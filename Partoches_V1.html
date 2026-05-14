@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Partoches - V1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,900&family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #efb810; --bg: #050505; --page-bright: 1; --page-contrast: 1; }
+        body { background: var(--bg); color: #f1e7d0; font-family: 'Montserrat', sans-serif; overflow: hidden; margin: 0; touch-action: none; }
+        .jazz-title { font-family: 'Playfair Display', serif; background: linear-gradient(to bottom, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .glass { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(239, 184, 16, 0.3); }
+        .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
+        .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
+
+        /* VISIONNEUSE : CENTRAGE HORIZONTAL PERMANENT ET NAVIGATION VERTICALE TOTALE */
+        #scroll-container {
+            height: 100vh; width: 100vw; 
+            overflow-y: scroll; 
+            overflow-x: auto; 
+            background: black;
+            scroll-behavior: auto;
+            touch-action: pan-x pan-y;
+            display: grid;
+            place-items: start center;
+        }
+        
+        #viewer-content { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 120px 0 500px 0; 
+            min-width: 100%;
+            height: fit-content; 
+            transition: transform 0.1s ease-out; 
+            transform-origin: center top; 
+            justify-content: flex-start;
+            gap: 50px;
+        }
+        
+        .page-wrapper { 
+            position: relative; 
+            flex-shrink: 0; 
+            background: white; 
+            box-shadow: 0 0 100px rgba(0,0,0,1);
+            filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
+        }
+
+        canvas, img { 
+            height: 95vh !important; 
+            width: auto !important; 
+            object-fit: contain; 
+            display: block; 
+        }
+
+        .anno-canvas { 
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            pointer-events: none; z-index: 10; 
+            background: transparent !important; 
+        }
+        
+        .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
+
+        .tab-btn { font-weight: 800; letter-spacing: 1px; color: #444; transition: 0.3s; }
+        .tab-active { color: var(--gold); text-shadow: 0 0 10px rgba(239, 184, 16, 0.3); }
+        
+        .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 0.75rem; font-weight: bold; background: black; padding: 8px 16px; border-radius: 4px; }
+        
+        #anno-toolbar, #fx-toolbar {
+            position: fixed; left: 50%; transform: translateX(-50%);
+            display: none; gap: 15px; padding: 20px; border-radius: 50px;
+            background: rgba(0,0,0,0.95); border: 1px solid var(--gold); z-index: 200;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        #anno-toolbar { bottom: 120px; }
+        #fx-toolbar { bottom: 30px; width: 360px; flex-direction: column; border-radius: 25px; }
+
+        .color-dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .color-dot.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 15px currentColor; }
+        
+        #scroll-container::-webkit-scrollbar { height: 8px; width: 8px; }
+        #scroll-container::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
+        
+        input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; height: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
+
+    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[100] text-[10px] uppercase tracking-tighter">
+        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active font-black">Répertoire</button>
+        <button onclick="switchTab('set')" id="tab-set" class="tab-btn font-black">Setlists</button>
+        <button onclick="switchTab('view')" id="tab-view" class="tab-btn font-black opacity-20">Visionneuse</button>
+    </nav>
+
+    <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-6">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="jazz-title text-5xl font-black italic text-shadow">Partoches</h1>
+            <div class="flex gap-3">
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden border-2 border-blue-500 text-blue-400 px-6 py-2 rounded-full text-[10px] animate-pulse font-black uppercase">Réactiver Accès</button>
+                <button onclick="addSource()" class="btn-jazz uppercase tracking-widest">Scanner Dossier</button>
+            </div>
+        </div>
+        <div id="source-list" class="flex flex-wrap gap-2 mb-6"></div>
+        <div id="alpha-bar" class="sticky top-0 bg-[#050505] py-4 z-20 flex flex-wrap justify-center gap-2 border-b border-zinc-800"></div>
+        <div id="library-list" class="pb-48 mt-4"></div>
+    </section>
+
+    <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-6">
+        <div class="max-w-2xl mx-auto text-center">
+            <h2 class="jazz-title text-3xl mb-8 italic uppercase tracking-widest">Programmation</h2>
+            <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[220px] mb-8 p-6"></div>
+            <div class="grid grid-cols-2 gap-6 mb-12">
+                <button onclick="saveCurrentSet()" class="btn-jazz py-5 text-lg rounded-xl shadow-2xl uppercase tracking-widest">Enregistrer le Set</button>
+                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] tracking-widest hover:text-red-500 transition">Vider la liste</button>
+            </div>
+            <div id="saved-sets-list" class="space-y-4 pb-48 text-left"></div>
+        </div>
+    </section>
+
+    <section id="sec-view" class="fixed inset-0 bg-black hidden z-[110] overflow-hidden">
+        <div id="viewer-header" class="glass absolute top-0 w-full p-4 flex justify-between items-center z-[120]">
+            <button onclick="switchTab('lib')" class="text-[10px] text-zinc-500 font-black px-5 py-2 hover:text-white transition uppercase">✕ Quitter</button>
+            
+            <div class="flex items-center gap-8">
+                <button onclick="toggleFX()" class="btn-jazz px-4 py-2 rounded uppercase tracking-tighter shadow-sm">☼ Image</button>
+                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz px-5 py-2 rounded uppercase tracking-tighter shadow-sm">✎ Annoter</button>
+                
+                <div class="flex items-center bg-black/60 border border-zinc-800 rounded-xl overflow-hidden shadow-inner">
+                    <button onclick="adjustZoom(-0.1)" class="px-5 py-2 text-gold text-2xl hover:bg-gold/10 transition">-</button>
+                    <span id="zoom-level" class="text-[11px] w-14 text-center font-black border-x border-zinc-800">100%</span>
+                    <button onclick="adjustZoom(0.1)" class="px-5 py-2 text-gold text-2xl hover:bg-gold/10 transition">+</button>
+                </div>
+                
+                <div class="flex items-center gap-4 text-zinc-500 font-black uppercase text-[10px] tracking-widest">
+                    <span>Navigation Active</span>
+                </div>
+            </div>
+            
+            <div id="page-info" class="text-gold font-black italic text-base tracking-widest pr-4">1 / 1</div>
+        </div>
+
+        <div id="fx-toolbar">
+            <div class="flex flex-col gap-4">
+                <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400">Luminosité</label><span id="val-bright" class="text-[10px] text-gold font-bold">100%</span></div>
+                <input type="range" min="0.2" max="2.5" step="0.01" value="1" oninput="updateFX('bright', this.value)">
+                <div class="flex justify-between items-center mt-2"><label class="text-[10px] uppercase font-black text-zinc-400">Contraste</label><span id="val-contrast" class="text-[10px] text-gold font-bold">100%</span></div>
+                <input type="range" min="0.2" max="4" step="0.01" value="1" oninput="updateFX('contrast', this.value)">
+            </div>
+        </div>
+
+        <div id="anno-toolbar">
+            <div class="flex gap-3 border-r border-zinc-700 pr-5">
+                <div onclick="setAnnoColor('red', this)" class="color-dot active shadow-lg" style="background: red;"></div>
+                <div onclick="setAnnoColor('#3b82f6', this)" class="color-dot shadow-lg" style="background: #3b82f6;"></div>
+                <div onclick="setAnnoColor('#eab308', this)" class="color-dot shadow-lg" style="background: #eab308;"></div>
+                <div onclick="setAnnoColor('eraser', this)" class="color-dot flex items-center justify-center bg-white text-black text-[8px] font-black uppercase shadow-lg">Gomme</div>
+            </div>
+            <div class="flex items-center gap-6 pl-2">
+                <div onclick="setAnnoSize(2, this)" class="w-2 h-2 bg-white rounded-full cursor-pointer hover:scale-150 transition shadow"></div>
+                <div onclick="setAnnoSize(6, this)" class="w-5 h-5 bg-white rounded-full cursor-pointer border-2 border-yellow-500 hover:scale-125 transition shadow"></div>
+                <div onclick="setAnnoSize(15, this)" class="w-8 h-8 bg-white rounded-full cursor-pointer hover:scale-110 transition shadow"></div>
+            </div>
+        </div>
+
+        <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
+            <div id="viewer-content"></div>
+        </div>
+
+        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-16 pointer-events-none z-[120]">
+            <button onclick="event.stopPropagation(); prevFile()" class="pointer-events-auto w-20 h-20 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">◀</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="pointer-events-auto w-20 h-20 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">▶</button>
+        </div>
+    </section>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        let files = [], setFiles = [], currentIndex = 0, sources = [];
+        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
+        let annoColor = 'red', annoSize = 6, initialPinchDist = null;
+        let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
+
+        // PERSISTANCE INDEXEDDB POUR ACCÈS DOSSIERS
+        const DB_NAME = "PartochesDB_V1_NoScroll";
+        async function openDB() {
+            return new Promise((r) => {
+                const req = indexedDB.open(DB_NAME, 1);
+                req.onupgradeneeded = () => req.result.createObjectStore("sources");
+                req.onsuccess = () => r(req.result);
+            });
+        }
+
+        async function loadSources() {
+            const db = await openDB();
+            const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
+            req.onsuccess = () => {
+                sources = req.result;
+                if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
+                renderSources();
+            };
+        }
+
+        async function addSource() {
+            try {
+                const h = await window.showDirectoryPicker();
+                if(!sources.find(s => s.name === h.name)) {
+                    sources.push(h);
+                    const db = await openDB();
+                    db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name);
+                    await refreshFiles();
+                }
+            } catch(e){}
+        }
+
+        async function restoreAccess() {
+            try {
+                for(const h of sources) { if(await h.requestPermission() !== 'granted') return; }
+                document.getElementById('btn-restore').classList.add('hidden');
+                await refreshFiles();
+            } catch(e) { console.error("Permission refusée."); }
+        }
+
+        async function refreshFiles() {
+            files = [];
+            for(const h of sources) { await scan(h); }
+            renderLibrary(); renderSources();
+        }
+
+        async function scan(h) {
+            for await (const e of h.values()) {
+                if(e.kind === 'file' && e.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) files.push({entry: e});
+                else if(e.kind === 'directory') await scan(e);
+            }
+        }
+
+        function renderSources() {
+            const c = document.getElementById('source-list'); c.innerHTML = '';
+            sources.forEach((s, i) => {
+                c.innerHTML += `<span class="bg-zinc-900 border border-zinc-800 text-[10px] px-4 py-2 rounded-full text-zinc-400 flex items-center gap-2">♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1 font-black" onclick="removeSource(${i})">✕</b></span>`;
+            });
+        }
+
+        async function removeSource(i) {
+            const name = sources[i].name;
+            sources.splice(i, 1);
+            const db = await openDB();
+            db.transaction("sources", "readwrite").objectStore("sources").delete(name);
+            await refreshFiles();
+        }
+
+        function renderLibrary(f = '') {
+            const l = document.getElementById('library-list'); l.innerHTML = '';
+            files.filter(x => !f || x.entry.name.toUpperCase().startsWith(f))
+                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
+                 .forEach(file => {
+                    const row = document.createElement('div');
+                    row.className = "file-row flex justify-between items-center p-5";
+                    row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
+                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="text-gold text-[11px] font-black border-2 border-gold/30 px-5 py-2 rounded-xl uppercase tracking-tighter transition hover:bg-gold/20">Ajouter</button>`;
+                    l.appendChild(row);
+                 });
+        }
+
+        // --- VISIONNEUSE MULTIPAGES VERTICALE ---
+        async function openFile(obj) {
+            if(!obj) return;
+            switchTab('view');
+            const file = await obj.entry.getFile();
+            const container = document.getElementById('viewer-content');
+            container.innerHTML = ''; 
+            
+            const fileURL = URL.createObjectURL(file);
+            if(file.name.toLowerCase().endsWith('.pdf')) {
+                const pdf = await pdfjsLib.getDocument(fileURL).promise;
+                for(let i=1; i<=pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({scale: 3}); 
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "page-wrapper";
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width; canvas.height = viewport.height;
+                    wrapper.appendChild(canvas);
+                    const anno = document.createElement('canvas');
+                    anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
+                    wrapper.appendChild(anno);
+                    container.appendChild(wrapper);
+                    await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+                    setupDrawing(anno, file.name, i);
+                }
+            } else {
+                const wrapper = document.createElement('div');
+                wrapper.className = "page-wrapper";
+                const img = document.createElement('img');
+                img.src = fileURL;
+                wrapper.appendChild(img);
+                const anno = document.createElement('canvas');
+                anno.className = "anno-canvas";
+                container.appendChild(wrapper);
+                img.onload = () => {
+                    anno.width = img.naturalWidth; anno.height = img.naturalHeight;
+                    wrapper.appendChild(anno);
+                    setupDrawing(anno, file.name, 0);
+                };
+            }
+            
+            applyVisuals();
+            const sc = document.getElementById('scroll-container');
+            sc.scrollLeft = 0; sc.scrollTop = 0; 
+            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${setFiles.length || 1}`;
+        }
+
+        function updateFX(type, val) {
+            const root = document.documentElement;
+            if(type === 'bright') {
+                root.style.setProperty('--page-bright', val);
+                document.getElementById('val-bright').innerText = Math.round(val*100)+'%';
+            }
+            if(type === 'contrast') {
+                root.style.setProperty('--page-contrast', val);
+                document.getElementById('val-contrast').innerText = Math.round(val*100)+'%';
+            }
+        }
+
+        function toggleFX() {
+            const f = document.getElementById('fx-toolbar');
+            f.style.display = f.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function applyVisuals() { 
+            const content = document.getElementById('viewer-content');
+            content.style.transform = `scale(${currentZoom})`; 
+            document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+'%'; 
+        }
+
+        function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); applyVisuals(); }
+        function resetZoom() { currentZoom = 1.0; applyVisuals(); }
+
+        // --- NAVIGATION CLAVIER ET SOURIS (SANS AUTO-SCROLL) ---
+        function handleWheel(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                adjustZoom(e.deltaY > 0 ? -0.05 : 0.05);
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const sc = document.getElementById('scroll-container');
+            const step = 120 * currentZoom;
+            if(e.key === "ArrowRight") nextFile();
+            if(e.key === "ArrowLeft") prevFile();
+            if(e.key === "ArrowDown") sc.scrollBy({ top: step, behavior: 'auto' });
+            if(e.key === "ArrowUp") sc.scrollBy({ top: -step, behavior: 'auto' });
+        });
+
+        const scEl = document.getElementById('scroll-container');
+        scEl.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) { 
+                initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); 
+            }
+        }, { passive: true });
+
+        scEl.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDist) {
+                const currentDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                const diff = (currentDist - initialPinchDist) / 400;
+                adjustZoom(diff); initialPinchDist = currentDist;
+            }
+        }, { passive: true });
+
+        // --- ANNOTATIONS ---
+        function setAnnoColor(color, el) {
+            annoColor = color;
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function setAnnoSize(size, el) {
+            annoSize = size;
+            document.querySelectorAll('.w-2, .w-5, .w-15').forEach(d => d.classList.remove('border-yellow-500'));
+            el.classList.add('border-yellow-500');
+        }
+
+        function setupDrawing(canvas, fileName, pIdx) {
+            const ctx = canvas.getContext('2d');
+            const key = `${fileName}_${pIdx}`;
+            if(annotations[key]) {
+                const img = new Image(); img.src = annotations[key];
+                img.onload = () => ctx.drawImage(img,0,0);
+            }
+            let drawing = false;
+            const getPos = (e) => {
+                const r = canvas.getBoundingClientRect();
+                const sx = canvas.width / r.width; const sy = canvas.height / r.height;
+                const cx = (e.clientX || (e.touches ? e.touches[0].clientX : 0));
+                const cy = (e.clientY || (e.touches ? e.touches[0].clientY : 0));
+                return { x: (cx - r.left) * sx, y: (cy - r.top) * sy };
+            };
+            const start = (e) => { if(!isDrawingMode) return; drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+            const move = (e) => { 
+                if(!drawing) return; 
+                const p = getPos(e); 
+                ctx.lineTo(p.x, p.y); 
+                ctx.lineCap = 'round';
+                if(annoColor === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = annoSize * 3; }
+                else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = annoColor; ctx.lineWidth = annoSize; }
+                ctx.stroke(); e.preventDefault();
+            };
+            const stop = () => { if(drawing) { drawing = false; annotations[key] = canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
+            
+            canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move);
+            canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', move, {passive: false});
+            window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
+        }
+
+        function toggleDrawingMode() { 
+            isDrawingMode = !isDrawingMode; 
+            document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); 
+            document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'black';
+            document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none';
+        }
+
+        function switchTab(id) { 
+            ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); });
+            document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active');
+            if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
+        }
+
+        function viewSingle(n) { const f = files.find(x => x.entry.name === n); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
+        
+        function nextFile() { 
+            if(setFiles.length === 0) return;
+            currentIndex = (currentIndex + 1) % setFiles.length; 
+            openFile(setFiles[currentIndex]); 
+        }
+
+        function prevFile() { 
+            if(setFiles.length === 0) return;
+            currentIndex = (currentIndex - 1 + setFiles.length) % setFiles.length; 
+            openFile(setFiles[currentIndex]); 
+        }
+
+        function toggleUI() { 
+            if(isDrawingMode) return;
+            uiVisible = !uiVisible; 
+            document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; 
+            document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; 
+        }
+
+        // --- GESTION DES SETLISTS (PERSISTENCE LOCALSTORAGE) ---
+        new Sortable(document.getElementById('set-list-current'), { animation: 150 });
+        function addToSet(name) {
+            const div = document.createElement('div');
+            div.className = "flex justify-between items-center bg-zinc-800 p-5 mb-3 rounded-xl border border-zinc-700";
+            div.dataset.name = name;
+            div.innerHTML = `<span class="font-bold text-base text-zinc-100">${name}</span> <button onclick="this.parentElement.remove()" class="text-red-500 font-black text-xl px-2">✕</button>`;
+            document.getElementById('set-list-current').appendChild(div);
+        }
+        function clearCurrentSet() { document.getElementById('set-list-current').innerHTML = ''; }
+        function saveCurrentSet() {
+            const name = prompt("Nom de la Setlist :"); if (!name) return;
+            const items = Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name);
+            localStorage.setItem('part_set_' + name, JSON.stringify(items));
+            renderSavedSets();
+        }
+        function renderSavedSets() {
+            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
+            Object.keys(localStorage).filter(k => k.startsWith('part_set_')).sort().forEach(key => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3";
+                div.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div>
+                                 <button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-red-900 font-black hover:text-white transition text-xl px-2">✕</button>`;
+                list.appendChild(div);
+            });
+        }
+        function loadSet(key) {
+            const names = JSON.parse(localStorage.getItem(key));
+            setFiles = []; document.getElementById('set-list-current').innerHTML = '';
+            names.forEach(n => { const f = files.find(file => file.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } });
+            if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
+        }
+
+        // --- INITIALISATION ---
+        loadSources(); renderSavedSets();
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
+            const b = document.createElement('button'); b.className = "px-3 text-zinc-600 font-black text-xs hover:text-gold transition";
+            b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
+        });
+    </script>
+</body>
+</html>
