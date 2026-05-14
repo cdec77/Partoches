@@ -1,0 +1,17 @@
+{
+  "name": "Partoches Pro",
+  "short_name": "Partoches",
+  "description": "Gestionnaire de partitions professionnelles",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#efb810",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3750/3750011.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
