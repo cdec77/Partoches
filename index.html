@@ -130,14 +130,33 @@
         .source-tag { background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
         .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; font-weight: 900; }
 
-        #alpha-bar button { 
-            padding: 6px 10px; 
-            font-size: 13px; 
-            font-weight: 500; 
-            color: #555; 
-            border: 1px solid transparent;
+        /* BARRE ALPHABETIQUE STANDARDISÉE */
+        #alpha-bar {
+            background: var(--surface);
+            border-bottom: 2px solid var(--neon-lime);
+            padding: 10px 0;
+            gap: 2px;
         }
-        #alpha-bar button:hover { color: var(--neon-lime); border-bottom-color: var(--neon-lime); }
+        #alpha-bar button { 
+            padding: 8px 12px; 
+            font-size: 14px; 
+            font-weight: 800; 
+            color: #ffffff; 
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            text-shadow: 0 0 2px black;
+        }
+        #alpha-bar button:hover { 
+            background: var(--neon-lime);
+            color: #000000;
+            text-shadow: none;
+        }
+        #alpha-bar button.active {
+            background: var(--neon-lime);
+            color: #000000;
+        }
 
         .lang-switch { font-size: 9px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; color: #888; cursor: pointer; }
         .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); }
@@ -169,7 +188,7 @@
             </div>
         </div>
         
-        <div id="alpha-bar" class="sticky top-0 bg-[#0a0a0c]/90 backdrop-filter blur-sm py-2 z-20 flex flex-wrap justify-center border-b border-white/5"></div>
+        <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center shadow-2xl"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
