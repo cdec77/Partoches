@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Pro Hybrid</title>
+    <title>Partoches - Neon Pro Hybrid Fix</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -127,25 +127,13 @@
         .source-tag { background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
         .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; font-weight: 900; }
 
-        /* BARRE ALPHABÉTIQUE STANDARD ET LISIBLE */
         #alpha-bar {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 4px;
-            padding: 10px;
-            background: #111;
-            border-bottom: 1px solid #333;
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 4px; padding: 10px; background: #111; border-bottom: 1px solid #333;
         }
         #alpha-bar button { 
-            padding: 8px 12px; 
-            font-size: 14px; 
-            font-weight: bold; 
-            color: #ffffff; 
-            background: #222;
-            border-radius: 4px;
-            min-width: 35px;
-            transition: 0.2s;
+            padding: 8px 12px; font-size: 14px; font-weight: bold; 
+            color: #ffffff; background: #222; border-radius: 4px; min-width: 35px;
         }
         #alpha-bar button:active { background: var(--neon-lime); color: #000; }
 
@@ -178,7 +166,6 @@
                 <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
-        
         <div id="alpha-bar" class="sticky top-0 z-20"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
@@ -209,7 +196,6 @@
             </div>
             <div id="page-info" class="text-white/20 font-bold text-[10px] pr-4 italic">0 / 0</div>
         </div>
-
         <div id="fx-toolbar">
             <div class="flex flex-col gap-3">
                 <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[9px] text-lime-400">100%</span></div>
@@ -218,7 +204,6 @@
                 <input type="range" min="0.2" max="4" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
-
         <div id="anno-toolbar">
             <div class="flex gap-3 border-r border-white/10 pr-4">
                 <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;"></div>
@@ -227,11 +212,9 @@
             </div>
             <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white/10 border border-white/20 rounded cursor-pointer hover:bg-lime-400 transition"></div>
         </div>
-
         <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
             <div id="viewer-content"></div>
         </div>
-
         <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-10 pointer-events-none z-[400]">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
@@ -240,22 +223,8 @@
 
     <script>
         const i18n = {
-            fr: {
-                nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
-                btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier",
-                set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
-                btn_close: "✕ Fermer", btn_settings: "Réglages", btn_draw: "Dessin",
-                fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Del",
-                btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter"
-            },
-            en: {
-                nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
-                btn_restore: "Restore Access", btn_scan: "Scan Folder",
-                set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
-                btn_close: "✕ Close", btn_settings: "Settings", btn_draw: "Draw",
-                fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Del",
-                btn_prev: "Previous", btn_next: "Next", btn_add: "Add"
-            }
+            fr: { nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse", btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier", set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider", btn_close: "✕ Fermer", btn_settings: "Réglages", btn_draw: "Dessin", fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Del", btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter" },
+            en: { nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer", btn_restore: "Restore Access", btn_scan: "Scan Folder", set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear", btn_close: "✕ Close", btn_settings: "Settings", btn_draw: "Draw", fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Del", btn_prev: "Previous", btn_next: "Next", btn_add: "Add" }
         };
 
         let currentLang = localStorage.getItem('part_lang') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
@@ -272,41 +241,34 @@
             renderLibrary();
         }
 
-        // --- GESTION TACTILE ANDROID (PINCH TO ZOOM) ---
+        // --- PINCH TO ZOOM ANDROID ---
         const scEl = document.getElementById('scroll-container');
-        scEl.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-            }
-        }, { passive: false });
-
-        scEl.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && initialPinchDist) {
-                e.preventDefault();
-                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                const zoomFactor = (dist - initialPinchDist) / 300;
-                adjustZoom(zoomFactor);
-                initialPinchDist = dist;
-            } else if (e.touches.length === 1 && !isDrawingMode) {
-                // Scroll standard à un doigt autorisé hors mode dessin
-            }
-        }, { passive: false });
+        scEl.addEventListener('touchstart', (e) => { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
+        scEl.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((dist - initialPinchDist) / 300); initialPinchDist = dist; } }, { passive: false });
 
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Android_Pinch", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
+        async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Neon_Fix", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
         async function loadSources() { if (!window.showDirectoryPicker) return; const db = await openDB(); const req = db.transaction("sources", "readonly").objectStore("sources").getAll(); req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); }; }
         async function addSource() { try { const h = await window.showDirectoryPicker(); if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles(); } } catch(e){} }
         async function scanFolder(h) { const res = []; for await (const e of h.values()) { if (e.kind === 'file' && e.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) res.push({entry:e}); else if (e.kind === 'directory') res.push(...(await scanFolder(e))); } return res; }
-        async function refreshFiles() { files = []; for(const h of sources) { files.push(...(await scanFolder(h))); } renderLibrary(); renderSourcesUI(); }
+        
+        async function refreshFiles() { 
+            files = []; 
+            for(const h of sources) { const found = await scanFolder(h); files = files.concat(found); }
+            renderLibrary(); 
+            renderSourcesUI(); 
+        }
+
         function renderSourcesUI() { const c = document.getElementById('source-list'); c.innerHTML = ''; sources.forEach((s, i) => { const tag = document.createElement('div'); tag.className = 'source-tag'; tag.innerHTML = `${s.name} <span class="source-delete" onclick="removeSource(${i})">✕</span>`; c.appendChild(tag); }); }
         async function removeSource(i) { const n = sources[i].name; sources.splice(i, 1); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(n); refreshFiles(); }
         async function restoreAccess() { try { for(const h of sources) { if(await h.requestPermission() !== 'granted') return; } document.getElementById('btn-restore').classList.add('hidden'); refreshFiles(); } catch(e) {} }
 
         function renderLibrary(f = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
+            const filtered = files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0);
+            filtered.sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
                 const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-3 px-4";
                 row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[12px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">${i18n[currentLang].btn_add}</button>`;
                 l.appendChild(row);
@@ -324,7 +286,7 @@
                     const page = await pdf.getPage(i); const vp = page.getViewport({scale: 2.2}); 
                     const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
                     const canvas = document.createElement('canvas'); canvas.width = vp.width; canvas.height = vp.height;
-                    const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = vp.width; anno.height = vp.height;
+                    const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
                     wrapper.appendChild(canvas); wrapper.appendChild(anno); container.appendChild(wrapper);
                     await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
                     setupDrawing(anno, obj.entry.name, i);
