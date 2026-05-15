@@ -36,7 +36,7 @@
 
         .glass { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 
-        /* Lignes bibliothèque */
+        /* Lignes bibliothèque d'origine */
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
         .file-row:hover { background: rgba(204, 255, 0, 0.1); padding-left: 10px; }
 
@@ -88,7 +88,7 @@
             color: var(--neon-blue); font-weight: 900; font-size: 1.2rem; padding: 15px 30px; border-radius: 8px;
         }
 
-        /* Barre alphabétique standard */
+        /* Barre alphabétique originale */
         #alpha-bar {
             display: flex; flex-wrap: wrap; justify-content: center;
             gap: 4px; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222;
@@ -155,7 +155,7 @@
             <div class="flex items-center gap-4">
                 <button onclick="toggleFX()" class="btn-jazz !py-1" data-i18n="btn_settings">Image</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !py-1" data-i18n="btn_draw">Annoter</button>
-                <div class="flex items-center bg-black/60 border border-zinc-800 rounded-lg overflow-hidden">
+                <div class="flex items-center bg-black/60 border border-zinc-800 rounded-lg overflow-hidden shadow-inner">
                     <button onclick="adjustZoom(-0.1)" class="px-4 py-1 text-neon-lime text-2xl">-</button>
                     <span id="zoom-level" class="text-[11px] w-12 text-center font-black text-white">100%</span>
                     <button onclick="adjustZoom(0.1)" class="px-4 py-1 text-neon-lime text-2xl">+</button>
@@ -163,6 +163,7 @@
             </div>
             <div id="page-info" class="text-neon-lime font-black italic text-sm pr-4">1 / 1</div>
         </div>
+
         <div id="fx-toolbar">
             <div class="flex flex-col gap-4">
                 <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[10px] text-neon-lime font-bold">100%</span></div>
@@ -171,6 +172,7 @@
                 <input type="range" min="0.2" max="4" step="0.01" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
+
         <div id="anno-toolbar">
             <div class="flex gap-4 border-r border-zinc-700 pr-5">
                 <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;"></div>
@@ -179,9 +181,11 @@
             </div>
             <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white rounded-sm border-2 border-neon-lime cursor-pointer"></div>
         </div>
+
         <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
             <div id="viewer-content"></div>
         </div>
+
         <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 pointer-events-none z-[400]">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">◄</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">►</button>
@@ -189,20 +193,16 @@
     </section>
 
     <script>
-        // --- LOGIQUE CORE index3.html INTÉGRALE ---
-        var pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-        let files = [], setFiles = [], currentIndex = 0, sources = [];
-        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
-        let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
-        let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
-
-        // BILINGUE
         const i18n = {
             fr: { nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse", btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier", set_title: "Programmation", btn_save_set: "Sauvegarder Set", btn_clear: "Vider", btn_close: "✕ Fermer", btn_settings: "Image", btn_draw: "Annoter", fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Gomme", btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter" },
             en: { nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer", btn_restore: "Restore Access", btn_scan: "Scan Folder", set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear", btn_close: "✕ Close", btn_settings: "FX", btn_draw: "Annotate", fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Eraser", btn_prev: "Previous", btn_next: "Next", btn_add: "Add" }
         };
+
+        let currentLang = localStorage.getItem('part_lang') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
+        let files = [], setFiles = [], currentIndex = 0, sources = [];
+        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
+        let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
+        let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
         function setLang(l) {
             currentLang = l; localStorage.setItem('part_lang', l);
@@ -212,11 +212,20 @@
             renderLibrary();
         }
 
-        // DATABASE
+        // --- GESTION TACTILE ANDROID PINCH-TO-ZOOM ---
+        const scEl = document.getElementById('scroll-container');
+        scEl.addEventListener('touchstart', function(e) { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
+        scEl.addEventListener('touchmove', function(e) { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 300); initialPinchDist = d; } }, { passive: false });
+
+        // --- LOGIQUE CORE index3.html RESTAURÉE ---
+        var pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
         async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Hybrid_Final", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
         
         async function loadSources() { 
             if (!window.showDirectoryPicker) return; 
+            document.getElementById('btn-scan').classList.remove('hidden');
             const db = await openDB(); 
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll(); 
             req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); }; 
@@ -270,14 +279,14 @@
 
         function renderLibrary(f = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
+            const filtered = files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name));
+            filtered.forEach(file => {
                 const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">Add</button>`;
+                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">${i18n[currentLang].btn_add}</button>`;
                 l.appendChild(row);
             });
         }
 
-        // NAVIGATION
         function viewSingle(name) { const f = files.find(x => x.entry.name === name); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
 
         async function openFile(obj) {
@@ -315,10 +324,6 @@
             canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); if(e.touches) e.preventDefault(); };
             window.onmouseup = window.ontouchend = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
         }
-
-        // ZOOM TACTILE ANDROID
-        scEl.addEventListener('touchstart', function(e) { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
-        scEl.addEventListener('touchmove', function(e) { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 300); initialPinchDist = d; } }, { passive: false });
 
         function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
         window.addEventListener('keydown', (e) => { const sc = document.getElementById('scroll-container'); if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile(); if(e.key === "ArrowDown") sc.scrollBy(0, 150); if(e.key === "ArrowUp") sc.scrollBy(0, -150); });
