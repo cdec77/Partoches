@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Pro Hybrid</title>
+    <title>Range tes Partoches-V3</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -179,7 +179,7 @@
     <section id="sec-lib" class="pt-20 h-screen overflow-y-auto px-6">
         <div class="flex justify-between items-end mb-6">
             <div>
-                <h1 class="jazz-title text-4xl mb-1">Partoches</h1>
+                <h1 class="jazz-title text-4xl mb-1">Range tes Partoches</h1>
                 <div id="source-list" class="flex gap-2"></div>
             </div>
             <div class="flex gap-3">
@@ -289,7 +289,7 @@
         let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        const DB_NAME = "PartochesDB_Neon_Final";
+        const DB_NAME = "Range tes Partoches";
         async function openDB() {
             return new Promise((r) => {
                 const req = indexedDB.open(DB_NAME, 1);
