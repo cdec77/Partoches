@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Multi-Platform Edition</title>
+    <title>Partoches - Pro Multi-Source</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#efb810">
@@ -25,7 +25,6 @@
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
         .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
 
-        /* VISIONNEUSE : STRUCTURE UNIFIÉE POUR TOUS SYSTÈMES */
         #scroll-container {
             height: 100vh; width: 100vw; 
             overflow-y: scroll; overflow-x: auto; 
@@ -84,10 +83,8 @@
         <div class="flex justify-between items-center mb-8">
             <h1 class="jazz-title text-5xl font-black italic text-shadow">Partoches</h1>
             <div class="flex gap-3">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden border-2 border-blue-500 text-blue-400 px-4 py-2 rounded-full text-[10px] animate-pulse font-black uppercase">Réactiver</button>
-                
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden border-2 border-blue-500 text-blue-400 px-6 py-2 rounded-full text-[10px] animate-pulse font-black uppercase">Réactiver</button>
                 <button onclick="addSource()" id="btn-scan" class="btn-jazz uppercase tracking-widest hidden md:block">Scanner Dossier</button>
-                
                 <label class="btn-jazz uppercase tracking-widest cursor-pointer flex items-center">
                     + iCloud / Photos
                     <input type="file" multiple onchange="handleVintageFiles(this.files)" class="hidden" accept="image/*,application/pdf">
@@ -159,9 +156,7 @@
     </section>
 
     <script>
-        // SERVICE WORKER
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-        
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         let files = [], setFiles = [], currentIndex = 0, sources = [];
@@ -169,8 +164,7 @@
         let annoColor = 'red', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        // LOGIQUE HYBRIDE : SCANNER VS FILE READER
-        const DB_NAME = "PartochesDB_Hybrid";
+        const DB_NAME = "PartochesDB_Final_Recursive";
         async function openDB() {
             return new Promise((r) => {
                 const req = indexedDB.open(DB_NAME, 1);
@@ -179,7 +173,6 @@
             });
         }
 
-        // --- GESTION PC/ANDROID (IndexedDB + Directories) ---
         async function loadSources() {
             if (!window.showDirectoryPicker) return;
             document.getElementById('btn-scan').classList.remove('hidden');
@@ -204,7 +197,31 @@
             } catch(e){}
         }
 
-        // --- GESTION IPAD/CLOUD (FileReader + LocalStorage) ---
+        // --- SCAN RÉCURSIF DES SOUS-RÉPERTOIRES ---
+        async function scanFolder(handle) {
+            const results = [];
+            for await (const entry of handle.values()) {
+                if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
+                    results.push({entry});
+                } else if (entry.kind === 'directory') {
+                    const subFiles = await scanFolder(entry);
+                    results.push(...subFiles);
+                }
+            }
+            return results;
+        }
+
+        async function refreshFiles() {
+            const pickerFiles = [];
+            for(const h of sources) {
+                const subFiles = await scanFolder(h);
+                pickerFiles.push(...subFiles);
+            }
+            const vintage = files.filter(f => f.isVintage);
+            files = [...pickerFiles, ...vintage];
+            renderLibrary(); renderSources();
+        }
+
         function handleVintageFiles(fileList) {
             Array.from(fileList).forEach(file => {
                 const reader = new FileReader();
@@ -227,18 +244,6 @@
         function saveVintageToLocal() {
             const vintageFiles = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
             try { localStorage.setItem('partoches_vintage', JSON.stringify(vintageFiles)); } catch(e) {}
-        }
-
-        async function refreshFiles() {
-            const pickerFiles = [];
-            for(const h of sources) {
-                for await (const e of h.values()) {
-                    if(e.kind === 'file' && e.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) pickerFiles.push({entry: e});
-                }
-            }
-            const vintage = files.filter(f => f.isVintage);
-            files = [...pickerFiles, ...vintage];
-            renderLibrary(); renderSources();
         }
 
         function renderSources() {
@@ -269,20 +274,17 @@
                  .forEach(file => {
                     const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
                     row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
-                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="text-gold text-[11px] font-black border-2 border-gold/30 px-5 py-2 rounded-xl uppercase tracking-tighter">Ajouter</button>`;
+                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="text-gold text-[11px] font-black border-2 border-gold/30 px-5 py-2 rounded-xl uppercase">Ajouter</button>`;
                     l.appendChild(row);
                  });
         }
 
-        // --- VISIONNEUSE MULTI-FORMAT ---
         async function openFile(obj) {
             if(!obj) return; switchTab('view');
             const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
-            
             let fileData;
             if (obj.isVintage) { fileData = obj.data; } 
             else { const file = await obj.entry.getFile(); fileData = URL.createObjectURL(file); }
-
             if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
@@ -302,7 +304,6 @@
             document.getElementById('page-info').innerText = `${currentIndex + 1} / ${setFiles.length || 1}`;
         }
 
-        // --- DESSIN & ZOOM (MOBILE + PC) ---
         function setupDrawing(canvas, fileName, pIdx) {
             const ctx = canvas.getContext('2d'); const key = `${fileName}_${pIdx}`;
             if(annotations[key]) { const img = new Image(); img.src = annotations[key]; img.onload = () => ctx.drawImage(img,0,0); }
@@ -326,7 +327,6 @@
         scEl.addEventListener('touchstart', (e) => { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: true });
         scEl.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && initialPinchDist) { const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 400); initialPinchDist = d; } }, { passive: true });
 
-        // --- NAVIGATION & UI ---
         function switchTab(id) { 
             ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); });
             document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active');
@@ -340,7 +340,6 @@
         function toggleFX() { const f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
         function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
 
-        // --- CLAVIER & SETLISTS ---
         window.addEventListener('keydown', (e) => { 
             const sc = document.getElementById('scroll-container'); 
             if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile();
@@ -368,7 +367,6 @@
             if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
         }
 
-        // --- INIT ---
         window.onload = () => {
             const savedVintage = localStorage.getItem('partoches_vintage');
             if(savedVintage) files = JSON.parse(savedVintage).map(f => ({ entry: {name: f.name, getFile: async() => null}, data: f.data, isVintage: true }));
