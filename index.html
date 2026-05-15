@@ -3,141 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Pro Master PWA</title>
+    <title>Partoches - Neon Master Edition</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#efb810">
+    <meta name="theme-color" content="#ccff00">
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,900&family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Outfit:wght@200;400;900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --gold: #efb810; --bg: #050505; --page-bright: 1; --page-contrast: 1; }
-        body { background: var(--bg); color: #f1e7d0; font-family: 'Montserrat', sans-serif; overflow: hidden; margin: 0; touch-action: none; }
-        .jazz-title { font-family: 'Playfair Display', serif; background: linear-gradient(to bottom, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .glass { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(239, 184, 16, 0.3); }
-        .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
-        .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
+        :root { 
+            --neon-lime: #ccff00; 
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff00ff;
+            --bg: #0a0a0c; 
+            --surface: #16161a;
+            --page-bright: 1; 
+            --page-contrast: 1; 
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: #e0e0e0; 
+            font-family: 'Space Grotesk', sans-serif; 
+            overflow: hidden; 
+            margin: 0; 
+            touch-action: none; 
+            font-size: 13px;
+        }
 
+        .jazz-title { 
+            font-family: 'Outfit', sans-serif; 
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: -2px;
+            background: linear-gradient(to right, var(--neon-lime), var(--neon-blue));
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            filter: drop-shadow(0 0 10px rgba(204, 255, 0, 0.3));
+        }
+
+        .glass { 
+            background: rgba(10, 10, 12, 0.85); 
+            backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(204, 255, 0, 0.2); 
+        }
+
+        .file-row { 
+            background: var(--surface);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: pointer; 
+        }
+        .file-row:hover { 
+            border-color: var(--neon-lime);
+            transform: translateX(5px);
+            box-shadow: -5px 0 15px rgba(204, 255, 0, 0.15);
+        }
+
+        /* VISIONNEUSE : NEON FOCUS */
         #scroll-container {
             height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: auto; 
-            background: black; scroll-behavior: auto; touch-action: pan-x pan-y;
+            background: #000; scroll-behavior: auto; touch-action: pan-x pan-y;
             display: grid; place-items: start center;
         }
+        
         #viewer-content { 
             display: flex; flex-direction: column; align-items: center; 
-            padding: 120px 0 500px 0; min-width: 100%; height: fit-content; 
-            transition: transform 0.1s ease-out; transform-origin: center top; gap: 50px;
+            padding: 100px 0 500px 0; min-width: 100%; height: fit-content; 
+            transition: transform 0.1s ease-out; transform-origin: center top; gap: 40px;
         }
-        .page-wrapper { position: relative; flex-shrink: 0; background: white; box-shadow: 0 0 100px rgba(0,0,0,1); filter: brightness(var(--page-bright)) contrast(var(--page-contrast)); }
-        canvas, img { height: 95vh !important; width: auto !important; object-fit: contain; display: block; }
+        
+        .page-wrapper { 
+            position: relative; flex-shrink: 0; background: white; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 1px var(--neon-lime);
+            filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
+            border-radius: 4px; overflow: hidden;
+        }
+
+        canvas, img { height: 92vh !important; width: auto !important; object-fit: contain; display: block; }
         .anno-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; background: transparent !important; }
         .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
 
-        .tab-btn { font-weight: 800; letter-spacing: 1px; color: #444; transition: 0.3s; }
-        .tab-active { color: var(--gold); text-shadow: 0 0 10px rgba(239, 184, 16, 0.3); }
-        .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 0.75rem; font-weight: bold; background: black; padding: 12px 24px; border-radius: 4px; text-transform: uppercase; }
+        .tab-btn { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #555; transition: 0.3s; }
+        .tab-active { color: var(--neon-lime); text-shadow: 0 0 8px var(--neon-lime); }
+        
+        .btn-jazz { 
+            background: transparent;
+            border: 1px solid var(--neon-lime); 
+            color: var(--neon-lime); 
+            font-size: 10px; 
+            font-weight: 700; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        .btn-jazz:hover {
+            background: var(--neon-lime);
+            color: black;
+            box-shadow: 0 0 20px rgba(204, 255, 0, 0.4);
+        }
         
         #anno-toolbar, #fx-toolbar {
             position: fixed; left: 50%; transform: translateX(-50%);
-            display: none; gap: 15px; padding: 20px; border-radius: 8px;
-            background: rgba(0,0,0,0.95); border: 1px solid var(--gold); z-index: 500;
+            display: none; gap: 12px; padding: 15px; border-radius: 12px;
+            background: rgba(22, 22, 26, 0.95); border: 1px solid var(--neon-lime); 
+            z-index: 500; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        #anno-toolbar { bottom: 130px; }
-        #fx-toolbar { bottom: 40px; width: 340px; flex-direction: column; }
-        .color-dot { width: 38px; height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s; }
-        .color-dot.active { border-color: var(--gold); transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
+        #anno-toolbar { bottom: 120px; }
+        #fx-toolbar { bottom: 40px; width: 300px; flex-direction: column; }
+        
+        .color-dot { width: 32px; height: 32px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .color-dot.active { border-color: white; transform: scale(1.1); box-shadow: 0 0 15px currentColor; }
         
         .nav-rect {
-            pointer-events: auto; background: rgba(5,5,5,0.9); border: 2px solid var(--gold); 
-            color: var(--gold); font-weight: 900; font-size: 1.2rem; padding: 20px 45px; border-radius: 6px;
+            pointer-events: auto; background: rgba(22, 22, 26, 0.9); border: 1px solid var(--neon-blue); 
+            color: var(--neon-blue); font-weight: 700; font-size: 10px; padding: 15px 30px; border-radius: 30px;
+            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
         }
+        .nav-rect:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
 
-        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
-        input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; height: 8px; }
+        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #444; letter-spacing: 2px; z-index: 50; }
+        input[type=range] { accent-color: var(--neon-lime); cursor: pointer; width: 100%; height: 4px; }
         
-        /* ESPACEMENT LIGNES SUPPLÉMENTAIRES POUR MAINTENANCE */
-        .spacer-line { height: 1px; width: 100%; visibility: hidden; }
+        #source-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .source-tag { background: #000; border: 1px solid #333; padding: 4px 10px; border-radius: 6px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
+        .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; }
+
+        #alpha-bar button { padding: 4px 8px; font-size: 10px; font-weight: 700; color: #444; transition: 0.2s; }
+        #alpha-bar button:hover { color: var(--neon-lime); }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
+    <div class="copyright font-black uppercase tracking-widest">© Cyrille de Chanteloup</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[200] text-[10px] uppercase tracking-tighter">
-        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active font-black">Répertoire</button>
-        <button onclick="switchTab('set')" id="tab-set" class="tab-btn font-black">Setlists</button>
-        <button onclick="switchTab('view')" id="tab-view" class="tab-btn font-black opacity-20">Visionneuse</button>
+    <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
+        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active">LIBRARY</button>
+        <button onclick="switchTab('set')" id="tab-set" class="tab-btn">SETLISTS</button>
+        <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20">VIEWER</button>
     </nav>
 
-    <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-6">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="jazz-title text-5xl font-black italic">Partoches</h1>
-            <div class="flex gap-4">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden border border-blue-500 text-blue-400 px-4 py-2 rounded-lg text-[10px] uppercase">Réactiver</button>
-                <button onclick="addSource()" class="btn-jazz uppercase tracking-widest">Scanner Dossier</button>
+    <section id="sec-lib" class="pt-20 h-screen overflow-y-auto px-6">
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <h1 class="jazz-title text-4xl mb-1">Partoches</h1>
+                <div id="source-list"></div>
+            </div>
+            <div class="flex gap-3">
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden text-[9px] border border-blue-500 text-blue-400 px-3 py-1 rounded uppercase font-bold">Restore Access</button>
+                <button onclick="addSource()" class="btn-jazz">Scan Folder</button>
             </div>
         </div>
-        <div id="source-list" class="flex flex-wrap gap-2 mb-6"></div>
-        <div id="alpha-bar" class="sticky top-0 bg-[#050505] py-4 z-20 flex flex-wrap justify-center gap-2 border-b border-zinc-800"></div>
-        <div id="library-list" class="pb-48 mt-4"></div>
+        
+        <div id="alpha-bar" class="sticky top-0 bg-[#0a0a0c]/80 backdrop-filter blur-sm py-3 z-20 flex flex-wrap justify-center border-b border-white/5"></div>
+        <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
-    <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-6">
-        <div class="max-w-2xl mx-auto text-center">
-            <h2 class="jazz-title text-3xl mb-8 italic uppercase tracking-widest">Programmation</h2>
-            <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[220px] mb-8 p-6 text-left"></div>
-            <div class="grid grid-cols-2 gap-6 mb-12">
-                <button onclick="saveCurrentSet()" class="btn-jazz py-5 text-lg shadow-2xl">Sauvegarder</button>
-                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] hover:text-red-500 transition">Vider</button>
+    <section id="sec-set" class="hidden pt-20 h-screen overflow-y-auto px-6">
+        <div class="max-w-xl mx-auto text-center">
+            <h2 class="jazz-title text-2xl mb-6">Programmation</h2>
+            <div id="set-list-current" class="bg-[#111] border border-white/5 rounded-xl min-h-[180px] mb-6 p-4"></div>
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <button onclick="saveCurrentSet()" class="btn-jazz !py-4 text-[12px] bg-white/5">Save Setlist</button>
+                <button onclick="clearCurrentSet()" class="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition">Clear Current</button>
             </div>
-            <div id="saved-sets-list" class="space-y-4 pb-48 text-left"></div>
+            <div id="saved-sets-list" class="space-y-3 pb-40 text-left"></div>
         </div>
     </section>
 
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
-        <div id="viewer-header" class="glass absolute top-0 w-full p-4 flex justify-between items-center z-[400]">
-            <button onclick="switchTab('lib')" class="btn-jazz !py-2 !px-4 !border-zinc-700 !text-zinc-500">✕ Quitter</button>
-            <div class="flex items-center gap-8">
-                <button onclick="toggleFX()" class="btn-jazz !py-2">☼ Image</button>
-                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !py-2">✎ Dessin</button>
-                <div class="flex items-center bg-black/60 border border-zinc-800 rounded-lg overflow-hidden">
-                    <button onclick="adjustZoom(-0.1)" class="px-5 py-2 text-gold text-2xl">-</button>
-                    <span id="zoom-level" class="text-[11px] w-14 text-center font-black">100%</span>
-                    <button onclick="adjustZoom(0.1)" class="px-5 py-2 text-gold text-2xl">+</button>
+        <div id="viewer-header" class="glass absolute top-0 w-full p-3 flex justify-between items-center z-[400]">
+            <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-2">✕ CLOSE</button>
+            <div class="flex items-center gap-6">
+                <button onclick="toggleFX()" class="btn-jazz !border-zinc-700 !text-zinc-400">Settings</button>
+                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz">Draw</button>
+                <div class="flex items-center bg-zinc-900/50 rounded-full px-2 border border-white/5">
+                    <button onclick="adjustZoom(-0.1)" class="p-2 text-zinc-500 hover:text-white">-</button>
+                    <span id="zoom-level" class="text-[10px] w-10 text-center font-bold text-lime-400">100%</span>
+                    <button onclick="adjustZoom(0.1)" class="p-2 text-zinc-500 hover:text-white">+</button>
                 </div>
             </div>
-            <div id="page-info" class="text-gold font-black italic text-base tracking-widest pr-4">1 / 1</div>
+            <div id="page-info" class="text-white/30 font-bold text-[10px] tracking-tighter pr-4 italic">0 / 0</div>
         </div>
 
         <div id="fx-toolbar">
-            <div class="flex flex-col gap-4">
-                <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400">Luminosité</label><span id="val-bright" class="text-[10px] text-gold font-bold">100%</span></div>
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500">Brightness</label><span id="val-bright" class="text-[9px] text-lime-400">100%</span></div>
                 <input type="range" min="0.2" max="2.5" step="0.1" value="1" oninput="updateFX('bright', this.value)">
-                <div class="flex justify-between items-center mt-2"><label class="text-[10px] uppercase font-black text-zinc-400">Contraste</label><span id="val-contrast" class="text-[10px] text-gold font-bold">100%</span></div>
+                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500">Contrast</label><span id="val-contrast" class="text-[9px] text-lime-400">100%</span></div>
                 <input type="range" min="0.2" max="4" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
 
         <div id="anno-toolbar">
-            <div class="flex gap-5 border-r border-zinc-700 pr-6">
-                <div onclick="setAnnoColor('red', this)" class="color-dot active shadow-lg" style="background: red;"></div>
-                <div onclick="setAnnoColor('#3b82f6', this)" class="color-dot shadow-lg" style="background: #3b82f6;"></div>
-                <div onclick="setAnnoColor('eraser', this)" class="color-dot flex items-center justify-center bg-white text-black text-[7px] font-black uppercase shadow-lg">Gomme</div>
+            <div class="flex gap-3 border-r border-white/10 pr-4">
+                <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;"></div>
+                <div onclick="setAnnoColor('#00f0ff', this)" class="color-dot" style="background: #00f0ff;"></div>
+                <div onclick="setAnnoColor('#ff00ff', this)" class="color-dot" style="background: #ff00ff;"></div>
+                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-zinc-800 flex items-center justify-center text-[7px] text-zinc-400 font-bold uppercase">Del</div>
             </div>
-            <div onclick="setAnnoSize(6, this)" class="w-8 h-8 bg-white rounded-sm border-2 border-gold cursor-pointer"></div>
+            <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white/10 border border-white/20 rounded cursor-pointer hover:bg-lime-400 transition"></div>
         </div>
 
         <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
             <div id="viewer-content"></div>
         </div>
 
-        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-12 pointer-events-none z-[400]">
-            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">◄ PRÉCÉDENT</button>
-            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">SUIVANT ►</button>
+        <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-10 pointer-events-none z-[400]">
+            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">Previous</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">Next Page</button>
         </div>
     </section>
 
@@ -147,15 +232,15 @@
 
         let files = [], setFiles = [], currentIndex = 0, sources = [];
         let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
-        let annoColor = 'red', annoSize = 6, initialPinchDist = null;
+        let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        const DB_NAME = "PartochesDB_PWA_Only";
+        const DB_NAME = "PartochesDB_PWA_Recursive";
         async function openDB() {
             return new Promise((r) => {
                 const req = indexedDB.open(DB_NAME, 1);
                 req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources");
-                req.onsuccess = (e) => r(e.target.result);
+                req.onsuccess = (e) => r(req.result);
             });
         }
 
@@ -163,7 +248,11 @@
             if (!window.showDirectoryPicker) return;
             const db = await openDB();
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); };
+            req.onsuccess = () => {
+                sources = req.result;
+                if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
+                refreshFiles();
+            };
         }
 
         async function addSource() {
@@ -192,9 +281,13 @@
         }
 
         function renderSourcesUI() {
-            const c = document.getElementById('source-list'); c.innerHTML = '';
+            const container = document.getElementById('source-list');
+            container.innerHTML = '';
             sources.forEach((s, i) => {
-                c.innerHTML += `<span class="bg-zinc-900 border border-zinc-800 text-[10px] px-3 py-1 rounded-full text-zinc-400">♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1" onclick="removeSource(${i})">✕</b></span>`;
+                const tag = document.createElement('div');
+                tag.className = 'source-tag';
+                tag.innerHTML = `${s.name} <span class="source-delete" onclick="removeSource(${i})">✕</span>`;
+                container.appendChild(tag);
             });
         }
 
@@ -214,8 +307,8 @@
         function renderLibrary(f = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
             files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
-                const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">Ajouter</button>`;
+                const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-3 px-4";
+                row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[13px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">Add</button>`;
                 l.appendChild(row);
             });
         }
@@ -226,7 +319,6 @@
             if(!obj) return; switchTab('view');
             const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
             const blob = await obj.entry.getFile(); const fileData = URL.createObjectURL(blob);
-
             if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
@@ -282,16 +374,16 @@
         function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); applyVisuals(); }
         function applyVisuals() { document.getElementById('viewer-content').style.transform = "scale("+currentZoom+")"; document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+"%"; }
         function toggleFX() { const f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
-        function updateFX(type, val) { const r = document.documentElement; if(type === 'bright') r.style.setProperty('--page-bright', val); if(type === 'contrast') r.style.setProperty('--page-contrast', val); }
-        function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'black'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
+        function updateFX(type, val) { const r = document.documentElement; if(type === 'bright') { r.style.setProperty('--page-bright', val); document.getElementById('val-bright').innerText = Math.round(val*100)+"%"; } if(type === 'contrast') { r.style.setProperty('--page-contrast', val); document.getElementById('val-contrast').innerText = Math.round(val*100)+"%"; } }
+        function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'transparent'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
         function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
         function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); el.classList.add('active'); }
         function setAnnoSize(s) { annoSize = s; }
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(name) {
-            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-800 p-5 mb-3 rounded-xl border border-zinc-700";
-            div.dataset.name = name; div.innerHTML = `<span class="font-bold text-base text-zinc-100">${name}</span> <button onclick="this.parentElement.remove()" class="text-red-500 font-black text-xl px-2">✕</button>`;
+            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-[#1a1a1a] p-3 mb-2 rounded-lg border border-white/5";
+            div.dataset.name = name; div.innerHTML = `<span class="font-medium text-xs text-zinc-300">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold text-sm px-2">✕</button>`;
             document.getElementById('set-list-current').appendChild(div);
         }
         function saveCurrentSet() {
@@ -301,8 +393,8 @@
         function renderSavedSets() {
             const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
             Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
-                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3";
-                div.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-red-900 font-black px-2">✕</button>`;
+                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900/50 border border-white/5 p-3 rounded-lg";
+                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-xs" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-zinc-600 hover:text-white transition px-2">✕</button>`;
                 list.appendChild(div);
             });
         }
@@ -315,8 +407,7 @@
         window.onload = () => {
             loadSources(); renderSavedSets();
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
-                const b = document.createElement('button'); b.className = "px-3 text-zinc-600 font-black text-xs hover:text-gold transition";
-                b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
+                const b = document.createElement('button'); b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
             });
         };
     </script>
