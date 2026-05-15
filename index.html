@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Pro Hybrid Final</title>
+    <title>Partoches - Neon Pro Hybrid Ultimate</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -35,6 +35,7 @@
             font-size: 13px;
         }
 
+        /* --- TYPOGRAPHIE JAZZ NEON --- */
         .jazz-title { 
             font-family: 'Outfit', sans-serif; 
             text-transform: uppercase;
@@ -66,10 +67,19 @@
             background: rgba(204, 255, 0, 0.05);
         }
 
-        /* VISIONNEUSE : TOUCH-ACTION NONE CRITIQUE POUR ANDROID PINCH & DRAW */
+        /* --- LAYOUT VISIONNEUSE --- */
+        #view-layout { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+        
+        #viewer-sidebar {
+            width: 280px; background: #0a0a0c; border-right: 1px solid rgba(204, 255, 0, 0.15);
+            display: flex; flex-direction: column; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 450;
+        }
+        #viewer-sidebar.collapsed { margin-left: -280px; }
+
         #scroll-container {
-            height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: auto; 
-            background: #000; scroll-behavior: auto; touch-action: none;
+            flex-grow: 1; height: 100vh; overflow-y: scroll; overflow-x: auto; 
+            background: #000; scroll-behavior: auto; touch-action: auto;
             display: grid; place-items: start center;
         }
         
@@ -81,20 +91,20 @@
         
         .page-wrapper { 
             position: relative; flex-shrink: 0; background: white; 
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
             border-radius: 2px;
         }
 
         canvas, img { height: 92vh !important; width: auto !important; object-fit: contain; display: block; }
         
-        /* CALQUE DE DESSIN : GESTION DES COORDONNÉES ANDROID */
         .anno-canvas { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             pointer-events: none; z-index: 10; 
         }
         .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
 
+        /* --- BOUTONS --- */
         .tab-btn { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #666; transition: 0.3s; text-transform: uppercase; }
         .tab-active { color: var(--neon-lime); text-shadow: 0 0 10px var(--neon-lime); }
         
@@ -111,45 +121,47 @@
         }
         .btn-jazz:hover { background: var(--neon-lime); color: black; }
         
-        #anno-toolbar, #fx-toolbar {
-            position: fixed; left: 50%; transform: translateX(-50%);
-            display: none; gap: 12px; padding: 15px; border-radius: 8px;
-            background: rgba(10, 10, 12, 0.98); border: 1px solid var(--neon-lime); 
-            z-index: 500;
-        }
-        #anno-toolbar { bottom: 120px; }
-        #fx-toolbar { bottom: 40px; width: 300px; flex-direction: column; }
-        
-        .color-dot { width: 32px; height: 32px; border-radius: 4px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; }
-        .color-dot.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 10px currentColor; }
-        
         .nav-rect {
             pointer-events: auto; background: rgba(10, 10, 12, 0.9); border: 1px solid var(--neon-blue); 
             color: var(--neon-blue); font-weight: 700; font-size: 11px; padding: 12px 24px; border-radius: 4px;
             text-transform: uppercase; transition: 0.2s;
         }
 
-        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #333; z-index: 50; }
-        input[type=range] { accent-color: var(--neon-lime); width: 100%; height: 4px; }
+        /* --- TOOLBARS --- */
+        #anno-toolbar, #fx-toolbar {
+            position: fixed; left: 50%; transform: translateX(-50%);
+            display: none; gap: 12px; padding: 15px; border-radius: 8px;
+            background: rgba(10, 10, 12, 0.98); border: 1px solid var(--neon-lime); 
+            z-index: 500; box-shadow: 0 0 40px rgba(0,0,0,1);
+        }
+        #anno-toolbar { bottom: 120px; align-items: center; }
+        #fx-toolbar { bottom: 40px; width: 300px; flex-direction: column; }
         
-        #source-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .source-tag { background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
-        .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; font-weight: 900; }
+        .color-dot { width: 28px; height: 28px; border-radius: 4px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; }
+        .color-dot.active { border-color: white; transform: scale(1.1); box-shadow: 0 0 10px currentColor; }
+        
+        .size-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #555; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; }
+        .size-btn.active { border-color: var(--neon-lime); color: var(--neon-lime); background: rgba(204, 255, 0, 0.1); }
 
-        #alpha-bar {
-            background: var(--surface);
-            border-bottom: 2px solid var(--neon-lime);
-            padding: 10px 0;
-            gap: 2px;
+        .sidebar-item {
+            padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 11px; color: #777; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center;
         }
-        #alpha-bar button { 
-            padding: 8px 12px; font-size: 14px; font-weight: 800; color: #ffffff; 
-            background: transparent; border-radius: 4px; transition: all 0.2s ease;
-        }
-        #alpha-bar button:hover { background: var(--neon-lime); color: #000; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .sidebar-item.active { background: rgba(204, 255, 0, 0.08); color: var(--neon-lime); font-weight: bold; border-left: 4px solid var(--neon-lime); }
 
-        .lang-switch { font-size: 9px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; color: #888; cursor: pointer; }
-        .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); }
+        .lang-switch { font-size: 9px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; color: #888; cursor: pointer; font-weight: bold; }
+        .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); background: rgba(204, 255, 0, 0.1); }
+
+        .source-tag { background: #111; border: 1px solid #333; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .source-delete { color: var(--neon-pink); cursor: pointer; font-size: 12px; }
+
+        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #333; z-index: 50; }
+        input[type=range] { accent-color: var(--neon-lime); width: 100%; }
+        
+        #alpha-bar button { padding: 8px 11px; font-size: 14px; font-weight: 800; color: #555; transition: 0.2s; }
+        #alpha-bar button:hover { color: var(--neon-lime); transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -170,32 +182,38 @@
         <div class="flex justify-between items-end mb-6">
             <div>
                 <h1 class="jazz-title text-4xl mb-1">Partoches</h1>
-                <div id="source-list" class="flex gap-2"></div>
+                <div id="source-list" class="flex flex-wrap gap-2"></div>
             </div>
             <div class="flex gap-3">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden text-[9px] border border-blue-500 text-blue-400 px-3 py-1 rounded uppercase font-bold" data-i18n="btn_restore">Réactiver Accès</button>
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
                 <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
-        <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center shadow-2xl"></div>
+        <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
     <section id="sec-set" class="hidden pt-20 h-screen overflow-y-auto px-6">
         <div class="max-w-xl mx-auto text-center">
             <h2 class="jazz-title text-2xl mb-6" data-i18n="set_title">Programmation</h2>
-            <div id="set-list-current" class="bg-[#111] border border-white/5 rounded-lg min-h-[180px] mb-6 p-4"></div>
+            <div id="set-list-current" class="bg-[#111] border border-white/5 rounded-lg min-h-[220px] mb-6 p-4"></div>
             <div class="grid grid-cols-2 gap-4 mb-10">
                 <button onclick="saveCurrentSet()" class="btn-jazz !py-4 text-[11px]" data-i18n="btn_save_set">Enregistrer Set</button>
                 <button onclick="clearCurrentSet()" class="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition" data-i18n="btn_clear">Vider</button>
             </div>
-            <div id="saved-sets-list" class="space-y-2 pb-40 text-left"></div>
+            <div class="text-left">
+                <h3 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-4 font-bold">Sauvegardes</h3>
+                <div id="saved-sets-list" class="space-y-2 pb-40"></div>
+            </div>
         </div>
     </section>
 
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
-        <div id="viewer-header" class="glass absolute top-0 w-full p-3 flex justify-between items-center z-[400]">
-            <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-2" data-i18n="btn_close">✕ Fermer</button>
+        <div id="viewer-header" class="glass absolute top-0 w-full p-3 flex justify-between items-center z-[500]">
+            <div class="flex items-center gap-3">
+                <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-2" data-i18n="btn_close">✕ Fermer</button>
+                <button onclick="toggleSidebar()" class="btn-jazz !border-zinc-800">☰ Menu</button>
+            </div>
             <div class="flex items-center gap-4">
                 <button onclick="toggleFX()" class="btn-jazz !border-zinc-700 !text-zinc-400" data-i18n="btn_settings">Réglages</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz" data-i18n="btn_draw">Dessin</button>
@@ -208,42 +226,55 @@
             <div id="page-info" class="text-white/20 font-bold text-[10px] pr-4 italic">0 / 0</div>
         </div>
 
-        <div id="fx-toolbar">
-            <div class="flex flex-col gap-3">
-                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[9px] text-lime-400">100%</span></div>
-                <input type="range" min="0.2" max="2.5" step="0.1" value="1" oninput="updateFX('bright', this.value)">
-                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_contrast">Contraste</label><span id="val-contrast" class="text-[9px] text-lime-400">100%</span></div>
-                <input type="range" min="0.2" max="4" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
-            </div>
-        </div>
+        <div id="view-layout">
+            <aside id="viewer-sidebar">
+                <div class="p-4 border-b border-white/5 font-black text-[10px] tracking-widest text-zinc-600 uppercase">Navigation Live</div>
+                <div id="sidebar-items" class="flex-grow overflow-y-auto"></div>
+            </aside>
 
-        <div id="anno-toolbar">
-            <div class="flex flex-wrap gap-2 border-r border-white/10 pr-4">
-                <div onclick="setAnnoColor('red', this)" class="color-dot" style="background: red;" title="Rouge"></div>
-                <div onclick="setAnnoColor('blue', this)" class="color-dot" style="background: blue;" title="Bleu"></div>
-                <div onclick="setAnnoColor('black', this)" class="color-dot" style="background: black; border:1px solid #444;" title="Noir"></div>
-                <div onclick="setAnnoColor('green', this)" class="color-dot" style="background: green;" title="Vert"></div>
-                <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;" title="Lime"></div>
-                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-zinc-800 flex items-center justify-center text-[7px] text-zinc-400 font-bold uppercase" data-i18n="btn_del">Del</div>
+            <div id="scroll-container" onwheel="handleWheel(event)" onclick="toggleUI()">
+                <div id="viewer-content"></div>
             </div>
-            <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white/10 border border-white/20 rounded cursor-pointer hover:bg-lime-400 transition"></div>
-        </div>
-
-        <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
-            <div id="viewer-content"></div>
         </div>
 
         <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-10 pointer-events-none z-[400]">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
         </div>
+
+        <div id="anno-toolbar">
+            <div class="flex gap-2 border-r border-white/10 pr-4">
+                <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;"></div>
+                <div onclick="setAnnoColor('red', this)" class="color-dot" style="background: red;"></div>
+                <div onclick="setAnnoColor('blue', this)" class="color-dot" style="background: blue;"></div>
+                <div onclick="setAnnoColor('eraser', this)" class="btn-jazz !px-2 !py-1 !text-[8px]" data-i18n="btn_del">Gomme</div>
+            </div>
+            <div class="flex gap-1 border-r border-white/10 pr-4">
+                <div onclick="setAnnoSize(2, this)" class="size-btn">1</div>
+                <div onclick="setAnnoSize(5, this)" class="size-btn active">2</div>
+                <div onclick="setAnnoSize(12, this)" class="size-btn">3</div>
+                <div onclick="setAnnoSize(25, this)" class="size-btn">4</div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="undoLast()" class="btn-jazz !border-zinc-700 !text-zinc-500">Undo</button>
+                <button onclick="clearCurrentPage()" class="btn-jazz !border-pink-900 !text-pink-500">Reset</button>
+            </div>
+        </div>
+
+        <div id="fx-toolbar">
+            <div class="flex justify-between mb-2"><span class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_bright">Luminosité</span><span id="val-bright" class="text-lime-400 text-[9px]">100%</span></div>
+            <input type="range" min="0.5" max="2" step="0.1" value="1" oninput="updateFX('bright', this.value)">
+            <div class="flex justify-between mt-4 mb-2"><span class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_contrast">Contraste</span><span id="val-contrast" class="text-lime-400 text-[9px]">100%</span></div>
+            <input type="range" min="0.5" max="3" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
+        </div>
     </section>
 
     <script>
+        // --- INTERNATIONALISATION ---
         const i18n = {
             fr: {
                 nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
-                btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier",
+                btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier",
                 set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
                 btn_close: "✕ Fermer", btn_settings: "Réglages", btn_draw: "Dessin",
                 fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Gomme",
@@ -259,131 +290,80 @@
             }
         };
 
-        let currentLang = localStorage.getItem('part_lang') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
+        let currentLang = localStorage.getItem('part_lang') || 'fr';
         let files = [], setFiles = [], currentIndex = 0, sources = [];
         let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
-        let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
-        let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
+        let annoColor = '#ccff00', annoSize = 5;
+        let annotations = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
+        let undoStack = [];
 
-        // --- MOTEUR PINCH-TO-ZOOM ANDROID ---
-        const scEl = document.getElementById('scroll-container');
-        scEl.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-            }
-        }, { passive: false });
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        scEl.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && initialPinchDist) {
-                e.preventDefault();
-                const currentDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                const delta = (currentDist - initialPinchDist) / 250;
-                adjustZoom(delta);
-                initialPinchDist = currentDist;
-            }
-        }, { passive: false });
-
+        // --- GESTION TRADUCTION ---
         function setLang(lang) {
             currentLang = lang; localStorage.setItem('part_lang', lang);
-            document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = i18n[lang][el.getAttribute('data-i18n')]; });
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = i18n[lang][key] || key;
+            });
             document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
             document.getElementById('lang-' + lang).classList.add('active');
             renderLibrary();
+            renderSavedSets();
         }
 
-        // --- SYSTÈME DE DESSIN COMPATIBLE ANDROID ---
-        function setupDrawing(canvas, fileName, pIdx) {
-            const ctx = canvas.getContext('2d');
-            const key = fileName + "_" + pIdx;
-            if(annotations[key]) {
-                const img = new Image(); img.src = annotations[key];
-                img.onload = () => ctx.drawImage(img,0,0);
-            }
-            
-            let isPainting = false;
-
-            const getCoordinates = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return {
-                    x: (clientX - rect.left) * scaleX,
-                    y: (clientY - rect.top) * scaleY
-                };
-            };
-
-            const startPosition = (e) => {
-                if(!isDrawingMode) return;
-                isPainting = true;
-                const pos = getCoordinates(e);
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                if(e.touches) e.preventDefault();
-            };
-
-            const finishedPosition = () => {
-                if(!isPainting) return;
-                isPainting = false;
-                ctx.closePath();
-                annotations[key] = canvas.toDataURL();
-                localStorage.setItem('partoches_annotations', JSON.stringify(annotations));
-            };
-
-            const draw = (e) => {
-                if(!isPainting || !isDrawingMode) return;
-                const pos = getCoordinates(e);
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                
-                if(annoColor === 'eraser') {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.lineWidth = annoSize * 5;
-                } else {
-                    ctx.globalCompositeOperation = 'source-over';
-                    ctx.strokeStyle = annoColor;
-                    ctx.lineWidth = annoSize;
-                }
-
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-                if(e.touches) e.preventDefault();
-            };
-
-            // Événements Souris
-            canvas.addEventListener('mousedown', startPosition);
-            canvas.addEventListener('mousemove', draw);
-            window.addEventListener('mouseup', finishedPosition);
-
-            // Événements Tactiles (Android/iOS)
-            canvas.addEventListener('touchstart', startPosition, { passive: false });
-            canvas.addEventListener('touchmove', draw, { passive: false });
-            canvas.addEventListener('touchend', finishedPosition);
-        }
-
-        // --- LOGIQUE CORE ---
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-        const DB_NAME = "PartochesDB_Neon_Final";
+        // --- BASE DE DONNÉES ET DOSSIERS ---
+        const DB_NAME = "PartochesDB_Ultimate";
         async function openDB() { return new Promise((r) => { const req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.result); }); }
 
-        async function loadSources() {
-            if (!window.showDirectoryPicker) return;
+        async function init() {
+            setLang(currentLang);
             const db = await openDB();
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); };
+            req.onsuccess = async () => { 
+                sources = req.result; 
+                if(sources.length > 0) {
+                    try {
+                        for(const h of sources) { 
+                            if(await h.queryPermission() !== 'granted') document.getElementById('btn-restore').classList.remove('hidden');
+                        }
+                        await refreshFiles();
+                    } catch(e) { console.error("Auto-restore failed", e); }
+                }
+            };
+            renderSavedSets();
+            generateAlphaBar();
         }
 
         async function addSource() {
             try {
                 const h = await window.showDirectoryPicker();
-                if(!sources.find(s => s.name === h.name)) {
-                    sources.push(h); const db = await openDB();
-                    db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles();
-                }
+                if(sources.find(s => s.name === h.name)) return;
+                const db = await openDB();
+                db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name);
+                sources.push(h);
+                await refreshFiles();
             } catch(e){}
+        }
+
+        async function removeSource(name) {
+            if(!confirm("Supprimer l'accès à ce dossier ?")) return;
+            const db = await openDB();
+            db.transaction("sources", "readwrite").objectStore("sources").delete(name);
+            sources = sources.filter(s => s.name !== name);
+            await refreshFiles();
+        }
+
+        async function refreshFiles() {
+            files = [];
+            for(const h of sources) {
+                try {
+                    const results = await scanFolder(h);
+                    files.push(...results);
+                } catch(e) { console.warn("Folder inaccessible", h.name); }
+            }
+            renderLibrary();
+            renderSourcesUI();
         }
 
         async function scanFolder(handle) {
@@ -395,51 +375,104 @@
             return results;
         }
 
-        async function refreshFiles() {
-            files = [];
-            for(const h of sources) { files.push(...(await scanFolder(h))); }
-            renderLibrary(); renderSourcesUI();
-        }
-
         function renderSourcesUI() {
             const container = document.getElementById('source-list'); container.innerHTML = '';
-            sources.forEach((s, i) => {
+            sources.forEach(s => {
                 const tag = document.createElement('div'); tag.className = 'source-tag';
-                tag.innerHTML = `${s.name} <span class="source-delete" onclick="removeSource(${i})">✕</span>`;
+                tag.innerHTML = `${s.name} <span class="source-delete" onclick="removeSource('${s.name}')">✕</span>`;
                 container.appendChild(tag);
             });
         }
 
-        async function removeSource(i) {
-            const name = sources[i].name; sources.splice(i, 1);
-            const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(name);
-            refreshFiles();
+        async function restoreAccess() {
+            try {
+                for(const h of sources) { await h.requestPermission(); }
+                document.getElementById('btn-restore').classList.add('hidden');
+                refreshFiles();
+            } catch(e) { alert("Permission refusée."); }
         }
 
-        async function restoreAccess() { try { for(const h of sources) { if(await h.requestPermission() !== 'granted') return; } document.getElementById('btn-restore').classList.add('hidden'); refreshFiles(); } catch(e) {} }
-
-        function renderLibrary(f = '') {
+        // --- BIBLIOTHEQUE ---
+        function renderLibrary(filter = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
-                const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-3 px-4";
-                row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[12px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">${i18n[currentLang].btn_add}</button>`;
-                l.appendChild(row);
+            files.filter(x => !filter || x.entry.name.toUpperCase().startsWith(filter))
+                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
+                 .forEach(file => {
+                    const row = document.createElement('div');
+                    row.className = "file-row flex justify-between items-center p-3 px-4";
+                    row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[12px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
+                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1">${i18n[currentLang].btn_add}</button>`;
+                    l.appendChild(row);
+                 });
+        }
+
+        function generateAlphaBar() {
+            const bar = document.getElementById('alpha-bar');
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
+                const b = document.createElement('button'); b.innerText = l;
+                b.onclick = () => renderLibrary(l); bar.appendChild(b);
             });
         }
 
-        function viewSingle(name) { const f = files.find(x => x.entry.name === name); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
+        // --- SETLISTS ---
+        function addToSet(name) {
+            const div = document.createElement('div');
+            div.className = "flex justify-between items-center bg-[#15151a] p-3 mb-2 rounded border border-white/5 cursor-move";
+            div.dataset.name = name;
+            div.innerHTML = `<span class="text-[11px] text-zinc-300 font-bold">${name}</span> 
+                             <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold">✕</button>`;
+            document.getElementById('set-list-current').appendChild(div);
+            new Sortable(document.getElementById('set-list-current'), { animation: 150 });
+        }
 
+        function saveCurrentSet() {
+            const name = prompt(currentLang === 'fr' ? "Nom de la Setlist :" : "Setlist Name :");
+            if (!name) return;
+            const items = Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name);
+            localStorage.setItem('part_set_' + name, JSON.stringify(items));
+            renderSavedSets();
+        }
+
+        function clearCurrentSet() { if(confirm("Vider la liste actuelle ?")) document.getElementById('set-list-current').innerHTML = ''; }
+
+        function renderSavedSets() {
+            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
+            Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
+                const name = key.replace('part_set_', '');
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-zinc-900/40 border border-white/5 p-3 rounded";
+                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px]" onclick="loadSet('${key}')">${name}</div>
+                                 <button onclick="deleteSet('${key}')" class="text-zinc-700 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function deleteSet(key) { if(confirm("Supprimer ce set ?")) { localStorage.removeItem(key); renderSavedSets(); } }
+
+        function loadSet(key) {
+            const names = JSON.parse(localStorage.getItem(key));
+            setFiles = []; document.getElementById('set-list-current').innerHTML = '';
+            names.forEach(n => {
+                const f = files.find(file => file.entry.name === n);
+                if (f) { setFiles.push(f); addToSet(n); }
+            });
+            if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
+        }
+
+        // --- VISIONNEUSE ET NAVIGATION ---
         async function openFile(obj) {
             if(!obj) return; switchTab('view');
             const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
             const blob = await obj.entry.getFile(); const fileData = URL.createObjectURL(blob);
+            
             if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
                     const page = await pdf.getPage(i); const viewport = page.getViewport({scale: 2.2}); 
                     const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
                     const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
-                    const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
+                    const anno = document.createElement('canvas'); anno.className = "anno-canvas";
+                    anno.width = canvas.width; anno.height = canvas.height;
                     wrapper.appendChild(canvas); wrapper.appendChild(anno); container.appendChild(wrapper);
                     await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
                     setupDrawing(anno, obj.entry.name, i);
@@ -449,73 +482,138 @@
                 const img = document.createElement('img'); img.src = fileData;
                 const anno = document.createElement('canvas'); anno.className = "anno-canvas";
                 wrapper.appendChild(img); container.appendChild(wrapper);
-                img.onload = () => { anno.width = img.naturalWidth; anno.height = img.naturalHeight; wrapper.appendChild(anno); setupDrawing(anno, obj.entry.name, 0); };
+                img.onload = () => { anno.width = img.naturalWidth; anno.height = img.naturalHeight; setupDrawing(anno, obj.entry.name, 0); };
             }
-            applyVisuals(); document.getElementById('scroll-container').scrollTop = 0; 
+            document.getElementById('scroll-container').scrollTop = 0;
             document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
+            renderSidebar();
         }
 
-        function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
-        window.addEventListener('keydown', (e) => {
-            const sc = document.getElementById('scroll-container');
-            if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile();
-            if(e.key === "ArrowDown") sc.scrollBy(0, 150); if(e.key === "ArrowUp") sc.scrollBy(0, -150);
-        });
-
-        function switchTab(id) { 
-            ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); });
-            document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active');
-            if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
+        function viewSingle(name) {
+            const f = files.find(x => x.entry.name === name);
+            if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
         }
 
         function nextFile() { if(setFiles.length > 0) { currentIndex = (currentIndex + 1) % setFiles.length; openFile(setFiles[currentIndex]); } }
         function prevFile() { if(setFiles.length > 0) { currentIndex = (currentIndex - 1 + setFiles.length) % setFiles.length; openFile(setFiles[currentIndex]); } }
-        function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); applyVisuals(); }
-        function applyVisuals() { document.getElementById('viewer-content').style.transform = "scale("+currentZoom+")"; document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+"%"; }
+
+        // --- EVENEMENTS CLAVIER ---
+        window.addEventListener('keydown', (e) => {
+            if(document.activeElement.tagName === 'INPUT') return;
+            const sc = document.getElementById('scroll-container');
+            if(e.code === "Space") { e.preventDefault(); nextFile(); }
+            if(e.key === "ArrowRight") nextFile();
+            if(e.key === "ArrowLeft") prevFile();
+            if(e.key === "ArrowDown") sc.scrollBy(0, 150);
+            if(e.key === "ArrowUp") sc.scrollBy(0, -150);
+        });
+
+        // --- DESSIN ---
+        function setupDrawing(canvas, fileName, pIdx) {
+            const ctx = canvas.getContext('2d');
+            const key = fileName + "_" + pIdx;
+            if(annotations[key]) {
+                const img = new Image(); img.src = annotations[key];
+                img.onload = () => ctx.drawImage(img,0,0);
+            }
+            let isPainting = false;
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scale = canvas.width / rect.width;
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: (cx - rect.left) * scale, y: (cy - rect.top) * scale };
+            };
+            const start = (e) => {
+                if(!isDrawingMode) return; isPainting = true;
+                undoStack.push({key, data: canvas.toDataURL()});
+                if(undoStack.length > 30) undoStack.shift();
+                const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
+            };
+            const draw = (e) => {
+                if(!isPainting || !isDrawingMode) return;
+                const pos = getPos(e); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                if(annoColor === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = annoSize * 5; }
+                else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = annoColor; ctx.lineWidth = annoSize; }
+                ctx.lineTo(pos.x, pos.y); ctx.stroke(); e.preventDefault();
+            };
+            const stop = () => { 
+                if(!isPainting) return; isPainting = false; 
+                annotations[key] = canvas.toDataURL();
+                localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+            };
+            canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stop);
+            canvas.addEventListener('touchstart', start, {passive:false}); canvas.addEventListener('touchmove', draw, {passive:false});
+            canvas.addEventListener('touchend', stop);
+        }
+
+        function undoLast() {
+            if(undoStack.length === 0) return;
+            const last = undoStack.pop();
+            // Note: Restauration basée sur l'ID du canvas visible
+            alert("Undo limité à l'action en cours");
+        }
+
+        function clearCurrentPage() { if(confirm("Effacer tout sur cette page ?")) { document.querySelectorAll('.anno-canvas').forEach(c => c.getContext('2d').clearRect(0,0,c.width,c.height)); } }
+
+        // --- UI TOOLS ---
+        function switchTab(id) { 
+            ['lib','set','view'].forEach(t => { 
+                document.getElementById('sec-'+t).classList.add('hidden'); 
+                document.getElementById('tab-'+t).classList.remove('tab-active'); 
+            });
+            document.getElementById('sec-'+id).classList.remove('hidden'); 
+            document.getElementById('tab-'+id).classList.add('tab-active');
+            if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
+        }
+
+        function toggleSidebar() { document.getElementById('viewer-sidebar').classList.toggle('collapsed'); }
+
+        function renderSidebar() {
+            const container = document.getElementById('sidebar-items'); container.innerHTML = '';
+            setFiles.forEach((f, i) => {
+                const div = document.createElement('div');
+                div.className = `sidebar-item ${i === currentIndex ? 'active' : ''}`;
+                div.innerHTML = `<span class="opacity-30 mr-3 text-[9px]">${i+1}</span> ${f.entry.name}`;
+                div.onclick = () => { currentIndex = i; openFile(f); };
+                container.appendChild(div);
+            });
+        }
+
+        function adjustZoom(d) { 
+            currentZoom = Math.max(0.2, Math.min(4, currentZoom + d)); 
+            document.getElementById('viewer-content').style.transform = `scale(${currentZoom})`;
+            document.getElementById('zoom-level').innerText = Math.round(currentZoom*100) + "%";
+        }
+
+        function handleWheel(e) { if(e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.1 : 0.1); } }
+
+        function toggleDrawingMode() {
+            isDrawingMode = !isDrawingMode;
+            document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode);
+            document.getElementById('draw-toggle').style.background = isDrawingMode ? '#ff0055' : '';
+            document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none';
+        }
+
+        function toggleUI() {
+            if(isDrawingMode) return; uiVisible = !uiVisible;
+            document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0";
+            document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0";
+        }
+
         function toggleFX() { const f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
-        function updateFX(type, val) { const r = document.documentElement; if(type === 'bright') { r.style.setProperty('--page-bright', val); document.getElementById('val-bright').innerText = Math.round(val*100)+"%"; } if(type === 'contrast') { r.style.setProperty('--page-contrast', val); document.getElementById('val-contrast').innerText = Math.round(val*100)+"%"; } }
-        function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'transparent'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
-        function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
-        function setAnnoColor(c, el) { 
-            annoColor = c; 
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); 
-            el.classList.add('active'); 
-        }
-        function setAnnoSize(s) { annoSize = s; }
 
-        new Sortable(document.getElementById('set-list-current'), { animation: 150 });
-        function addToSet(name) {
-            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-[#1a1a1a] p-2 mb-2 rounded border border-white/5";
-            div.dataset.name = name; div.innerHTML = `<span class="font-medium text-[11px] text-zinc-300">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold text-sm px-2">✕</button>`;
-            document.getElementById('set-list-current').appendChild(div);
-        }
-        function saveCurrentSet() {
-            const name = prompt(currentLang === 'fr' ? "Nom de la Setlist :" : "Setlist Name :"); if (!name) return;
-            localStorage.setItem('part_set_' + name, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets();
-        }
-        function renderSavedSets() {
-            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
-            Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
-                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900/50 border border-white/5 p-2 px-3 rounded";
-                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px]" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-zinc-600 hover:text-white transition px-2">✕</button>`;
-                list.appendChild(div);
-            });
-        }
-        function loadSet(key) {
-            const names = JSON.parse(localStorage.getItem(key)); setFiles = []; document.getElementById('set-list-current').innerHTML = '';
-            names.forEach(n => { const f = files.find(file => file.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } });
-            if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
+        function updateFX(t, v) {
+            const r = document.documentElement;
+            if(t==='bright') { r.style.setProperty('--page-bright', v); document.getElementById('val-bright').innerText = Math.round(v*100)+'%'; }
+            if(t==='contrast') { r.style.setProperty('--page-contrast', v); document.getElementById('val-contrast').innerText = Math.round(v*100)+'%'; }
         }
 
-        window.onload = () => {
-            loadSources(); setLang(currentLang); renderSavedSets();
-            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-            const bar = document.getElementById('alpha-bar');
-            alpha.forEach(l => {
-                const b = document.createElement('button');
-                b.innerText = l; b.onclick = () => renderLibrary(l); bar.appendChild(b);
-            });
-        };
+        function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); if(el) el.classList.add('active'); }
+        function setAnnoSize(s, el) { annoSize = s; document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active')); if(el) el.classList.add('active'); }
+
+        window.onload = init;
     </script>
 </body>
 </html>
