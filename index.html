@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Pro Master iPad Deluxe</title>
+    <title>Partoches - Pro Master Final Fix</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#efb810">
@@ -20,33 +20,22 @@
         :root { --gold: #efb810; --bg: #050505; --page-bright: 1; --page-contrast: 1; }
         body { background: var(--bg); color: #f1e7d0; font-family: 'Montserrat', sans-serif; overflow: hidden; margin: 0; touch-action: none; -webkit-tap-highlight-color: transparent; }
         .jazz-title { font-family: 'Playfair Display', serif; background: linear-gradient(to bottom, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
         .glass { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(239, 184, 16, 0.3); }
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
         .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
 
-        /* VISIONNEUSE : NAVIGATION LUXE */
+        /* VISIONNEUSE : NAVIGATION LUXE POUR IPAD */
         #scroll-container {
-            height: 100vh; width: 100vw; 
-            overflow-y: scroll; overflow-x: auto; 
-            background: black; scroll-behavior: auto;
-            touch-action: pan-x pan-y; display: grid; place-items: start center;
-            -webkit-overflow-scrolling: touch;
+            height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: auto; 
+            background: black; scroll-behavior: auto; touch-action: pan-x pan-y;
+            display: grid; place-items: start center; -webkit-overflow-scrolling: touch;
         }
-        
         #viewer-content { 
             display: flex; flex-direction: column; align-items: center; 
             padding: 120px 0 500px 0; min-width: 100%; height: fit-content; 
-            transition: transform 0.1s ease-out; transform-origin: center top; 
-            justify-content: flex-start; gap: 50px;
+            transition: transform 0.1s ease-out; transform-origin: center top; gap: 50px;
         }
-        
-        .page-wrapper { 
-            position: relative; flex-shrink: 0; background: white; 
-            box-shadow: 0 0 100px rgba(0,0,0,1);
-            filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
-        }
-
+        .page-wrapper { position: relative; flex-shrink: 0; background: white; box-shadow: 0 0 100px rgba(0,0,0,1); filter: brightness(var(--page-bright)) contrast(var(--page-contrast)); }
         canvas, img { height: 95vh !important; width: auto !important; object-fit: contain; display: block; }
         .anno-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; background: transparent !important; }
         .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
@@ -55,7 +44,6 @@
         .tab-active { color: var(--gold); text-shadow: 0 0 10px rgba(239, 184, 16, 0.3); }
         .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 0.75rem; font-weight: bold; background: black; padding: 10px 20px; border-radius: 4px; text-transform: uppercase; }
         
-        /* TOOLBARS DESIGN ÉPURÉ */
         #anno-toolbar, #fx-toolbar {
             position: fixed; left: 50%; transform: translateX(-50%);
             display: none; gap: 15px; padding: 20px; border-radius: 12px;
@@ -63,37 +51,41 @@
         }
         #anno-toolbar { bottom: 120px; }
         #fx-toolbar { bottom: 30px; width: 360px; flex-direction: column; border-radius: 12px; }
-
-        .color-dot { width: 36px; height: 36px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s; }
-        .color-dot.active { border-color: var(--gold); transform: scale(1.1); box-shadow: 0 0 10px var(--gold); }
+        .color-dot { width: 36px; height: 36px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
+        .color-dot.active { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); }
         
-        /* NOUVEAU STYLE BOUTONS NAVIGATION : RECTANGULAIRES ÉLÉGANTS */
+        /* NAVIGATION IPAD : BOUTONS RECTANGULAIRES OR */
         .nav-rect {
-            pointer-events: auto; background: rgba(10,10,10,0.8);
-            border: 1px solid var(--gold); color: var(--gold);
-            font-weight: 900; font-size: 1.5rem;
-            padding: 20px 40px; border-radius: 8px;
-            backdrop-filter: blur(5px); transition: 0.3s;
+            pointer-events: auto; background: rgba(10,10,10,0.9); border: 1px solid var(--gold); 
+            color: var(--gold); font-weight: 900; font-size: 1.2rem; padding: 15px 30px; border-radius: 8px;
         }
-        .nav-rect:active { background: var(--gold); color: black; }
 
-        #scroll-container::-webkit-scrollbar { height: 8px; width: 8px; }
-        #scroll-container::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
-        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
-        input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; height: 6px; }
+        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; z-index: 50; }
+        input[type=range] { accent-color: var(--gold); width: 100%; height: 6px; }
 
-        /* LOADING IPAD */
-        #import-status {
-            background: rgba(239, 184, 16, 0.1); border: 1px solid var(--gold);
-            border-radius: 8px; margin: 10px 0;
+        /* OVERLAY IMPORTATION MASSIVE */
+        #loading-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; color: var(--gold);
         }
+        #load-bar-bg { width: 80%; height: 10px; background: #222; border-radius: 5px; margin-top: 20px; overflow: hidden; }
+        #load-bar-fill { width: 0%; height: 100%; background: var(--gold); transition: width 0.2s; }
     </style>
 </head>
 <body>
 
+    <div id="loading-overlay">
+        <div class="jazz-title text-4xl mb-2 italic">Importation Album</div>
+        <div id="load-name" class="text-[12px] uppercase tracking-widest text-zinc-400 mb-6">Initialisation...</div>
+        <div id="load-prog" class="text-6xl font-black">0%</div>
+        <div id="load-bar-bg"><div id="load-bar-fill"></div></div>
+        <div class="mt-8 text-zinc-500 italic text-sm">Veuillez patienter, ne pas quitter Safari</div>
+    </div>
+
     <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[200] text-[10px] uppercase tracking-tighter">
+    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[200] text-[10px] uppercase">
         <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active font-black">Répertoire</button>
         <button onclick="switchTab('set')" id="tab-set" class="tab-btn font-black">Setlists</button>
         <button onclick="switchTab('view')" id="tab-view" class="tab-btn font-black opacity-20">Visionneuse</button>
@@ -103,21 +95,13 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <h1 class="jazz-title text-5xl font-black italic">Partoches</h1>
             <div class="flex flex-wrap justify-center gap-3">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden border border-blue-500 text-blue-400 px-4 py-2 rounded-lg text-[10px] animate-pulse font-black uppercase">Réactiver</button>
                 <button onclick="addSource()" id="btn-scan" class="btn-jazz hidden md:block">Scanner Dossier PC</button>
-                
-                <label class="btn-jazz cursor-pointer flex items-center bg-gold/10 border-gold/40">
-                    <span class="mr-2">📥</span> Importer Photos / iCloud
-                    <input type="file" multiple onchange="handleVintageFiles(this.files)" class="hidden" accept="image/*,application/pdf">
+                <label class="btn-jazz cursor-pointer flex items-center bg-gold/10 border-gold/30">
+                    <span class="mr-2">📥</span> IMPORTER ALBUMS (PHOTOS/ICLOUD)
+                    <input type="file" multiple onchange="startSmartImport(this.files)" class="hidden" accept="image/*,application/pdf">
                 </label>
             </div>
         </div>
-        
-        <div id="import-status" class="hidden text-center p-6 text-gold font-bold italic text-sm">
-            <div class="mb-2">Traitement de l'album en cours...</div>
-            <div id="import-progress" class="text-2xl font-black">0%</div>
-        </div>
-
         <div id="source-list" class="flex flex-wrap gap-2 mb-6"></div>
         <div id="alpha-bar" class="sticky top-0 bg-[#050505] py-4 z-20 flex flex-wrap justify-center gap-2 border-b border-zinc-800"></div>
         <div id="library-list" class="pb-48 mt-4"></div>
@@ -126,10 +110,10 @@
     <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-6">
         <div class="max-w-2xl mx-auto text-center">
             <h2 class="jazz-title text-3xl mb-8 italic uppercase tracking-widest">Programmation</h2>
-            <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[220px] mb-8 p-6 text-left"></div>
+            <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[200px] mb-8 p-6 text-left"></div>
             <div class="grid grid-cols-2 gap-6 mb-12">
-                <button onclick="saveCurrentSet()" class="btn-jazz py-5 text-lg shadow-2xl">Sauvegarder Set</button>
-                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] tracking-widest hover:text-red-500 transition">Effacer Tout</button>
+                <button onclick="saveCurrentSet()" class="btn-jazz py-5 shadow-2xl">Sauvegarder Set</button>
+                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] hover:text-red-500 transition">Vider</button>
             </div>
             <div id="saved-sets-list" class="space-y-4 pb-48 text-left"></div>
         </div>
@@ -137,25 +121,25 @@
 
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
         <div id="viewer-header" class="glass absolute top-0 w-full p-4 flex justify-between items-center z-[400]">
-            <button onclick="switchTab('lib')" class="text-[10px] text-zinc-500 font-black px-5 py-2 hover:text-white transition uppercase">✕ Quitter</button>
-            <div class="flex items-center gap-4 md:gap-8">
-                <button onclick="toggleFX()" class="btn-jazz !py-2 !px-4">Ajuster Image</button>
-                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !py-2 !px-4">Annoter</button>
+            <button onclick="switchTab('lib')" class="text-[10px] text-zinc-500 font-black px-5 py-2">✕ Quitter</button>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleFX()" class="btn-jazz !py-1">Image</button>
+                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !py-1">Dessin</button>
                 <div class="flex items-center bg-black/60 border border-zinc-800 rounded-lg overflow-hidden">
-                    <button onclick="adjustZoom(-0.1)" class="px-5 py-2 text-gold text-2xl">-</button>
-                    <span id="zoom-level" class="text-[11px] w-14 text-center font-black">100%</span>
-                    <button onclick="adjustZoom(0.1)" class="px-5 py-2 text-gold text-2xl">+</button>
+                    <button onclick="adjustZoom(-0.1)" class="px-4 py-1 text-gold text-2xl">-</button>
+                    <span id="zoom-level" class="text-[11px] w-12 text-center font-black">100%</span>
+                    <button onclick="adjustZoom(0.1)" class="px-4 py-1 text-gold text-2xl">+</button>
                 </div>
             </div>
-            <div id="page-info" class="text-gold font-black italic text-base tracking-widest pr-4">1 / 1</div>
+            <div id="page-info" class="text-gold font-black italic text-sm">1 / 1</div>
         </div>
 
         <div id="fx-toolbar">
             <div class="flex flex-col gap-4">
-                <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400">Luminosité</label><span id="val-bright" class="text-[10px] text-gold font-bold">100%</span></div>
-                <input type="range" min="0.2" max="2.5" step="0.05" value="1" oninput="updateFX('bright', this.value)">
-                <div class="flex justify-between items-center mt-2"><label class="text-[10px] uppercase font-black text-zinc-400">Contraste</label><span id="val-contrast" class="text-[10px] text-gold font-bold">100%</span></div>
-                <input type="range" min="0.2" max="4" step="0.05" value="1" oninput="updateFX('contrast', this.value)">
+                <label class="text-[10px] uppercase font-black text-zinc-400">Luminosité</label>
+                <input type="range" min="0.2" max="2.5" step="0.1" value="1" oninput="updateFX('bright', this.value)">
+                <label class="text-[10px] uppercase font-black text-zinc-400 mt-2">Contraste</label>
+                <input type="range" min="0.2" max="4" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
 
@@ -163,27 +147,22 @@
             <div class="flex gap-4 border-r border-zinc-700 pr-5">
                 <div onclick="setAnnoColor('red', this)" class="color-dot active" style="background: red;"></div>
                 <div onclick="setAnnoColor('#3b82f6', this)" class="color-dot" style="background: #3b82f6;"></div>
-                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-white border-zinc-300 flex items-center justify-center text-[7px] text-black font-black uppercase">Gomme</div>
+                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-white flex items-center justify-center text-[7px] text-black font-black uppercase">Gomme</div>
             </div>
-            <div class="flex items-center gap-6 pl-2">
-                <div onclick="setAnnoSize(2, this)" class="w-3 h-3 bg-white rounded-sm cursor-pointer"></div>
-                <div onclick="setAnnoSize(7, this)" class="w-6 h-6 bg-white rounded-sm border-2 border-gold cursor-pointer"></div>
-            </div>
+            <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white rounded-sm border-2 border-gold cursor-pointer"></div>
         </div>
 
-        <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
+        <div id="scroll-container" onclick="toggleUI()">
             <div id="viewer-content"></div>
         </div>
 
-        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 md:px-16 pointer-events-none z-[400]">
+        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 pointer-events-none z-[400]">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">◄ PRÉCÉDENT</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">SUIVANT ►</button>
         </div>
     </section>
 
     <script>
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-        
         var pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -192,125 +171,85 @@
         let annoColor = 'red', annoSize = 6;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        // DATABASE PC/ANDROID
-        const DB_NAME = "PartochesDB_Hybrid_V6";
-        async function openDB() {
-            return new Promise((r) => {
-                const req = indexedDB.open(DB_NAME, 1);
-                req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources");
-                req.onsuccess = (e) => r(req.target.result);
-            });
-        }
-
-        async function loadSources() {
-            if (!window.showDirectoryPicker) return;
-            document.getElementById('btn-scan').classList.remove('hidden');
-            const db = await openDB();
-            const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); };
-        }
-
-        async function addSource() {
-            try {
-                const h = await window.showDirectoryPicker();
-                if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles(); }
-            } catch(e){}
-        }
-
-        async function scanFolder(handle) {
-            const results = [];
-            for await (const entry of handle.values()) {
-                if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) results.push({entry});
-                else if (entry.kind === 'directory') { const subFiles = await scanFolder(entry); results.push(...subFiles); }
-            }
-            return results;
-        }
-
-        async function refreshFiles() {
-            const pickerFiles = [];
-            for(const h of sources) { const subFiles = await scanFolder(h); pickerFiles.push(...subFiles); }
-            const vintage = files.filter(f => f.isVintage);
-            files = [...pickerFiles, ...vintage];
-            renderLibrary();
-        }
-
-        // --- GESTION IPAD ANTI-BLOCAGE (FILE D'ATTENTE) ---
-        function handleVintageFiles(fileList) {
-            const status = document.getElementById('import-status');
-            const prog = document.getElementById('import-progress');
-            status.classList.remove('hidden');
-            let processed = 0;
-            const targetCount = fileList.length;
-
-            const processSequential = (index) => {
-                if (index >= targetCount) {
-                    saveVintageToLocal();
-                    renderLibrary();
-                    status.classList.add('hidden');
+        // --- IMPORTATION SMART (SÉQUENTIELLE + NETTOYAGE RAM) ---
+        function startSmartImport(fileList) {
+            const overlay = document.getElementById('loading-overlay');
+            const prog = document.getElementById('load-prog');
+            const fill = document.getElementById('load-bar-fill');
+            const nameDisp = document.getElementById('load-name');
+            overlay.style.display = 'flex';
+            
+            let i = 0;
+            const processBatch = () => {
+                if (i >= fileList.length) {
+                    saveAndFinish();
                     return;
                 }
 
-                const file = fileList[index];
+                const file = fileList[i];
+                nameDisp.innerText = file.name;
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                
+                reader.onload = (e) => {
+                    // Ajout hybride compatible iPad 2
                     if (!files.find(f => f.entry.name === file.name)) {
-                        files.push({ entry: { name: file.name, getFile: async () => file }, data: e.target.result, isVintage: true });
+                        files.push({ entry: { name: file.name }, data: e.target.result, isVintage: true });
                     }
-                    processed++;
-                    prog.innerText = Math.round((processed / targetCount) * 100) + "%";
-                    // Petit délai pour laisser respirer l'iPad 2
-                    setTimeout(() => processSequential(index + 1), 50);
+                    i++;
+                    const p = Math.round((i / fileList.length) * 100);
+                    prog.innerText = p + "%";
+                    fill.style.width = p + "%";
+                    
+                    // Libération forcée de la mémoire reader
+                    reader.onload = null;
+                    
+                    // Pause pour laisser l'iPad 2 traiter le garbage collector
+                    setTimeout(processBatch, 80);
                 };
+
+                reader.onerror = () => { i++; processBatch(); };
                 reader.readAsDataURL(file);
-            };
-
-            processSequential(0);
+            }
+            processBatch();
         }
 
-        function saveVintageToLocal() {
-            const vintageFiles = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
-            try { localStorage.setItem('part_vintage_v3', JSON.stringify(vintageFiles)); } catch(e) { alert("Stockage iPad plein ! Supprimez des photos."); }
+        function saveAndFinish() {
+            const vintage = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
+            try {
+                localStorage.setItem('part_vintage_v5', JSON.stringify(vintage));
+                renderLibrary();
+                document.getElementById('loading-overlay').style.display = 'none';
+            } catch(e) {
+                alert("Mémoire saturée sur cet iPad. Veuillez importer moins de fichiers.");
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
         }
-
-        function renderLibrary(f = '') {
-            const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0)
-                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
-                 .forEach(file => {
-                    const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                    row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
-                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1">Ajouter</button>`;
-                    l.appendChild(row);
-                 });
-        }
-
-        function viewSingle(name) { const f = files.find(x => x.entry.name === name); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
 
         async function openFile(obj) {
             if(!obj) return; switchTab('view');
             const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
             let fileData = obj.isVintage ? obj.data : URL.createObjectURL(await obj.entry.getFile());
 
-            if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
+            if(obj.entry.name.toLowerCase().indexOf('.pdf') > -1) {
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
-                    const scale = (window.innerWidth < 1024) ? 1.5 : 2.2;
-                    const viewport = page.getViewport({scale: scale});
+                    const viewport = page.getViewport({scale: (window.innerWidth < 1024) ? 1.4 : 2.2});
                     const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
                     const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
                     const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
                     wrapper.appendChild(canvas); wrapper.appendChild(anno); container.appendChild(wrapper);
-                    await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+                    await page.render({canvasContext: canvas.getContext('2d'), viewport: viewport}).promise;
                     setupDrawing(anno, obj.entry.name, i);
                 }
             } else {
                 const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
-                const img = document.createElement('img'); img.src = fileData; wrapper.appendChild(img);
-                const anno = document.createElement('canvas'); anno.className = "anno-canvas"; container.appendChild(wrapper);
-                img.onload = () => { anno.width = img.naturalWidth; anno.height = img.naturalHeight; setupDrawing(anno, obj.entry.name, 0); };
+                const img = document.createElement('img'); img.src = fileData;
+                const anno = document.createElement('canvas'); anno.className = "anno-canvas";
+                wrapper.appendChild(img); container.appendChild(wrapper);
+                img.onload = function() { anno.width = img.naturalWidth; anno.height = img.naturalHeight; wrapper.appendChild(anno); setupDrawing(anno, obj.entry.name, 0); };
             }
-            applyVisuals(); document.getElementById('scroll-container').scrollTop = 0; 
+            document.getElementById('scroll-container').scrollTop = 0;
             document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
         }
 
@@ -324,37 +263,31 @@
                 const cy = (e.clientY || (e.touches ? e.touches[0].clientY : 0));
                 return { x: (cx-r.left)*sx, y: (cy-r.top)*sy };
             };
-            canvas.addEventListener('mousedown', (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); });
-            canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); });
-            canvas.addEventListener('touchstart', (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive:false});
-            canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize; ctx.stroke(); e.preventDefault(); }, {passive:false});
-            window.addEventListener('mouseup', () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }});
-            window.addEventListener('touchend', () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }});
+            canvas.onmousedown = canvas.ontouchstart = (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); if(e.touches) e.preventDefault(); };
+            canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); if(e.touches) e.preventDefault(); };
+            window.onmouseup = window.ontouchend = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
         }
 
-        function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
-        window.addEventListener('keydown', (e) => {
-            const sc = document.getElementById('scroll-container');
-            if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile();
-            if(e.key === "ArrowDown") sc.scrollBy(0, 150); if(e.key === "ArrowUp") sc.scrollBy(0, -150);
-        });
-
-        function switchTab(id) { 
-            ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); });
-            document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active');
-            if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
+        function renderLibrary(f = '') {
+            const l = document.getElementById('library-list'); l.innerHTML = '';
+            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
+                const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
+                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1">Ajouter</button>`;
+                l.appendChild(row);
+            });
         }
 
+        function viewSingle(name) { const f = files.find(x => x.entry.name === name); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
+        function switchTab(id) { ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); }); document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active'); if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20'); }
         function nextFile() { if(setFiles.length > 0) { currentIndex = (currentIndex + 1) % setFiles.length; openFile(setFiles[currentIndex]); } }
         function prevFile() { if(setFiles.length > 0) { currentIndex = (currentIndex - 1 + setFiles.length) % setFiles.length; openFile(setFiles[currentIndex]); } }
-        function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); applyVisuals(); }
-        function applyVisuals() { document.getElementById('viewer-content').style.transform = "scale("+currentZoom+")"; document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+"%"; }
+        function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); document.getElementById('viewer-content').style.transform = "scale("+currentZoom+")"; document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+"%"; }
         function toggleFX() { const f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
-        function updateFX(type, val) { const r = document.documentElement; if(type === 'bright') { r.style.setProperty('--page-bright', val); document.getElementById('val-bright').innerText = Math.round(val*100)+"%"; } if(type === 'contrast') { r.style.setProperty('--page-contrast', val); document.getElementById('val-contrast').innerText = Math.round(val*100)+"%"; } }
+        function updateFX(type, val) { const r = document.documentElement; if(type === 'bright') r.style.setProperty('--page-bright', val); if(type === 'contrast') r.style.setProperty('--page-contrast', val); }
         function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'black'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
         function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
         function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); el.classList.add('active'); }
-        function setAnnoSize(s, el) { annoSize = s; }
+        function setAnnoSize(s) { annoSize = s; }
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(name) {
@@ -364,14 +297,13 @@
         }
         function saveCurrentSet() {
             const name = prompt("Nom de la Setlist :"); if (!name) return;
-            const items = Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name);
-            localStorage.setItem('part_set_' + name, JSON.stringify(items)); renderSavedSets();
+            localStorage.setItem('part_set_' + name, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets();
         }
         function renderSavedSets() {
             const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
             Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
                 const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3";
-                div.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-red-900 font-black hover:text-white transition text-xl px-2">✕</button>`;
+                div.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-red-900 font-black px-2">✕</button>`;
                 list.appendChild(div);
             });
         }
@@ -382,13 +314,13 @@
         }
 
         window.onload = () => {
-            const savedVintage = localStorage.getItem('part_vintage_v3');
-            if(savedVintage) files = JSON.parse(savedVintage).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
-            loadSources(); renderSavedSets();
+            const saved = localStorage.getItem('part_vintage_v5');
+            if(saved) files = JSON.parse(saved).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
                 const b = document.createElement('button'); b.className = "px-3 text-zinc-600 font-black text-xs hover:text-gold transition";
                 b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
             });
+            renderSavedSets();
         };
     </script>
 </body>
