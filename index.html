@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Pro Multi-Source</title>
+    <title>Partoches - Ultimate Hybrid</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#efb810">
@@ -12,370 +12,471 @@
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,900&family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
     
     <style>
         :root { --gold: #efb810; --bg: #050505; --page-bright: 1; --page-contrast: 1; }
-        body { background: var(--bg); color: #f1e7d0; font-family: 'Montserrat', sans-serif; overflow: hidden; margin: 0; touch-action: none; }
-        .jazz-title { font-family: 'Playfair Display', serif; background: linear-gradient(to bottom, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        body { background: var(--bg); color: #f1e7d0; font-family: 'Montserrat', sans-serif; overflow: hidden; margin: 0; touch-action: none; -webkit-tap-highlight-color: transparent; }
         
+        .jazz-title { font-family: 'Playfair Display', serif; background: linear-gradient(to bottom, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .glass { background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(239, 184, 16, 0.3); }
+        
+        /* Liste des fichiers */
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
-        .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
+        .file-row:hover { background: rgba(239, 184, 16, 0.1); }
 
+        /* Visionneuse Multi-Supports */
         #scroll-container {
             height: 100vh; width: 100vw; 
             overflow-y: scroll; overflow-x: auto; 
-            background: black; scroll-behavior: auto;
-            touch-action: pan-x pan-y; display: grid; place-items: start center;
+            background: black; -webkit-overflow-scrolling: touch;
+            display: block; position: relative;
         }
         
         #viewer-content { 
             display: flex; flex-direction: column; align-items: center; 
-            padding: 120px 0 500px 0; min-width: 100%; height: fit-content; 
-            transition: transform 0.1s ease-out; transform-origin: center top; 
-            justify-content: flex-start; gap: 50px;
+            padding: 100px 0 400px 0; width: 100%;
+            transform-origin: center top; 
         }
         
         .page-wrapper { 
-            position: relative; flex-shrink: 0; background: white; 
-            box-shadow: 0 0 100px rgba(0,0,0,1);
+            position: relative; margin-bottom: 30px; background: white; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
         }
 
-        canvas, img { height: 95vh !important; width: auto !important; object-fit: contain; display: block; }
-        .anno-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; background: transparent !important; }
-        .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
+        canvas, img { max-width: 100%; height: auto !important; display: block; }
+        .anno-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .anno-active .anno-canvas { pointer-events: auto; }
 
-        .tab-btn { font-weight: 800; letter-spacing: 1px; color: #444; transition: 0.3s; }
-        .tab-active { color: var(--gold); text-shadow: 0 0 10px rgba(239, 184, 16, 0.3); }
-        .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 0.75rem; font-weight: bold; background: black; padding: 8px 16px; border-radius: 4px; }
+        .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 10px; font-weight: 800; background: black; padding: 10px 15px; border-radius: 5px; text-transform: uppercase; }
+        .tab-active { color: var(--gold); border-bottom: 2px solid var(--gold); }
         
+        /* Toolbars */
         #anno-toolbar, #fx-toolbar {
             position: fixed; left: 50%; transform: translateX(-50%);
-            display: none; gap: 15px; padding: 20px; border-radius: 50px;
-            background: rgba(0,0,0,0.95); border: 1px solid var(--gold); z-index: 200;
+            display: none; background: rgba(0,0,0,0.9); border: 1px solid var(--gold); z-index: 500;
         }
-        #anno-toolbar { bottom: 120px; }
-        #fx-toolbar { bottom: 30px; width: 360px; flex-direction: column; border-radius: 25px; }
-        .color-dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
-        .color-dot.active { border-color: white; transform: scale(1.15); }
+        #anno-toolbar { bottom: 100px; padding: 15px; border-radius: 40px; gap: 15px; align-items: center; }
+        #fx-toolbar { bottom: 20px; width: 300px; padding: 20px; border-radius: 20px; flex-direction: column; gap: 10px; }
         
-        #scroll-container::-webkit-scrollbar { height: 8px; width: 8px; }
-        #scroll-container::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
-        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
-        input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot.active { border-color: white; transform: scale(1.1); }
+
+        .copyright { position: fixed; bottom: 10px; left: 10px; font-size: 9px; color: #333; z-index: 50; }
+        input[type=range] { accent-color: var(--gold); width: 100%; }
     </style>
 </head>
 <body>
 
-    <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
+    <div class="copyright font-black">© CYRILLE DE CHANTELOUP</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[100] text-[10px] uppercase tracking-tighter">
-        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active font-black">Répertoire</button>
-        <button onclick="switchTab('set')" id="tab-set" class="tab-btn font-black">Setlists</button>
-        <button onclick="switchTab('view')" id="tab-view" class="tab-btn font-black opacity-20">Visionneuse</button>
+    <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200] text-[10px] font-bold uppercase">
+        <button onclick="switchTab('lib')" id="tab-lib" class="tab-active py-2">Répertoire</button>
+        <button onclick="switchTab('set')" id="tab-set" class="py-2">Setlists</button>
+        <button onclick="switchTab('view')" id="tab-view" class="py-2 opacity-30">Visionneuse</button>
     </nav>
 
-    <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-6">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="jazz-title text-5xl font-black italic text-shadow">Partoches</h1>
-            <div class="flex gap-3">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden border-2 border-blue-500 text-blue-400 px-6 py-2 rounded-full text-[10px] animate-pulse font-black uppercase">Réactiver</button>
-                <button onclick="addSource()" id="btn-scan" class="btn-jazz uppercase tracking-widest hidden md:block">Scanner Dossier</button>
-                <label class="btn-jazz uppercase tracking-widest cursor-pointer flex items-center">
+    <section id="sec-lib" class="pt-20 h-screen overflow-y-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <h1 class="jazz-title text-4xl font-black italic">Partoches</h1>
+            <div class="flex gap-2">
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden bg-blue-900 text-white px-4 py-2 rounded text-[9px] font-bold">RÉACTIVER</button>
+                <button onclick="addSource()" id="btn-scan" class="btn-jazz hidden md:block">Scanner Dossier</button>
+                <label class="btn-jazz cursor-pointer">
                     + iCloud / Photos
                     <input type="file" multiple onchange="handleVintageFiles(this.files)" class="hidden" accept="image/*,application/pdf">
                 </label>
             </div>
         </div>
-        <div id="source-list" class="flex flex-wrap gap-2 mb-6"></div>
-        <div id="alpha-bar" class="sticky top-0 bg-[#050505] py-4 z-20 flex flex-wrap justify-center gap-2 border-b border-zinc-800"></div>
-        <div id="library-list" class="pb-48 mt-4"></div>
+        <div id="source-list" class="flex flex-wrap gap-2 mb-4"></div>
+        <div id="alpha-bar" class="sticky top-0 bg-[#050505] py-2 z-20 flex flex-wrap justify-center gap-1 border-b border-zinc-800"></div>
+        <div id="library-list" class="pb-40"></div>
     </section>
 
-    <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-6">
-        <div class="max-w-2xl mx-auto text-center">
-            <h2 class="jazz-title text-3xl mb-8 italic uppercase tracking-widest">Programmation</h2>
-            <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[220px] mb-8 p-6"></div>
-            <div class="grid grid-cols-2 gap-6 mb-12">
-                <button onclick="saveCurrentSet()" class="btn-jazz py-5 text-lg rounded-xl shadow-2xl uppercase tracking-widest">Sauvegarder</button>
-                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] tracking-widest hover:text-red-500 transition">Vider</button>
+    <section id="sec-set" class="hidden pt-20 h-screen overflow-y-auto px-4">
+        <div class="max-w-xl mx-auto">
+            <h2 class="jazz-title text-2xl mb-6 italic text-center">PROGRAMMATION</h2>
+            <div id="set-list-current" class="bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-xl min-h-[150px] mb-6 p-4"></div>
+            <div class="flex gap-4 mb-10">
+                <button onclick="saveCurrentSet()" class="btn-jazz flex-1 py-4 text-sm">Enregistrer Set</button>
+                <button onclick="clearCurrentSet()" class="text-xs uppercase font-bold text-zinc-500">Vider</button>
             </div>
-            <div id="saved-sets-list" class="space-y-4 pb-48 text-left"></div>
+            <div id="saved-sets-list" class="space-y-3 pb-40"></div>
         </div>
     </section>
 
-    <section id="sec-view" class="fixed inset-0 bg-black hidden z-[110] overflow-hidden">
-        <div id="viewer-header" class="glass absolute top-0 w-full p-4 flex justify-between items-center z-[120]">
-            <button onclick="switchTab('lib')" class="text-[10px] text-zinc-500 font-black px-5 py-2 hover:text-white transition uppercase">✕ Quitter</button>
-            <div class="flex items-center gap-8">
-                <button onclick="toggleFX()" class="btn-jazz px-4 py-2 rounded uppercase shadow-sm">☼ Image</button>
-                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz px-5 py-2 rounded uppercase shadow-sm">✎ Annoter</button>
-                <div class="flex items-center bg-black/60 border border-zinc-800 rounded-xl overflow-hidden">
-                    <button onclick="adjustZoom(-0.1)" class="px-5 py-2 text-gold text-2xl">-</button>
-                    <span id="zoom-level" class="text-[11px] w-14 text-center font-black border-x border-zinc-800">100%</span>
-                    <button onclick="adjustZoom(0.1)" class="px-5 py-2 text-gold text-2xl">+</button>
+    <section id="sec-view" class="fixed inset-0 bg-black hidden z-[300]">
+        <div id="viewer-header" class="glass absolute top-0 w-full p-3 flex justify-between items-center z-[400]">
+            <button onclick="switchTab('lib')" class="text-[10px] font-bold text-zinc-400 uppercase">✕ Fermer</button>
+            <div class="flex gap-4 items-center">
+                <button onclick="toggleFX()" class="btn-jazz !py-1">Image</button>
+                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !py-1">Dessin</button>
+                <div class="flex items-center bg-zinc-900 rounded">
+                    <button onclick="adjustZoom(-0.1)" class="px-3 py-1 text-gold">-</button>
+                    <span id="zoom-val" class="text-[9px] font-bold w-10 text-center">100%</span>
+                    <button onclick="adjustZoom(0.1)" class="px-3 py-1 text-gold">+</button>
                 </div>
             </div>
-            <div id="page-info" class="text-gold font-black italic text-base tracking-widest pr-4">1 / 1</div>
+            <div id="page-info" class="text-gold font-bold text-xs italic">0 / 0</div>
         </div>
 
-        <div id="fx-toolbar">
-            <div class="flex flex-col gap-4">
-                <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400">Luminosité</label><span id="val-bright" class="text-[10px] text-gold font-bold">100%</span></div>
-                <input type="range" min="0.2" max="2.5" step="0.01" value="1" oninput="updateFX('bright', this.value)">
-                <div class="flex justify-between items-center mt-2"><label class="text-[10px] uppercase font-black text-zinc-400">Contraste</label><span id="val-contrast" class="text-[10px] text-gold font-bold">100%</span></div>
-                <input type="range" min="0.2" max="4" step="0.01" value="1" oninput="updateFX('contrast', this.value)">
-            </div>
+        <div id="fx-toolbar" class="flex">
+            <label class="text-[9px] font-bold text-zinc-500 uppercase">Luminosité</label>
+            <input type="range" min="0.3" max="2" step="0.1" value="1" oninput="updateFX('bright', this.value)">
+            <label class="text-[9px] font-bold text-zinc-500 uppercase mt-2">Contraste</label>
+            <input type="range" min="0.5" max="3" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
         </div>
 
-        <div id="anno-toolbar">
-            <div class="flex gap-3 border-r border-zinc-700 pr-5">
-                <div onclick="setAnnoColor('red', this)" class="color-dot active shadow-lg" style="background: red;"></div>
-                <div onclick="setAnnoColor('#3b82f6', this)" class="color-dot shadow-lg" style="background: #3b82f6;"></div>
-                <div onclick="setAnnoColor('eraser', this)" class="color-dot flex items-center justify-center bg-white text-black text-[8px] font-black uppercase shadow-lg">Gomme</div>
-            </div>
-            <div class="flex items-center gap-6 pl-2">
-                <div onclick="setAnnoSize(2, this)" class="w-2 h-2 bg-white rounded-full cursor-pointer hover:scale-150 transition shadow"></div>
-                <div onclick="setAnnoSize(6, this)" class="w-5 h-5 bg-white rounded-full cursor-pointer border-2 border-yellow-500 hover:scale-125 transition shadow"></div>
-                <div onclick="setAnnoSize(15, this)" class="w-8 h-8 bg-white rounded-full cursor-pointer hover:scale-110 transition shadow"></div>
-            </div>
+        <div id="anno-toolbar" class="flex">
+            <div onclick="setAnnoColor('red', this)" class="color-dot active shadow" style="background: red;"></div>
+            <div onclick="setAnnoColor('#3b82f6', this)" class="color-dot shadow" style="background: #3b82f6;"></div>
+            <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-white border-zinc-300 flex items-center justify-center text-[7px] text-black font-bold uppercase">Gomme</div>
+            <div class="w-[1px] h-6 bg-zinc-700 mx-2"></div>
+            <div onclick="setAnnoSize(3, this)" class="w-3 h-3 bg-white rounded-full"></div>
+            <div onclick="setAnnoSize(8, this)" class="w-5 h-5 bg-white rounded-full border-2 border-gold"></div>
         </div>
 
-        <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
+        <div id="scroll-container" onclick="handleViewClick(event)">
             <div id="viewer-content"></div>
         </div>
 
-        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-16 pointer-events-none z-[120]">
-            <button onclick="event.stopPropagation(); prevFile()" class="pointer-events-auto w-20 h-20 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">◀</button>
-            <button onclick="event.stopPropagation(); nextFile()" class="pointer-events-auto w-20 h-20 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">▶</button>
+        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 pointer-events-none z-[400]">
+            <button onclick="prevFile(event)" class="pointer-events-auto w-14 h-14 rounded-full glass border border-gold text-gold shadow-2xl">◀</button>
+            <button onclick="nextFile(event)" class="pointer-events-auto w-14 h-14 rounded-full glass border border-gold text-gold shadow-2xl">▶</button>
         </div>
     </section>
 
     <script>
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        // CONFIGURATION PDF.JS POUR COMPATIBILITÉ
+        var pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        let files = [], setFiles = [], currentIndex = 0, sources = [];
-        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
-        let annoColor = 'red', annoSize = 6, initialPinchDist = null;
-        let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
+        var files = [], setFiles = [], currentIndex = 0, sources = [];
+        var currentZoom = 1.0, isDrawingMode = false, uiVisible = true;
+        var annoColor = 'red', annoSize = 5;
+        var annotations = JSON.parse(localStorage.getItem('partoches_annos') || '{}');
 
-        const DB_NAME = "PartochesDB_Final_Recursive";
-        async function openDB() {
-            return new Promise((r) => {
-                const req = indexedDB.open(DB_NAME, 1);
-                req.onupgradeneeded = () => req.result.createObjectStore("sources");
-                req.onsuccess = () => r(req.result);
-            });
+        // INITIALISATION BDD (IndexedDB pour Windows/Android)
+        var DB_NAME = "PartochesHybridDB";
+        function initDB(cb) {
+            var req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = function(e) { e.target.result.createObjectStore("sources"); };
+            req.onsuccess = function(e) { cb(e.target.result); };
         }
 
-        async function loadSources() {
-            if (!window.showDirectoryPicker) return;
-            document.getElementById('btn-scan').classList.remove('hidden');
-            const db = await openDB();
-            const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = () => {
-                sources = req.result;
-                if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
-                refreshFiles();
-            };
-        }
-
-        async function addSource() {
-            try {
-                const h = await window.showDirectoryPicker();
-                if(!sources.find(s => s.name === h.name)) {
-                    sources.push(h);
-                    const db = await openDB();
-                    db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name);
-                    refreshFiles();
+        // CHARGEMENT INITIAL
+        window.onload = function() {
+            if (window.showDirectoryPicker) document.getElementById('btn-scan').classList.remove('hidden');
+            
+            // Récupérer fichiers iCloud/Photos sauvegardés
+            var saved = localStorage.getItem('part_vintage');
+            if(saved) {
+                var list = JSON.parse(saved);
+                for(var i=0; i<list.length; i++) {
+                    files.push({ entry: {name: list[i].name}, data: list[i].data, isVintage: true });
                 }
-            } catch(e){}
-        }
+            }
 
-        // --- SCAN RÉCURSIF DES SOUS-RÉPERTOIRES ---
-        async function scanFolder(handle) {
-            const results = [];
-            for await (const entry of handle.values()) {
+            initDB(function(db) {
+                var req = db.transaction("sources", "readonly").objectStore("sources").getAll();
+                req.onsuccess = function() {
+                    sources = req.result;
+                    if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
+                    refreshFiles();
+                };
+            });
+
+            // Barre alphabétique
+            var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var bar = document.getElementById('alpha-bar');
+            for(var i=0; i<alpha.length; i++) {
+                var btn = document.createElement('button');
+                btn.className = "px-2 py-1 text-zinc-500 font-bold text-[10px] hover:text-gold";
+                btn.innerText = alpha[i];
+                btn.onclick = (function(l){ return function(){ renderLibrary(l); }; })(alpha[i]);
+                bar.appendChild(btn);
+            }
+            renderSavedSets();
+        };
+
+        // SCAN RÉCURSIF DES SOUS-DOSSIERS (Windows/Android)
+        async function scanFolderRecursive(handle) {
+            var results = [];
+            for await (var entry of handle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
-                    results.push({entry});
+                    results.push({entry: entry});
                 } else if (entry.kind === 'directory') {
-                    const subFiles = await scanFolder(entry);
-                    results.push(...subFiles);
+                    var sub = await scanFolderRecursive(entry);
+                    results = results.concat(sub);
                 }
             }
             return results;
         }
 
-        async function refreshFiles() {
-            const pickerFiles = [];
-            for(const h of sources) {
-                const subFiles = await scanFolder(h);
-                pickerFiles.push(...subFiles);
-            }
-            const vintage = files.filter(f => f.isVintage);
-            files = [...pickerFiles, ...vintage];
-            renderLibrary(); renderSources();
-        }
-
-        function handleVintageFiles(fileList) {
-            Array.from(fileList).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const fileObj = { 
-                        entry: { name: file.name, getFile: async () => file }, 
-                        data: e.target.result, 
-                        isVintage: true 
-                    };
-                    if (!files.find(f => f.entry.name === file.name)) {
-                        files.push(fileObj);
-                        saveVintageToLocal();
-                        renderLibrary();
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function saveVintageToLocal() {
-            const vintageFiles = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
-            try { localStorage.setItem('partoches_vintage', JSON.stringify(vintageFiles)); } catch(e) {}
-        }
-
-        function renderSources() {
-            const c = document.getElementById('source-list'); c.innerHTML = '';
-            sources.forEach((s, i) => {
-                c.innerHTML += `<span class="bg-zinc-900 border border-zinc-800 text-[10px] px-3 py-1 rounded-full text-zinc-400 flex items-center gap-2">♪ ${s.name} <b class="text-red-500 cursor-pointer" onclick="removeSource(${i})">✕</b></span>`;
-            });
-        }
-
-        async function removeSource(i) {
-            const name = sources[i].name; sources.splice(i, 1);
-            const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(name);
-            refreshFiles();
-        }
-
-        async function restoreAccess() {
+        async function addSource() {
             try {
-                for(const h of sources) { if(await h.requestPermission() !== 'granted') return; }
-                document.getElementById('btn-restore').classList.add('hidden');
+                var h = await window.showDirectoryPicker();
+                sources.push(h);
+                initDB(function(db) { db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); });
                 refreshFiles();
             } catch(e) {}
         }
 
-        function renderLibrary(f = '') {
-            const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().startsWith(f))
-                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
-                 .forEach(file => {
-                    const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                    row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
-                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="text-gold text-[11px] font-black border-2 border-gold/30 px-5 py-2 rounded-xl uppercase">Ajouter</button>`;
-                    l.appendChild(row);
-                 });
-        }
-
-        async function openFile(obj) {
-            if(!obj) return; switchTab('view');
-            const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
-            let fileData;
-            if (obj.isVintage) { fileData = obj.data; } 
-            else { const file = await obj.entry.getFile(); fileData = URL.createObjectURL(file); }
-            if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
-                const pdf = await pdfjsLib.getDocument(fileData).promise;
-                for(let i=1; i<=pdf.numPages; i++) {
-                    const page = await pdf.getPage(i); const viewport = page.getViewport({scale: 2.5}); 
-                    const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
-                    const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height; wrapper.appendChild(canvas);
-                    const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height; wrapper.appendChild(anno);
-                    container.appendChild(wrapper); await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise; setupDrawing(anno, obj.entry.name, i);
-                }
-            } else {
-                const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
-                const img = document.createElement('img'); img.src = fileData; wrapper.appendChild(img);
-                const anno = document.createElement('canvas'); anno.className = "anno-canvas"; container.appendChild(wrapper);
-                img.onload = () => { anno.width = img.naturalWidth; anno.height = img.naturalHeight; wrapper.appendChild(anno); setupDrawing(anno, obj.entry.name, 0); };
+        async function refreshFiles() {
+            var pickerFiles = [];
+            for(var i=0; i<sources.length; i++) {
+                var found = await scanFolderRecursive(sources[i]);
+                pickerFiles = pickerFiles.concat(found);
             }
-            applyVisuals(); const sc = document.getElementById('scroll-container'); sc.scrollLeft = 0; sc.scrollTop = 0; 
-            document.getElementById('page-info').innerText = `${currentIndex + 1} / ${setFiles.length || 1}`;
+            var vintage = files.filter(f => f.isVintage);
+            files = pickerFiles.concat(vintage);
+            renderLibrary(); renderSourcesUI();
         }
 
-        function setupDrawing(canvas, fileName, pIdx) {
-            const ctx = canvas.getContext('2d'); const key = `${fileName}_${pIdx}`;
-            if(annotations[key]) { const img = new Image(); img.src = annotations[key]; img.onload = () => ctx.drawImage(img,0,0); }
-            let drawing = false;
-            const getPos = (e) => {
-                const r = canvas.getBoundingClientRect(); const sx = canvas.width/r.width, sy = canvas.height/r.height;
-                const cx = (e.clientX || (e.touches ? e.touches[0].clientX : 0));
-                const cy = (e.clientY || (e.touches ? e.touches[0].clientY : 0));
-                return { x: (cx-r.left)*sx, y: (cy-r.top)*sy };
+        // GESTION IMPORTATION IPAD (Photos / iCloud)
+        function handleVintageFiles(fileList) {
+            var count = 0;
+            for(var i=0; i<fileList.length; i++) {
+                (function(file){
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var obj = { entry: {name: file.name}, data: e.target.result, isVintage: true };
+                        files.push(obj);
+                        count++;
+                        if(count === fileList.length) {
+                            var toStore = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
+                            localStorage.setItem('part_vintage', JSON.stringify(toStore));
+                            renderLibrary();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                })(fileList[i]);
+            }
+        }
+
+        // RENDER LIBRARY
+        function renderLibrary(filter) {
+            var list = document.getElementById('library-list');
+            list.innerHTML = '';
+            var sorted = files.slice().sort((a,b) => a.entry.name.localeCompare(b.entry.name));
+            
+            for(var i=0; i<sorted.length; i++) {
+                var f = sorted[i];
+                if(filter && f.entry.name.toUpperCase().indexOf(filter) !== 0) continue;
+
+                var row = document.createElement('div');
+                row.className = "file-row flex justify-between items-center p-4";
+                row.innerHTML = '<div class="flex-grow font-bold text-zinc-300" onclick="viewSingle(\''+f.entry.name.replace(/'/g,"\\'")+'\')">'+f.entry.name+'</div>' +
+                                '<button onclick="addToSet(\''+f.entry.name.replace(/'/g,"\\'")+'\')" class="btn-jazz !py-1">Ajouter</button>';
+                list.appendChild(row);
+            }
+        }
+
+        // VISIONNEUSE (CORRECTION PDF + IPAD 2)
+        async function openFile(obj) {
+            if(!obj) return;
+            switchTab('view');
+            var container = document.getElementById('viewer-content');
+            container.innerHTML = '<div class="text-gold animate-pulse text-xs">Chargement...</div>';
+            
+            try {
+                var fileData;
+                if(obj.isVintage) {
+                    fileData = obj.data;
+                } else {
+                    var blob = await obj.entry.getFile();
+                    fileData = URL.createObjectURL(blob);
+                }
+
+                container.innerHTML = '';
+                if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
+                    var loadingTask = pdfjsLib.getDocument(fileData);
+                    var pdf = await loadingTask.promise;
+                    
+                    for(var p=1; p<=pdf.numPages; p++) {
+                        var page = await pdf.getPage(p);
+                        var scale = window.innerWidth < 768 ? 1.2 : 2.0;
+                        var viewport = page.getViewport({scale: scale});
+                        
+                        var wrapper = document.createElement('div');
+                        wrapper.className = "page-wrapper";
+                        
+                        var canvas = document.createElement('canvas');
+                        var ctx = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        wrapper.appendChild(canvas);
+                        
+                        var anno = document.createElement('canvas');
+                        anno.className = "anno-canvas";
+                        anno.width = canvas.width;
+                        anno.height = canvas.height;
+                        wrapper.appendChild(anno);
+                        
+                        container.appendChild(wrapper);
+                        await page.render({canvasContext: ctx, viewport: viewport}).promise;
+                        initDrawing(anno, obj.entry.name, p);
+                    }
+                } else {
+                    // Cas Image (JPG/PNG)
+                    var wrapper = document.createElement('div');
+                    wrapper.className = "page-wrapper";
+                    var img = new Image();
+                    img.src = fileData;
+                    img.className = "max-w-full";
+                    wrapper.appendChild(img);
+                    
+                    var anno = document.createElement('canvas');
+                    anno.className = "anno-canvas";
+                    container.appendChild(wrapper);
+                    
+                    img.onload = function() {
+                        anno.width = img.width;
+                        anno.height = img.height;
+                        wrapper.appendChild(anno);
+                        initDrawing(anno, obj.entry.name, 0);
+                    };
+                }
+            } catch(e) {
+                container.innerHTML = '<div class="text-red-500 p-10 text-center">Erreur de lecture du fichier.</div>';
+            }
+            updatePageInfo();
+            document.getElementById('scroll-container').scrollTop = 0;
+        }
+
+        // DESSIN (Compatible Souris + Tactile iPad)
+        function initDrawing(canvas, fileName, pIdx) {
+            var ctx = canvas.getContext('2d');
+            var key = fileName + "_" + pIdx;
+            if(annotations[key]) {
+                var img = new Image();
+                img.src = annotations[key];
+                img.onload = function() { ctx.drawImage(img, 0, 0); };
+            }
+
+            var drawing = false;
+            function getPos(e) {
+                var rect = canvas.getBoundingClientRect();
+                var sx = canvas.width / rect.width;
+                var sy = canvas.height / rect.height;
+                var clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                var clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                return { x: (clientX - rect.left) * sx, y: (clientY - rect.top) * sy };
+            }
+
+            canvas.onmousedown = canvas.ontouchstart = function(e) {
+                if(!isDrawingMode) return;
+                drawing = true;
+                ctx.beginPath();
+                var p = getPos(e);
+                ctx.moveTo(p.x, p.y);
+                if(e.type === 'touchstart') e.preventDefault();
             };
-            const start = (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-            const move = (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle=(annoColor==='eraser'?'transparent':annoColor); ctx.lineWidth=annoSize; ctx.stroke(); e.preventDefault(); };
-            const stop = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
-            canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move);
-            canvas.addEventListener('touchstart', start, {passive:false}); canvas.addEventListener('touchmove', move, {passive:false});
-            window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
+
+            canvas.onmousemove = canvas.ontouchmove = function(e) {
+                if(!drawing) return;
+                var p = getPos(e);
+                ctx.lineTo(p.x, p.y);
+                ctx.strokeStyle = (annoColor === 'eraser' ? 'black' : annoColor);
+                ctx.globalCompositeOperation = (annoColor === 'eraser' ? 'destination-out' : 'source-over');
+                ctx.lineWidth = annoSize;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                if(e.type === 'touchmove') e.preventDefault();
+            };
+
+            window.onmouseup = window.ontouchend = function() {
+                if(drawing) {
+                    drawing = false;
+                    annotations[key] = canvas.toDataURL();
+                    localStorage.setItem('partoches_annos', JSON.stringify(annotations));
+                }
+            };
         }
 
-        function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
-        const scEl = document.getElementById('scroll-container');
-        scEl.addEventListener('touchstart', (e) => { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: true });
-        scEl.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && initialPinchDist) { const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 400); initialPinchDist = d; } }, { passive: true });
+        // UTILS
+        function switchTab(id) {
+            document.getElementById('sec-lib').classList.add('hidden');
+            document.getElementById('sec-set').classList.add('hidden');
+            document.getElementById('sec-view').classList.add('hidden');
+            document.getElementById('tab-lib').classList.remove('tab-active');
+            document.getElementById('tab-set').classList.remove('tab-active');
+            document.getElementById('tab-view').classList.remove('tab-active');
 
-        function switchTab(id) { 
-            ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); });
-            document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active');
-            if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            document.getElementById('tab-' + id).classList.add('tab-active');
+            if(id === 'view') document.getElementById('tab-view').classList.remove('opacity-30');
         }
-        function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'black'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
-        function applyVisuals() { document.getElementById('viewer-content').style.transform = `scale(${currentZoom})`; document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+'%'; }
-        function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); applyVisuals(); }
-        function resetZoom() { currentZoom = 1.0; applyVisuals(); }
-        function updateFX(type, val) { const root = document.documentElement; if(type === 'bright') root.style.setProperty('--page-bright', val); if(type === 'contrast') root.style.setProperty('--page-contrast', val); }
-        function toggleFX() { const f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
-        function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
 
-        window.addEventListener('keydown', (e) => { 
-            const sc = document.getElementById('scroll-container'); 
-            if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile();
-            if(e.key === "ArrowDown") sc.scrollBy(0, 100); if(e.key === "ArrowUp") sc.scrollBy(0, -100);
-        });
+        function viewSingle(name) {
+            var f = files.find(x => x.entry.name === name);
+            if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
+        }
 
-        new Sortable(document.getElementById('set-list-current'), { animation: 150 });
+        function nextFile(e) { if(e) e.stopPropagation(); if(currentIndex < setFiles.length - 1) { currentIndex++; openFile(setFiles[currentIndex]); } }
+        function prevFile(e) { if(e) e.stopPropagation(); if(currentIndex > 0) { currentIndex--; openFile(setFiles[currentIndex]); } }
+        
+        function updatePageInfo() { 
+            document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length; 
+            document.getElementById('zoom-val').innerText = Math.round(currentZoom * 100) + "%";
+        }
+
+        function adjustZoom(v) { currentZoom += v; document.getElementById('viewer-content').style.transform = "scale(" + currentZoom + ")"; updatePageInfo(); }
+        function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? "red" : "black"; document.getElementById('anno-toolbar').style.display = isDrawingMode ? "flex" : "none"; }
+        function toggleFX() { var s = document.getElementById('fx-toolbar').style; s.display = (s.display === "flex" ? "none" : "flex"); }
+        function updateFX(type, v) { var r = document.documentElement.style; if(type==='bright') r.setProperty('--page-bright', v); else r.setProperty('--page-contrast', v); }
+
         function addToSet(name) {
-            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-800 p-5 mb-3 rounded-xl border border-zinc-700";
-            div.dataset.name = name; div.innerHTML = `<span class="font-bold text-base text-zinc-100">${name}</span> <button onclick="this.parentElement.remove()" class="text-red-500 font-black text-xl px-2">✕</button>`;
+            var div = document.createElement('div');
+            div.className = "flex justify-between items-center bg-zinc-800 p-4 mb-2 rounded-lg border border-zinc-700";
+            div.dataset.name = name;
+            div.innerHTML = '<span class="font-bold text-xs">'+name+'</span><button onclick="this.parentElement.remove()" class="text-red-500 font-bold">✕</button>';
             document.getElementById('set-list-current').appendChild(div);
-        }
-        function saveCurrentSet() { const name = prompt("Nom du Set :"); if(name) localStorage.setItem('part_set_'+name, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets(); }
-        function renderSavedSets() { 
-            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
-            Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
-                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3";
-                div.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${key}')">${key.replace('part_set_','')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-red-900 font-black text-xl px-2">✕</button>`;
-                list.appendChild(div);
-            });
-        }
-        function loadSet(key) {
-            const names = JSON.parse(localStorage.getItem(key)); setFiles = []; document.getElementById('set-list-current').innerHTML = '';
-            names.forEach(n => { const f = files.find(file => file.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } });
-            if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
+            new Sortable(document.getElementById('set-list-current'), {animation: 150});
         }
 
-        window.onload = () => {
-            const savedVintage = localStorage.getItem('partoches_vintage');
-            if(savedVintage) files = JSON.parse(savedVintage).map(f => ({ entry: {name: f.name, getFile: async() => null}, data: f.data, isVintage: true }));
-            loadSources(); renderSavedSets();
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
-                const b = document.createElement('button'); b.className = "px-3 text-zinc-600 font-black text-xs hover:text-gold transition";
-                b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
-            });
-        };
+        function saveCurrentSet() {
+            var name = prompt("Nom de la Setlist :");
+            if(!name) return;
+            var items = [];
+            var children = document.getElementById('set-list-current').children;
+            for(var i=0; i<children.length; i++) items.push(children[i].dataset.name);
+            localStorage.setItem('part_set_' + name, JSON.stringify(items));
+            renderSavedSets();
+        }
+
+        function renderSavedSets() {
+            var l = document.getElementById('saved-sets-list'); l.innerHTML = '';
+            for(var k in localStorage) {
+                if(k.indexOf('part_set_') === 0) {
+                    (function(key){
+                        var div = document.createElement('div');
+                        div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-4 rounded-xl";
+                        div.innerHTML = '<div class="text-gold font-bold italic cursor-pointer" onclick="loadSet(\''+key+'\')">'+key.replace('part_set_','')+'</div>' +
+                                        '<button onclick="localStorage.removeItem(\''+key+'\'); renderSavedSets()" class="text-red-900 font-bold">✕</button>';
+                        l.appendChild(div);
+                    })(k);
+                }
+            }
+        }
+
+        function loadSet(key) {
+            var names = JSON.parse(localStorage.getItem(key));
+            setFiles = [];
+            document.getElementById('set-list-current').innerHTML = '';
+            for(var i=0; i<names.length; i++) {
+                var f = files.find(x => x.entry.name === names[i]);
+                if(f) { setFiles.push(f); addToSet(names[i]); }
+            }
+            if(setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
+        }
+
+        function handleViewClick(e) { if(!isDrawingMode) { uiVisible = !uiVisible; document.getElementById('viewer-header').style.display = uiVisible ? "flex" : "none"; document.getElementById('viewer-nav').style.display = uiVisible ? "flex" : "none"; } }
+        function setAnnoColor(c, el) { annoColor = c; var dots = document.querySelectorAll('.color-dot'); for(var i=0; i<dots.length; i++) dots[i].classList.remove('active'); el.classList.add('active'); }
+        function setAnnoSize(s, el) { annoSize = s; }
     </script>
 </body>
 </html>
