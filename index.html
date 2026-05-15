@@ -27,6 +27,7 @@
             overflow: hidden; margin: 0; touch-action: none; -webkit-tap-highlight-color: transparent; 
         }
 
+        /* DESIGN TITRE index3 */
         .jazz-title { 
             font-family: 'Playfair Display', serif; font-weight: 900; font-style: italic;
             background: linear-gradient(to bottom, #fff, var(--gold));
@@ -62,7 +63,7 @@
         .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
 
         .tab-btn { font-weight: 800; letter-spacing: 1px; color: #444; transition: 0.3s; text-transform: uppercase; font-size: 10px; }
-        .tab-active { color: var(--gold); text-shadow: 0 0 10px rgba(239, 184, 16, 0.3); }
+        .tab-active { color: var(--neon-lime); text-shadow: 0 0 10px var(--neon-lime); }
         
         .btn-jazz { 
             border: 1px solid var(--gold); color: var(--gold); 
@@ -86,13 +87,14 @@
             color: var(--neon-blue); font-weight: 900; font-size: 1.2rem; padding: 15px 30px; border-radius: 8px;
         }
 
+        /* BARRE ALPHABÉTIQUE STANDARD index3 LISIBLE */
         #alpha-bar {
             display: flex; flex-wrap: wrap; justify-content: center;
             gap: 4px; padding: 10px; background: #050505; border-bottom: 1px solid #1a1a1a;
         }
         #alpha-bar button { 
             padding: 8px 14px; font-size: 15px; font-weight: 900; 
-            color: #ffffff; background: #111; border: 1px solid #333; 
+            color: #ffffff; background: #1a1a1a; border: 1px solid #333; 
             border-radius: 4px; min-width: 40px; transition: 0.2s;
         }
         #alpha-bar button:active { background: var(--neon-lime); color: #000; }
@@ -102,6 +104,8 @@
 
         .lang-switch { font-size: 10px; border: 1px solid #333; padding: 4px 8px; border-radius: 4px; color: #666; cursor: pointer; font-weight: 800; }
         .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); }
+        
+        .source-tag { background: #111; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 10px; color: var(--neon-blue); margin-bottom: 5px; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -130,17 +134,17 @@
                 </label>
             </div>
         </div>
-        <div id="source-list" class="flex flex-wrap gap-2 mb-6"></div>
+        <div id="source-list" class="mb-6"></div>
         <div id="alpha-bar" class="sticky top-0 z-20"></div>
         <div id="library-list" class="pb-48 mt-4"></div>
     </section>
 
     <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-6">
         <div class="max-w-2xl mx-auto text-center">
-            <h2 class="jazz-title text-3xl mb-8" data-i18n="set_title">Programmation</h2>
+            <h2 class="jazz-title text-3xl mb-8 italic" data-i18n="set_title">Programmation</h2>
             <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[220px] mb-8 p-6 text-left"></div>
             <div class="grid grid-cols-2 gap-6 mb-12">
-                <button onclick="saveCurrentSet()" class="btn-jazz py-5 text-lg shadow-2xl" data-i18n="btn_save_set">Sauvegarder</button>
+                <button onclick="saveCurrentSet()" class="btn-jazz py-5 text-lg shadow-2xl" data-i18n="btn_save_set">Sauvegarder Set</button>
                 <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] hover:text-red-500 transition" data-i18n="btn_clear">Vider</button>
             </div>
             <div id="saved-sets-list" class="space-y-4 pb-48 text-left"></div>
@@ -159,34 +163,27 @@
                     <button onclick="adjustZoom(0.1)" class="px-4 py-1 text-gold text-2xl">+</button>
                 </div>
             </div>
-            <div id="page-info" class="text-gold font-black italic text-sm pr-4">1 / 1</div>
+            <div id="page-info" class="text-neon-lime font-black italic text-sm pr-4">1 / 1</div>
         </div>
-
         <div id="fx-toolbar">
             <div class="flex flex-col gap-4">
-                <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[10px] text-gold font-bold">100%</span></div>
+                <div class="flex justify-between items-center"><label class="text-[10px] uppercase font-black text-zinc-400" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[10px] text-neon-lime font-bold">100%</span></div>
                 <input type="range" min="0.2" max="2.5" step="0.01" value="1" oninput="updateFX('bright', this.value)">
-                <div class="flex justify-between items-center mt-2"><label class="text-[10px] uppercase font-black text-zinc-400" data-i18n="fx_contrast">Contraste</label><span id="val-contrast" class="text-[10px] text-gold font-bold">100%</span></div>
+                <div class="flex justify-between items-center mt-2"><label class="text-[10px] uppercase font-black text-zinc-400" data-i18n="fx_contrast">Contraste</label><span id="val-contrast" class="text-[10px] text-neon-lime font-bold">100%</span></div>
                 <input type="range" min="0.2" max="4" step="0.01" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
-
         <div id="anno-toolbar">
             <div class="flex gap-4 border-r border-zinc-700 pr-5">
                 <div onclick="setAnnoColor('red', this)" class="color-dot active shadow-lg" style="background: red;"></div>
                 <div onclick="setAnnoColor('#3b82f6', this)" class="color-dot shadow-lg" style="background: #3b82f6;"></div>
                 <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-white flex items-center justify-center text-[7px] text-black font-black uppercase shadow-lg" data-i18n="btn_del">Gomme</div>
             </div>
-            <div class="flex items-center gap-6 pl-2">
-                <div onclick="setAnnoSize(2, this)" class="w-3 h-3 bg-white rounded-full cursor-pointer"></div>
-                <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white rounded-full border-2 border-neon-lime cursor-pointer"></div>
-            </div>
+            <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white rounded-full border-2 border-neon-lime cursor-pointer"></div>
         </div>
-
         <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
             <div id="viewer-content"></div>
         </div>
-
         <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 pointer-events-none z-[400]">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">◄</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">►</button>
@@ -218,40 +215,36 @@
             renderLibrary();
         }
 
-        // DATABASE index3
+        // DATABASE ORIGINALE index3
         async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Hybrid_Final", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
         
         async function loadSources() { 
             if (!window.showDirectoryPicker) return; 
-            document.getElementById('btn-scan').classList.remove('hidden');
             const db = await openDB(); 
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll(); 
-            req.onsuccess = async () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); await refreshFiles(); }; 
+            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); }; 
         }
 
-        async function addSource() { try { const h = await window.showDirectoryPicker(); if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); await refreshFiles(); } } catch(e){} }
+        async function addSource() { try { const h = await window.showDirectoryPicker(); if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles(); } } catch(e){} }
 
-        // SCAN RÉCURSIF index3
+        // SCAN RÉCURSIF ORIGINAL index3
         async function scanFolder(handle) {
             const results = [];
-            async function recursive(h) {
-                for await (const entry of h.values()) {
-                    if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
-                        results.push({entry: entry});
-                    } else if (entry.kind === 'directory') {
-                        await recursive(entry);
-                    }
+            for await (const entry of handle.values()) {
+                if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
+                    results.push({entry: entry});
+                } else if (entry.kind === 'directory') {
+                    results.push(...(await scanFolder(entry)));
                 }
             }
-            await recursive(handle);
             return results;
         }
 
         async function refreshFiles() { 
-            let pickerFiles = []; 
-            for(const h of sources) { try { pickerFiles = pickerFiles.concat(await scanFolder(h)); } catch(e) {} }
-            const vintage = files.filter(f => f.isVintage);
-            files = pickerFiles.concat(vintage);
+            files = []; 
+            for(const h of sources) { try { files = files.concat(await scanFolder(h)); } catch(e) {} }
+            const vintage = JSON.parse(localStorage.getItem('part_vintage_v2') || '[]');
+            vintage.forEach(v => files.push({ entry: { name: v.name }, data: v.data, isVintage: true }));
             renderLibrary(); renderSourcesUI(); 
         }
 
@@ -272,16 +265,16 @@
             });
         }
 
-        function renderSourcesUI() { const c = document.getElementById('source-list'); c.innerHTML = ''; sources.forEach((s, i) => { const tag = document.createElement('span'); tag.className = 'bg-zinc-900 border border-zinc-800 text-[10px] px-3 py-1 rounded-full text-zinc-400'; tag.innerHTML = `♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1" onclick="removeSource(${i})">✕</b>`; c.appendChild(tag); }); }
+        function renderSourcesUI() { const c = document.getElementById('source-list'); c.innerHTML = ''; sources.forEach((s, i) => { const tag = document.createElement('span'); tag.className = 'source-tag'; tag.innerHTML = `♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1" onclick="removeSource(${i})">✕</b>`; c.appendChild(tag); }); }
         
-        async function removeSource(i) { const n = sources[i].name; sources.splice(i, 1); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(n); await refreshFiles(); }
+        async function removeSource(i) { const n = sources[i].name; sources.splice(i, 1); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(n); refreshFiles(); }
 
         function renderLibrary(f = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
-            const sorted = files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name));
-            sorted.forEach(file => {
+            const filtered = files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name));
+            filtered.forEach(file => {
                 const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">${i18n[currentLang].btn_add}</button>`;
+                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">Add</button>`;
                 l.appendChild(row);
             });
         }
@@ -324,7 +317,7 @@
             window.onmouseup = window.ontouchend = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
         }
 
-        // CORRECTIF ANDROID PINCH
+        // CORRECTIF ANDROID PINCH-TO-ZOOM
         scEl.addEventListener('touchstart', (e) => { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
         scEl.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 300); initialPinchDist = d; } }, { passive: false });
 
@@ -342,7 +335,7 @@
         function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); el.classList.add('active'); }
         function setAnnoSize(s) { annoSize = s; }
 
-        async function restoreAccess() { try { for(const h of sources) { if(await h.requestPermission() !== 'granted') return; } document.getElementById('btn-restore').classList.add('hidden'); await refreshFiles(); } catch(e) {} }
+        async function restoreAccess() { try { for(const h of sources) { if(await h.requestPermission() !== 'granted') return; } document.getElementById('btn-restore').classList.add('hidden'); refreshFiles(); } catch(e) {} }
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(n) { const d = document.createElement('div'); d.className = "flex justify-between items-center bg-zinc-800 p-5 mb-3 rounded-xl border border-zinc-700"; d.dataset.name = n; d.innerHTML = `<span class="font-bold text-base text-zinc-100">${n}</span> <button onclick="this.parentElement.remove()" class="text-red-500 font-black text-xl px-2">✕</button>`; document.getElementById('set-list-current').appendChild(d); }
@@ -350,11 +343,9 @@
         function renderSavedSets() { const l = document.getElementById('saved-sets-list'); l.innerHTML = ''; Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(k => { const d = document.createElement('div'); d.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3"; d.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${k}')">${k.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${k}'); renderSavedSets()" class="text-red-900 font-black text-xl px-2">✕</button>`; l.appendChild(d); }); }
         function loadSet(k) { const ns = JSON.parse(localStorage.getItem(k)); setFiles = []; document.getElementById('set-list-current').innerHTML = ''; ns.forEach(n => { const f = files.find(x => x.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } }); if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); } }
 
-        window.onload = async function() {
+        window.onload = function() {
             if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-            const savedVintage = localStorage.getItem('part_vintage_v2');
-            if(savedVintage) files = JSON.parse(savedVintage).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
-            await loadSources(); setLang(currentLang); renderSavedSets();
+            loadSources(); setLang(currentLang); renderSavedSets();
             const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
             const bar = document.getElementById('alpha-bar');
             alpha.forEach(l => {
