@@ -1,9 +1,9 @@
-const CACHE_NAME = 'partoches-v5';
+const CACHE_NAME = 'partoches-v6';
 const ASSETS = [
   'index.html',
+  'manifest.json',
   'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js'
 ];
 
 self.addEventListener('install', (e) => {
