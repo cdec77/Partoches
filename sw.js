@@ -1,4 +1,4 @@
-const CACHE_NAME = 'partoches-v6';
+const CACHE_NAME = 'Partoches-V2';
 const ASSETS = [
   'index.html',
   'manifest.json',
