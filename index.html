@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Pro Master Hybrid Fix</title>
+    <title>Partoches - Pro Master Hybrid Legacy</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#efb810">
@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,900&family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
     
@@ -25,7 +25,7 @@
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
         .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
 
-        /* VISIONNEUSE : NAVIGATION LUXE SANS ÉLÉMENTS GRIS */
+        /* VISIONNEUSE : NAVIGATION OPTIMISÉE IOS 10 */
         #scroll-container {
             height: 100vh; width: 100vw; 
             overflow-y: scroll; overflow-x: auto; 
@@ -65,9 +65,9 @@
         #fx-toolbar { bottom: 40px; width: 340px; flex-direction: column; }
 
         .color-dot { width: 38px; height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s; }
-        .color-dot.active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
+        .color-dot.active { border-color: var(--gold); transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
         
-        /* NAVIGATION IPAD & PC : BOUTONS RECTANGULAIRES GRANDS */
+        /* NAVIGATION IPAD 2 : BOUTONS RECTANGULAIRES GRANDS */
         .nav-rect {
             pointer-events: auto; background: rgba(5,5,5,0.9);
             border: 2px solid var(--gold); color: var(--gold);
@@ -82,32 +82,32 @@
         .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
         input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; height: 8px; }
 
-        /* OVERLAY IMPORTATION ANTI-FREEZE POUR IPAD */
+        /* OVERLAY IMPORTATION "ULTRA-LEGACY" */
         #loading-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.98);
             display: none; flex-direction: column; align-items: center; justify-content: center;
             z-index: 9999; color: var(--gold);
         }
-        #load-bar-bg { width: 70%; height: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; margin-top: 25px; overflow: hidden; }
-        #load-bar-fill { width: 0%; height: 100%; background: var(--gold); transition: width 0.1s; }
+        #load-bar-bg { width: 70%; height: 15px; background: #1a1a1a; border: 1px solid #444; border-radius: 8px; margin-top: 30px; overflow: hidden; }
+        #load-bar-fill { width: 0%; height: 100%; background: var(--gold); transition: width 0.2s; }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay">
-        <div class="jazz-title text-4xl mb-2 italic">Traitement de l'Album</div>
-        <div id="load-name" class="text-[12px] uppercase tracking-widest text-zinc-400 mb-6 px-10 text-center">Extraction en cours...</div>
+        <div class="jazz-title text-4xl mb-4 italic">Transfert en cours...</div>
+        <div id="load-name" class="text-[11px] uppercase tracking-widest text-zinc-400 mb-6 px-10 text-center italic">Optimisation pour iPad Ancienne Génération</div>
         <div id="load-prog" class="text-7xl font-black">0%</div>
         <div id="load-bar-bg"><div id="load-bar-fill"></div></div>
-        <div class="mt-10 text-zinc-500 italic text-sm">Veuillez patienter, iPad optimise vos fichiers.</div>
+        <div class="mt-12 text-zinc-500 italic text-sm">Ne touchez à rien pendant le traitement</div>
     </div>
 
     <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[200] text-[10px] uppercase tracking-tighter">
-        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active font-black">Répertoire</button>
-        <button onclick="switchTab('set')" id="tab-set" class="tab-btn font-black">Setlists</button>
-        <button onclick="switchTab('view')" id="tab-view" class="tab-btn font-black opacity-20">Visionneuse</button>
+    <nav class="glass fixed top-0 w-full flex justify-around p-5 z-[200] text-[10px] uppercase tracking-tighter font-bold">
+        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active">Répertoire</button>
+        <button onclick="switchTab('set')" id="tab-set" class="tab-btn">Setlists</button>
+        <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20">Visionneuse</button>
     </nav>
 
     <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-6">
@@ -115,11 +115,10 @@
             <h1 class="jazz-title text-5xl font-black italic">Partoches</h1>
             <div class="flex flex-wrap justify-center gap-4">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden border border-blue-500 text-blue-400 px-4 py-2 rounded-lg text-[10px] animate-pulse font-black uppercase">Réactiver</button>
-                
                 <button onclick="addSource()" id="btn-scan" class="btn-jazz hidden md:block">Scanner Dossier PC</button>
                 
                 <label class="btn-jazz cursor-pointer flex items-center bg-gold/10 border-gold/40">
-                    <span class="mr-3 text-xl">📥</span> IMPORTER PHOTOS / ICLOUD
+                    <span class="mr-3 text-xl">📥</span> IMPORTER (PHOTOS / ICLOUD)
                     <input type="file" multiple onchange="startSmartImport(this.files)" class="hidden" accept="image/*,application/pdf">
                 </label>
             </div>
@@ -135,7 +134,7 @@
             <div id="set-list-current" class="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-2xl min-h-[220px] mb-8 p-6 text-left"></div>
             <div class="grid grid-cols-2 gap-6 mb-12">
                 <button onclick="saveCurrentSet()" class="btn-jazz py-5 shadow-2xl">Sauvegarder Set</button>
-                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] tracking-widest hover:text-red-500 transition">Vider la liste</button>
+                <button onclick="clearCurrentSet()" class="text-zinc-500 font-black uppercase text-[11px] tracking-widest hover:text-red-500 transition">Vider</button>
             </div>
             <div id="saved-sets-list" class="space-y-4 pb-48 text-left"></div>
         </div>
@@ -185,186 +184,180 @@
     </section>
 
     <script>
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+        // COMPATIBILITÉ SERVICE WORKER
+        if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('sw.js'); }); }
         
         var pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js';
 
-        let files = [], setFiles = [], currentIndex = 0, sources = [];
-        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
-        let annoColor = 'red', annoSize = 6, initialPinchDist = null;
-        let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
+        var files = [], setFiles = [], currentIndex = 0, sources = [];
+        var uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
+        var annoColor = 'red', annoSize = 6, initialPinchDist = null;
+        var annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        // DATABASE PC/ANDROID (IndexedDB pour directories)
-        const DB_NAME = "PartochesDB_Hybrid_V8";
-        async function openDB() {
-            return new Promise((r) => {
-                const req = indexedDB.open(DB_NAME, 1);
-                req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources");
-                req.onsuccess = (e) => r(e.target.result);
-            });
+        // DATABASE PC/ANDROID
+        var DB_NAME = "PartochesDB_Hybrid_V10";
+        function openDB(callback) {
+            var req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = function(e) { e.target.result.createObjectStore("sources"); };
+            req.onsuccess = function(e) { callback(e.target.result); };
         }
 
-        async function loadSources() {
+        function loadSources() {
             if (!window.showDirectoryPicker) return;
             document.getElementById('btn-scan').classList.remove('hidden');
-            const db = await openDB();
-            const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = () => {
-                sources = req.result;
-                if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
-                refreshFiles();
-            };
+            openDB(function(db) {
+                var req = db.transaction("sources", "readonly").objectStore("sources").getAll();
+                req.onsuccess = function() {
+                    sources = req.result;
+                    if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
+                    refreshFiles();
+                };
+            });
         }
 
         async function addSource() {
             try {
-                const h = await window.showDirectoryPicker();
-                if(!sources.find(s => s.name === h.name)) {
-                    sources.push(h);
-                    const db = await openDB();
-                    db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name);
-                    refreshFiles();
-                }
+                var h = await window.showDirectoryPicker();
+                sources.push(h);
+                openDB(function(db) { db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); });
+                refreshFiles();
             } catch(e){}
         }
 
         async function scanFolder(handle) {
-            const results = [];
-            for await (const entry of handle.values()) {
+            var results = [];
+            for await (var entry of handle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
-                    results.push({entry});
+                    results.push({entry: entry});
                 } else if (entry.kind === 'directory') {
-                    const subFiles = await scanFolder(entry);
-                    results.push(...subFiles);
+                    var subFiles = await scanFolder(entry);
+                    results = results.concat(subFiles);
                 }
             }
             return results;
         }
 
         async function refreshFiles() {
-            const pickerFiles = [];
-            for(const h of sources) {
-                const subFiles = await scanFolder(h);
-                pickerFiles.push(...subFiles);
+            var pickerFiles = [];
+            for(var i=0; i<sources.length; i++) {
+                var sub = await scanFolder(sources[i]);
+                pickerFiles = pickerFiles.concat(sub);
             }
-            const vintage = files.filter(f => f.isVintage);
-            files = [...pickerFiles, ...vintage];
-            renderLibrary(); renderSourcesUI();
+            var vintage = files.filter(function(f) { return f.isVintage; });
+            files = pickerFiles.concat(vintage);
+            renderLibrary();
         }
 
-        // --- IMPORT IPAD SMART SÉQUENTIEL (ANTI-BLOCAGE) ---
+        // --- IMPORTATION IOS 10 : ULTRA-SÉQUENTIEL & NETTOYAGE MÉMOIRE ---
         function startSmartImport(fileList) {
             if (!fileList || fileList.length === 0) return;
-            const overlay = document.getElementById('loading-overlay');
-            const prog = document.getElementById('load-prog');
-            const fill = document.getElementById('load-bar-fill');
-            const nameDisp = document.getElementById('load-name');
+            var overlay = document.getElementById('loading-overlay');
+            var prog = document.getElementById('load-prog');
+            var fill = document.getElementById('load-bar-fill');
+            var nameDisp = document.getElementById('load-name');
             
             overlay.style.display = 'flex';
-            let i = 0;
+            var i = 0;
 
-            const processNextFile = () => {
+            function processNext() {
                 if (i >= fileList.length) {
                     saveLibraryAndFinish();
                     return;
                 }
 
-                const file = fileList[i];
-                nameDisp.innerText = `Lecture : ${file.name}`;
+                var file = fileList[i];
+                nameDisp.innerText = "IPAD TRAITE : " + file.name;
                 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    if (!files.find(f => f.entry.name === file.name)) {
-                        files.push({ entry: { name: file.name }, data: e.target.result, isVintage: true });
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    // Test doublon classique pour iOS 10
+                    var exists = false;
+                    for(var j=0; j<files.length; j++) { if(files[j].entry.name === file.name) exists = true; }
+                    
+                    if (!exists) {
+                        files.push({ 
+                            entry: { name: file.name, getFile: function() { return Promise.resolve(file); } }, 
+                            data: e.target.result, 
+                            isVintage: true 
+                        });
                     }
                     i++;
-                    const percent = Math.round((i / fileList.length) * 100);
+                    var percent = Math.round((i / fileList.length) * 100);
                     prog.innerText = percent + "%";
                     fill.style.width = percent + "%";
-                    // Délai pour laisser l'iPad 2 vider le cache RAM
-                    setTimeout(processNextFile, 200);
+                    
+                    // Libération RAM manuelle pour iPad 2
+                    reader = null; e = null;
+                    
+                    // Pause CPU plus longue (300ms) pour iOS 10.3.3
+                    setTimeout(processNext, 300);
                 };
 
-                reader.onerror = () => { i++; processNextFile(); };
+                reader.onerror = function() { i++; processNext(); };
                 reader.readAsDataURL(file);
             }
-            processNextFile();
+            processNext();
         }
 
         function saveLibraryAndFinish() {
-            const vintage = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
+            var vintage = [];
+            for(var i=0; i<files.length; i++) {
+                if(files[i].isVintage) vintage.push({name: files[i].entry.name, data: files[i].data});
+            }
             try {
-                localStorage.setItem('part_vintage_final', JSON.stringify(vintage));
+                localStorage.setItem('part_vintage_vFinal', JSON.stringify(vintage));
                 renderLibrary();
                 document.getElementById('loading-overlay').style.display = 'none';
-            } catch(e) {
-                alert("Mémoire iPad pleine ! Réduisez la taille des photos.");
+            } catch(err) {
+                alert("Mémoire iPad saturée ! Importez par petits groupes (10 photos max).");
                 document.getElementById('loading-overlay').style.display = 'none';
             }
         }
 
-        function renderSourcesUI() {
-            const c = document.getElementById('source-list'); c.innerHTML = '';
-            sources.forEach((s, i) => {
-                c.innerHTML += `<span class="bg-zinc-900 border border-zinc-800 text-[10px] px-3 py-1 rounded-full text-zinc-400">♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1" onclick="removeSource(${i})">✕</b></span>`;
+        function renderLibrary(f) {
+            var l = document.getElementById('library-list'); l.innerHTML = '';
+            var filtered = files.filter(function(x) { 
+                return !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0; 
+            }).sort(function(a,b) { return a.entry.name.localeCompare(b.entry.name); });
+
+            filtered.forEach(function(file) {
+                var row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
+                row.innerHTML = '<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle(\''+file.entry.name.replace(/'/g, "\\'")+'\')">'+file.entry.name+'</div>' +
+                                '<button onclick="addToSet(\''+file.entry.name.replace(/'/g, "\\'")+'\')" class="btn-jazz !py-1 !px-4">Ajouter</button>';
+                l.appendChild(row);
             });
         }
 
-        async function removeSource(i) {
-            const name = sources[i].name; sources.splice(i, 1);
-            const db = await openDB();
-            db.transaction("sources", "readwrite").objectStore("sources").delete(name);
-            refreshFiles();
-        }
-
-        async function restoreAccess() {
-            try {
-                for(const h of sources) { if(await h.requestPermission() !== 'granted') return; }
-                document.getElementById('btn-restore').classList.add('hidden');
-                refreshFiles();
-            } catch(e) {}
-        }
-
-        function renderLibrary(f = '') {
-            const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0)
-                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
-                 .forEach(file => {
-                    const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                    row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
-                                     <button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">Ajouter</button>`;
-                    l.appendChild(row);
-                 });
-        }
-
-        // --- VISIONNEUSE MULTI-FORMAT ---
         function viewSingle(name) {
-            const f = files.find(x => x.entry.name === name);
+            var f = null;
+            for(var i=0; i<files.length; i++) { if(files[i].entry.name === name) f = files[i]; }
             if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
         }
 
         async function openFile(obj) {
             if(!obj) return; switchTab('view');
-            const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
-            let fileData = obj.isVintage ? obj.data : URL.createObjectURL(await obj.entry.getFile());
+            var container = document.getElementById('viewer-content'); container.innerHTML = ''; 
+            var fileData = obj.isVintage ? obj.data : URL.createObjectURL(await obj.entry.getFile());
 
             if(obj.entry.name.toLowerCase().indexOf('.pdf') > -1) {
-                const pdf = await pdfjsLib.getDocument(fileData).promise;
-                for(let i=1; i<=pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const viewport = page.getViewport({scale: (window.innerWidth < 1024) ? 1.5 : 2.2});
-                    const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
-                    const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
-                    const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
+                var loadingTask = pdfjsLib.getDocument(fileData);
+                var pdf = await loadingTask.promise;
+                for(var i=1; i<=pdf.numPages; i++) {
+                    var page = await pdf.getPage(i);
+                    var scale = (window.innerWidth < 1024) ? 1.4 : 2.0;
+                    var viewport = page.getViewport({scale: scale});
+                    var wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
+                    var canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
+                    var anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
                     wrapper.appendChild(canvas); wrapper.appendChild(anno); container.appendChild(wrapper);
                     await page.render({canvasContext: canvas.getContext('2d'), viewport: viewport}).promise;
                     setupDrawing(anno, obj.entry.name, i);
                 }
             } else {
-                const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
-                const img = document.createElement('img'); img.src = fileData;
-                const anno = document.createElement('canvas'); anno.className = "anno-canvas";
+                var wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
+                var img = new Image(); img.src = fileData;
+                var anno = document.createElement('canvas'); anno.className = "anno-canvas";
                 wrapper.appendChild(img); container.appendChild(wrapper);
                 img.onload = function() { 
                     anno.width = img.naturalWidth; anno.height = img.naturalHeight; 
@@ -377,29 +370,33 @@
         }
 
         function setupDrawing(canvas, fileName, pIdx) {
-            const ctx = canvas.getContext('2d'); const key = fileName + "_" + pIdx;
-            if(annotations[key]) { const img = new Image(); img.src = annotations[key]; img.onload = () => ctx.drawImage(img,0,0); }
-            let drawing = false;
-            const getPos = (e) => {
-                const r = canvas.getBoundingClientRect(); const sx = canvas.width/r.width, sy = canvas.height/r.height;
-                const cx = (e.clientX || (e.touches ? e.touches[0].clientX : 0));
-                const cy = (e.clientY || (e.touches ? e.touches[0].clientY : 0));
+            var ctx = canvas.getContext('2d'); var key = fileName + "_" + pIdx;
+            if(annotations[key]) { var img = new Image(); img.src = annotations[key]; img.onload = function() { ctx.drawImage(img,0,0); }; }
+            var drawing = false;
+            var getPos = function(e) {
+                var r = canvas.getBoundingClientRect(); var sx = canvas.width/r.width, sy = canvas.height/r.height;
+                var cx = (e.clientX || (e.touches ? e.touches[0].clientX : 0));
+                var cy = (e.clientY || (e.touches ? e.touches[0].clientY : 0));
                 return { x: (cx-r.left)*sx, y: (cy-r.top)*sy };
             };
-            canvas.onmousedown = canvas.ontouchstart = (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); if(e.touches) e.preventDefault(); };
-            canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); if(e.touches) e.preventDefault(); };
-            window.onmouseup = window.ontouchend = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
+            canvas.onmousedown = canvas.ontouchstart = function(e) { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); var p=getPos(e); ctx.moveTo(p.x, p.y); if(e.touches) e.preventDefault(); };
+            canvas.onmousemove = canvas.ontouchmove = function(e) { if(!drawing) return; var p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); if(e.touches) e.preventDefault(); };
+            window.onmouseup = window.ontouchend = function() { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
         }
 
         function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
-        window.addEventListener('keydown', (e) => {
-            const sc = document.getElementById('scroll-container');
+        window.addEventListener('keydown', function(e) {
+            var sc = document.getElementById('scroll-container');
             if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile();
             if(e.key === "ArrowDown") sc.scrollBy(0, 150); if(e.key === "ArrowUp") sc.scrollBy(0, -150);
         });
 
         function switchTab(id) { 
-            ['lib','set','view'].forEach(t => { document.getElementById('sec-'+t).classList.add('hidden'); document.getElementById('tab-'+t).classList.remove('tab-active'); });
+            var tabs = ['lib','set','view'];
+            for(var i=0; i<tabs.length; i++) {
+                document.getElementById('sec-'+tabs[i]).classList.add('hidden');
+                document.getElementById('tab-'+tabs[i]).classList.remove('tab-active');
+            }
             document.getElementById('sec-'+id).classList.remove('hidden'); document.getElementById('tab-'+id).classList.add('tab-active');
             if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
         }
@@ -408,44 +405,61 @@
         function prevFile() { if(setFiles.length > 0) { currentIndex = (currentIndex - 1 + setFiles.length) % setFiles.length; openFile(setFiles[currentIndex]); } }
         function adjustZoom(d) { currentZoom = Math.max(0.1, currentZoom + d); applyVisuals(); }
         function applyVisuals() { document.getElementById('viewer-content').style.transform = "scale("+currentZoom+")"; document.getElementById('zoom-level').innerText = Math.round(currentZoom*100)+"%"; }
-        function toggleFX() { const f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
-        function updateFX(type, val) { const r = document.documentElement; if(type === 'bright') { r.style.setProperty('--page-bright', val); document.getElementById('val-bright').innerText = Math.round(val*100)+"%"; } if(type === 'contrast') { r.style.setProperty('--page-contrast', val); document.getElementById('val-contrast').innerText = Math.round(val*100)+"%"; } }
+        function toggleFX() { var f = document.getElementById('fx-toolbar'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex'; }
+        function updateFX(type, val) { var r = document.documentElement.style; if(type === 'bright') { r.setProperty('--page-bright', val); } else { r.setProperty('--page-contrast', val); } }
         function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'black'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
         function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
-        function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); el.classList.add('active'); }
+        function setAnnoColor(c, el) { annoColor = c; var dots = document.querySelectorAll('.color-dot'); for(var i=0; i<dots.length; i++) dots[i].classList.remove('active'); el.classList.add('active'); }
         function setAnnoSize(s) { annoSize = s; }
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(name) {
-            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-800 p-5 mb-3 rounded-xl border border-zinc-700";
-            div.dataset.name = name; div.innerHTML = `<span class="font-bold text-base text-zinc-100">${name}</span> <button onclick="this.parentElement.remove()" class="text-red-500 font-black text-xl px-2">✕</button>`;
+            var div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-800 p-5 mb-3 rounded-xl border border-zinc-700";
+            div.dataset.name = name; div.innerHTML = '<span class="font-bold text-base text-zinc-100">'+name+'</span> <button onclick="this.parentElement.remove()" class="text-red-500 font-black text-xl px-2">✕</button>';
             document.getElementById('set-list-current').appendChild(div);
         }
         function saveCurrentSet() {
-            const name = prompt("Nom de la Setlist :"); if (!name) return;
-            localStorage.setItem('part_set_' + name, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets();
+            var name = prompt("Nom de la Setlist :"); if (!name) return;
+            var items = []; var nodes = document.getElementById('set-list-current').children;
+            for(var i=0; i<nodes.length; i++) items.push(nodes[i].dataset.name);
+            localStorage.setItem('part_set_' + name, JSON.stringify(items)); renderSavedSets();
         }
         function renderSavedSets() {
-            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
-            Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
-                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3";
-                div.innerHTML = `<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-red-900 font-black px-2">✕</button>`;
-                list.appendChild(div);
-            });
+            var list = document.getElementById('saved-sets-list'); list.innerHTML = '';
+            for (var key in localStorage) {
+                if (key.indexOf('part_set_') === 0) {
+                    (function(k){
+                        var div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3";
+                        div.innerHTML = '<div class="font-black text-gold cursor-pointer italic text-lg" onclick="loadSet(\''+k+'\')">'+k.replace('part_set_', '')+'</div><button onclick="localStorage.removeItem(\''+k+'\'); renderSavedSets()" class="text-red-900 font-black px-2">✕</button>';
+                        list.appendChild(div);
+                    })(key);
+                }
+            }
         }
         function loadSet(key) {
-            const names = JSON.parse(localStorage.getItem(key)); setFiles = []; document.getElementById('set-list-current').innerHTML = '';
-            names.forEach(n => { const f = files.find(file => file.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } });
+            var names = JSON.parse(localStorage.getItem(key)); setFiles = []; document.getElementById('set-list-current').innerHTML = '';
+            for(var i=0; i<names.length; i++) {
+                for(var j=0; j<files.length; j++) {
+                    if(files[j].entry.name === names[i]) { setFiles.push(files[j]); addToSet(names[i]); break; }
+                }
+            }
             if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
         }
 
-        window.onload = () => {
-            const saved = localStorage.getItem('part_vintage_final');
-            if(saved) files = JSON.parse(saved).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
+        window.onload = function() {
+            var saved = localStorage.getItem('part_vintage_vFinal');
+            if(saved) {
+                var loaded = JSON.parse(saved);
+                for(var i=0; i<loaded.length; i++) {
+                    files.push({ entry: {name: loaded[i].name, getFile: function(){return Promise.resolve(null);}}, data: loaded[i].data, isVintage: true });
+                }
+            }
             loadSources(); renderSavedSets();
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
-                const b = document.createElement('button'); b.className = "px-3 text-zinc-600 font-black text-xs hover:text-gold transition";
-                b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
+            var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            var bar = document.getElementById('alpha-bar');
+            alpha.forEach(function(l) {
+                var b = document.createElement('button'); b.className = "px-3 text-zinc-600 font-black text-xs hover:text-gold transition";
+                b.innerText = l; b.onclick = function() { renderLibrary(l); }; bar.appendChild(b);
             });
         };
     </script>
