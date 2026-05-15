@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Master Edition</title>
+    <title>Partoches - Neon Pro Hybrid</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -39,31 +39,31 @@
             font-family: 'Outfit', sans-serif; 
             text-transform: uppercase;
             font-weight: 900;
-            letter-spacing: -2px;
+            letter-spacing: -1px;
             background: linear-gradient(to right, var(--neon-lime), var(--neon-blue));
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            filter: drop-shadow(0 0 10px rgba(204, 255, 0, 0.3));
+            filter: drop-shadow(0 0 8px rgba(204, 255, 0, 0.2));
         }
 
         .glass { 
-            background: rgba(10, 10, 12, 0.85); 
+            background: rgba(10, 10, 12, 0.9); 
             backdrop-filter: blur(20px); 
             border-bottom: 1px solid rgba(204, 255, 0, 0.2); 
         }
 
         .file-row { 
             background: var(--surface);
-            border-radius: 8px;
-            margin-bottom: 6px;
-            border: 1px solid transparent;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-radius: 6px;
+            margin-bottom: 4px;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: all 0.2s ease; 
             cursor: pointer; 
         }
         .file-row:hover { 
             border-color: var(--neon-lime);
-            transform: translateX(5px);
-            box-shadow: -5px 0 15px rgba(204, 255, 0, 0.15);
+            transform: translateX(4px);
+            background: rgba(204, 255, 0, 0.05);
         }
 
         /* VISIONNEUSE : NEON FOCUS */
@@ -81,127 +81,130 @@
         
         .page-wrapper { 
             position: relative; flex-shrink: 0; background: white; 
-            box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 1px var(--neon-lime);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
-            border-radius: 4px; overflow: hidden;
+            border-radius: 2px;
         }
 
         canvas, img { height: 92vh !important; width: auto !important; object-fit: contain; display: block; }
-        .anno-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; background: transparent !important; }
+        .anno-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .anno-active .anno-canvas { pointer-events: auto; cursor: crosshair; }
 
-        .tab-btn { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #555; transition: 0.3s; }
-        .tab-active { color: var(--neon-lime); text-shadow: 0 0 8px var(--neon-lime); }
+        .tab-btn { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #666; transition: 0.3s; text-transform: uppercase; }
+        .tab-active { color: var(--neon-lime); text-shadow: 0 0 10px var(--neon-lime); }
         
         .btn-jazz { 
-            background: transparent;
+            background: rgba(204, 255, 0, 0.05);
             border: 1px solid var(--neon-lime); 
             color: var(--neon-lime); 
             font-size: 10px; 
             font-weight: 700; 
-            padding: 8px 16px; 
-            border-radius: 20px; 
+            padding: 6px 14px; 
+            border-radius: 4px; 
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
-        .btn-jazz:hover {
-            background: var(--neon-lime);
-            color: black;
-            box-shadow: 0 0 20px rgba(204, 255, 0, 0.4);
-        }
+        .btn-jazz:hover { background: var(--neon-lime); color: black; }
         
         #anno-toolbar, #fx-toolbar {
             position: fixed; left: 50%; transform: translateX(-50%);
-            display: none; gap: 12px; padding: 15px; border-radius: 12px;
-            background: rgba(22, 22, 26, 0.95); border: 1px solid var(--neon-lime); 
-            z-index: 500; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: none; gap: 12px; padding: 15px; border-radius: 8px;
+            background: rgba(10, 10, 12, 0.98); border: 1px solid var(--neon-lime); 
+            z-index: 500;
         }
         #anno-toolbar { bottom: 120px; }
         #fx-toolbar { bottom: 40px; width: 300px; flex-direction: column; }
         
-        .color-dot { width: 32px; height: 32px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
-        .color-dot.active { border-color: white; transform: scale(1.1); box-shadow: 0 0 15px currentColor; }
+        .color-dot { width: 32px; height: 32px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        .color-dot.active { border-color: white; transform: scale(1.1); }
         
         .nav-rect {
-            pointer-events: auto; background: rgba(22, 22, 26, 0.9); border: 1px solid var(--neon-blue); 
-            color: var(--neon-blue); font-weight: 700; font-size: 10px; padding: 15px 30px; border-radius: 30px;
-            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
+            pointer-events: auto; background: rgba(10, 10, 12, 0.9); border: 1px solid var(--neon-blue); 
+            color: var(--neon-blue); font-weight: 700; font-size: 11px; padding: 12px 24px; border-radius: 4px;
+            text-transform: uppercase; transition: 0.2s;
         }
-        .nav-rect:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
 
-        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #444; letter-spacing: 2px; z-index: 50; }
-        input[type=range] { accent-color: var(--neon-lime); cursor: pointer; width: 100%; height: 4px; }
+        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #333; z-index: 50; }
+        input[type=range] { accent-color: var(--neon-lime); width: 100%; height: 4px; }
         
-        #source-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .source-tag { background: #000; border: 1px solid #333; padding: 4px 10px; border-radius: 6px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
-        .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; }
+        .source-tag { background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
+        .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; font-weight: 900; }
 
-        #alpha-bar button { padding: 4px 8px; font-size: 10px; font-weight: 700; color: #444; transition: 0.2s; }
-        #alpha-bar button:hover { color: var(--neon-lime); }
+        #alpha-bar button { 
+            padding: 6px 10px; 
+            font-size: 13px; 
+            font-weight: 500; 
+            color: #555; 
+            border: 1px solid transparent;
+        }
+        #alpha-bar button:hover { color: var(--neon-lime); border-bottom-color: var(--neon-lime); }
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .lang-switch { font-size: 9px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; color: #888; cursor: pointer; }
+        .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); }
     </style>
 </head>
 <body>
 
-    <div class="copyright font-black uppercase tracking-widest">© Cyrille de Chanteloup</div>
+    <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
 
     <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
-        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active">LIBRARY</button>
-        <button onclick="switchTab('set')" id="tab-set" class="tab-btn">SETLISTS</button>
-        <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20">VIEWER</button>
+        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
+        <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
+        <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20" data-i18n="nav_view">Visionneuse</button>
+        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+            <span onclick="setLang('fr')" id="lang-fr" class="lang-switch">FR</span>
+            <span onclick="setLang('en')" id="lang-en" class="lang-switch">EN</span>
+        </div>
     </nav>
 
     <section id="sec-lib" class="pt-20 h-screen overflow-y-auto px-6">
         <div class="flex justify-between items-end mb-6">
             <div>
                 <h1 class="jazz-title text-4xl mb-1">Partoches</h1>
-                <div id="source-list"></div>
+                <div id="source-list" class="flex gap-2"></div>
             </div>
             <div class="flex gap-3">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden text-[9px] border border-blue-500 text-blue-400 px-3 py-1 rounded uppercase font-bold">Restore Access</button>
-                <button onclick="addSource()" class="btn-jazz">Scan Folder</button>
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden text-[9px] border border-blue-500 text-blue-400 px-3 py-1 rounded uppercase font-bold" data-i18n="btn_restore">Réactiver Accès</button>
+                <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
         
-        <div id="alpha-bar" class="sticky top-0 bg-[#0a0a0c]/80 backdrop-filter blur-sm py-3 z-20 flex flex-wrap justify-center border-b border-white/5"></div>
+        <div id="alpha-bar" class="sticky top-0 bg-[#0a0a0c]/90 backdrop-filter blur-sm py-2 z-20 flex flex-wrap justify-center border-b border-white/5"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
     <section id="sec-set" class="hidden pt-20 h-screen overflow-y-auto px-6">
         <div class="max-w-xl mx-auto text-center">
-            <h2 class="jazz-title text-2xl mb-6">Programmation</h2>
-            <div id="set-list-current" class="bg-[#111] border border-white/5 rounded-xl min-h-[180px] mb-6 p-4"></div>
+            <h2 class="jazz-title text-2xl mb-6" data-i18n="set_title">Programmation</h2>
+            <div id="set-list-current" class="bg-[#111] border border-white/5 rounded-lg min-h-[180px] mb-6 p-4"></div>
             <div class="grid grid-cols-2 gap-4 mb-10">
-                <button onclick="saveCurrentSet()" class="btn-jazz !py-4 text-[12px] bg-white/5">Save Setlist</button>
-                <button onclick="clearCurrentSet()" class="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition">Clear Current</button>
+                <button onclick="saveCurrentSet()" class="btn-jazz !py-4 text-[11px]" data-i18n="btn_save_set">Enregistrer Set</button>
+                <button onclick="clearCurrentSet()" class="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition" data-i18n="btn_clear">Vider</button>
             </div>
-            <div id="saved-sets-list" class="space-y-3 pb-40 text-left"></div>
+            <div id="saved-sets-list" class="space-y-2 pb-40 text-left"></div>
         </div>
     </section>
 
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
         <div id="viewer-header" class="glass absolute top-0 w-full p-3 flex justify-between items-center z-[400]">
-            <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-2">✕ CLOSE</button>
-            <div class="flex items-center gap-6">
-                <button onclick="toggleFX()" class="btn-jazz !border-zinc-700 !text-zinc-400">Settings</button>
-                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz">Draw</button>
-                <div class="flex items-center bg-zinc-900/50 rounded-full px-2 border border-white/5">
-                    <button onclick="adjustZoom(-0.1)" class="p-2 text-zinc-500 hover:text-white">-</button>
+            <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-2" data-i18n="btn_close">✕ Fermer</button>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleFX()" class="btn-jazz !border-zinc-700 !text-zinc-400" data-i18n="btn_settings">Réglages</button>
+                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz" data-i18n="btn_draw">Dessin</button>
+                <div class="flex items-center bg-zinc-900 rounded-lg px-1 border border-white/5">
+                    <button onclick="adjustZoom(-0.1)" class="px-3 py-1 text-zinc-500 hover:text-white">-</button>
                     <span id="zoom-level" class="text-[10px] w-10 text-center font-bold text-lime-400">100%</span>
-                    <button onclick="adjustZoom(0.1)" class="p-2 text-zinc-500 hover:text-white">+</button>
+                    <button onclick="adjustZoom(0.1)" class="px-3 py-1 text-zinc-500 hover:text-white">+</button>
                 </div>
             </div>
-            <div id="page-info" class="text-white/30 font-bold text-[10px] tracking-tighter pr-4 italic">0 / 0</div>
+            <div id="page-info" class="text-white/20 font-bold text-[10px] pr-4 italic">0 / 0</div>
         </div>
 
         <div id="fx-toolbar">
             <div class="flex flex-col gap-3">
-                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500">Brightness</label><span id="val-bright" class="text-[9px] text-lime-400">100%</span></div>
+                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[9px] text-lime-400">100%</span></div>
                 <input type="range" min="0.2" max="2.5" step="0.1" value="1" oninput="updateFX('bright', this.value)">
-                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500">Contrast</label><span id="val-contrast" class="text-[9px] text-lime-400">100%</span></div>
+                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_contrast">Contraste</label><span id="val-contrast" class="text-[9px] text-lime-400">100%</span></div>
                 <input type="range" min="0.2" max="4" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
@@ -210,8 +213,7 @@
             <div class="flex gap-3 border-r border-white/10 pr-4">
                 <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;"></div>
                 <div onclick="setAnnoColor('#00f0ff', this)" class="color-dot" style="background: #00f0ff;"></div>
-                <div onclick="setAnnoColor('#ff00ff', this)" class="color-dot" style="background: #ff00ff;"></div>
-                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-zinc-800 flex items-center justify-center text-[7px] text-zinc-400 font-bold uppercase">Del</div>
+                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-zinc-800 flex items-center justify-center text-[7px] text-zinc-400 font-bold uppercase" data-i18n="btn_del">Del</div>
             </div>
             <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white/10 border border-white/20 rounded cursor-pointer hover:bg-lime-400 transition"></div>
         </div>
@@ -221,12 +223,45 @@
         </div>
 
         <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-10 pointer-events-none z-[400]">
-            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">Previous</button>
-            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">Next Page</button>
+            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
         </div>
     </section>
 
     <script>
+        const i18n = {
+            fr: {
+                nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
+                btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier",
+                set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
+                btn_close: "✕ Fermer", btn_settings: "Réglages", btn_draw: "Dessin",
+                fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Del",
+                btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter"
+            },
+            en: {
+                nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
+                btn_restore: "Restore Access", btn_scan: "Scan Folder",
+                set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
+                btn_close: "✕ Close", btn_settings: "Settings", btn_draw: "Draw",
+                fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Del",
+                btn_prev: "Previous", btn_next: "Next", btn_add: "Add"
+            }
+        };
+
+        let currentLang = localStorage.getItem('part_lang') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('part_lang', lang);
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = i18n[lang][key];
+            });
+            document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
+            document.getElementById('lang-' + lang).classList.add('active');
+            renderLibrary();
+        }
+
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
@@ -235,7 +270,7 @@
         let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        const DB_NAME = "PartochesDB_PWA_Recursive";
+        const DB_NAME = "PartochesDB_Neon_Final";
         async function openDB() {
             return new Promise((r) => {
                 const req = indexedDB.open(DB_NAME, 1);
@@ -248,11 +283,7 @@
             if (!window.showDirectoryPicker) return;
             const db = await openDB();
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = () => {
-                sources = req.result;
-                if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
-                refreshFiles();
-            };
+            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); };
         }
 
         async function addSource() {
@@ -308,7 +339,7 @@
             const l = document.getElementById('library-list'); l.innerHTML = '';
             files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
                 const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-3 px-4";
-                row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[13px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">Add</button>`;
+                row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[12px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">${i18n[currentLang].btn_add}</button>`;
                 l.appendChild(row);
             });
         }
@@ -322,7 +353,7 @@
             if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
-                    const page = await pdf.getPage(i); const viewport = page.getViewport({scale: 2.5}); 
+                    const page = await pdf.getPage(i); const viewport = page.getViewport({scale: 2.2}); 
                     const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
                     const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
                     const anno = document.createElement('canvas'); anno.className = "anno-canvas"; anno.width = canvas.width; anno.height = canvas.height;
@@ -382,19 +413,19 @@
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(name) {
-            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-[#1a1a1a] p-3 mb-2 rounded-lg border border-white/5";
-            div.dataset.name = name; div.innerHTML = `<span class="font-medium text-xs text-zinc-300">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold text-sm px-2">✕</button>`;
+            const div = document.createElement('div'); div.className = "flex justify-between items-center bg-[#1a1a1a] p-2 mb-2 rounded border border-white/5";
+            div.dataset.name = name; div.innerHTML = `<span class="font-medium text-[11px] text-zinc-300">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold text-sm px-2">✕</button>`;
             document.getElementById('set-list-current').appendChild(div);
         }
         function saveCurrentSet() {
-            const name = prompt("Nom de la Setlist :"); if (!name) return;
+            const name = prompt(currentLang === 'fr' ? "Nom de la Setlist :" : "Setlist Name :"); if (!name) return;
             localStorage.setItem('part_set_' + name, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets();
         }
         function renderSavedSets() {
             const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
             Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
-                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900/50 border border-white/5 p-3 rounded-lg";
-                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-xs" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-zinc-600 hover:text-white transition px-2">✕</button>`;
+                const div = document.createElement('div'); div.className = "flex justify-between items-center bg-zinc-900/50 border border-white/5 p-2 px-3 rounded";
+                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px]" onclick="loadSet('${key}')">${key.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${key}'); renderSavedSets()" class="text-zinc-600 hover:text-white transition px-2">✕</button>`;
                 list.appendChild(div);
             });
         }
@@ -405,9 +436,16 @@
         }
 
         window.onload = () => {
-            loadSources(); renderSavedSets();
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
-                const b = document.createElement('button'); b.innerText = l; b.onclick = () => renderLibrary(l); document.getElementById('alpha-bar').appendChild(b);
+            loadSources(); 
+            setLang(currentLang);
+            renderSavedSets();
+            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            const bar = document.getElementById('alpha-bar');
+            alpha.forEach(l => {
+                const b = document.createElement('button');
+                b.innerText = l;
+                b.onclick = () => renderLibrary(l);
+                bar.appendChild(b);
             });
         };
     </script>
