@@ -3,43 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Pro Hybrid Fix</title>
+    <title>Partoches - Neon Pro Master</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-512.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Outfit:wght@200;400;900&display=swap" rel="stylesheet">
     
     <style>
         :root { 
-            --neon-lime: #ccff00; --neon-blue: #00f0ff; --neon-pink: #ff00ff;
-            --bg: #0a0a0c; --surface: #16161a; --page-bright: 1; --page-contrast: 1; 
+            --neon-lime: #ccff00; 
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff00ff;
+            --bg: #0a0a0c; 
+            --surface: #16161a;
+            --page-bright: 1; 
+            --page-contrast: 1; 
         }
         
         body { 
-            background: var(--bg); color: #e0e0e0; font-family: 'Space Grotesk', sans-serif; 
-            overflow: hidden; margin: 0; touch-action: none; font-size: 13px;
+            background: var(--bg); 
+            color: #e0e0e0; 
+            font-family: 'Space Grotesk', sans-serif; 
+            overflow: hidden; 
+            margin: 0; 
+            touch-action: none; 
+            font-size: 13px;
         }
 
         .jazz-title { 
-            font-family: 'Outfit', sans-serif; text-transform: uppercase; font-weight: 900;
+            font-family: 'Outfit', sans-serif; 
+            text-transform: uppercase;
+            font-weight: 900;
             background: linear-gradient(to right, var(--neon-lime), var(--neon-blue));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
             filter: drop-shadow(0 0 8px rgba(204, 255, 0, 0.2));
         }
 
-        .glass { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass { 
+            background: rgba(10, 10, 12, 0.95); 
+            backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+        }
 
         .file-row { 
-            background: var(--surface); border-radius: 6px; margin-bottom: 4px;
-            border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s ease; cursor: pointer; 
+            background: var(--surface);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: all 0.2s ease; 
+            cursor: pointer; 
         }
-        .file-row:hover { border-color: var(--neon-lime); background: rgba(204, 255, 0, 0.05); }
+        .file-row:hover { 
+            border-color: var(--neon-lime);
+            background: rgba(204, 255, 0, 0.05);
+        }
 
+        /* VISIONNEUSE : NEON FOCUS AVEC PINCH-TO-ZOOM */
         #scroll-container {
             height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: auto; 
             background: #000; scroll-behavior: auto; touch-action: none;
@@ -67,19 +94,29 @@
         .tab-active { color: var(--neon-lime); text-shadow: 0 0 10px var(--neon-lime); }
         
         .btn-jazz { 
-            background: rgba(204, 255, 0, 0.05); border: 1px solid var(--neon-lime); 
-            color: var(--neon-lime); font-size: 10px; font-weight: 700; 
-            padding: 8px 16px; border-radius: 4px; text-transform: uppercase; transition: all 0.2s;
+            background: rgba(204, 255, 0, 0.05);
+            border: 1px solid var(--neon-lime); 
+            color: var(--neon-lime); 
+            font-size: 10px; 
+            font-weight: 700; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            text-transform: uppercase;
+            transition: all 0.2s;
         }
         .btn-jazz:hover { background: var(--neon-lime); color: black; }
         
         #anno-toolbar, #fx-toolbar {
             position: fixed; left: 50%; transform: translateX(-50%);
             display: none; gap: 12px; padding: 15px; border-radius: 8px;
-            background: rgba(10, 10, 12, 0.98); border: 1px solid var(--neon-lime); z-index: 500;
+            background: rgba(10, 10, 12, 0.98); border: 1px solid var(--neon-lime); 
+            z-index: 500;
         }
         #anno-toolbar { bottom: 120px; }
         #fx-toolbar { bottom: 40px; width: 300px; flex-direction: column; }
+        
+        .color-dot { width: 32px; height: 32px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        .color-dot.active { border-color: white; transform: scale(1.1); }
         
         .nav-rect {
             pointer-events: auto; background: rgba(10, 10, 12, 0.9); border: 1px solid var(--neon-blue); 
@@ -87,6 +124,13 @@
             text-transform: uppercase; transition: 0.2s;
         }
 
+        .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #333; z-index: 50; }
+        input[type=range] { accent-color: var(--neon-lime); width: 100%; height: 4px; }
+        
+        .source-tag { background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; }
+        .source-delete { color: var(--neon-pink); cursor: pointer; margin-left: 8px; font-weight: 900; }
+
+        /* BARRE ALPHABÉTIQUE STANDARD ET LISIBLE */
         #alpha-bar {
             display: flex; flex-wrap: wrap; justify-content: center;
             gap: 4px; padding: 10px; background: #111; border-bottom: 1px solid #333;
@@ -94,15 +138,17 @@
         #alpha-bar button { 
             padding: 8px 12px; font-size: 14px; font-weight: bold; 
             color: #ffffff; background: #222; border-radius: 4px; min-width: 35px;
+            transition: 0.2s;
         }
         #alpha-bar button:active { background: var(--neon-lime); color: #000; }
 
-        .source-tag { background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; font-size: 9px; color: var(--neon-blue); font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .lang-switch { font-size: 9px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; color: #888; cursor: pointer; }
         .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); }
     </style>
 </head>
 <body>
+
+    <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
 
     <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
         <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
@@ -115,16 +161,21 @@
     </nav>
 
     <section id="sec-lib" class="pt-20 h-screen overflow-y-auto px-6">
-        <div class="flex justify-between items-end mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
             <div>
                 <h1 class="jazz-title text-4xl mb-1">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden text-[9px] border border-blue-500 text-blue-400 px-3 py-1 rounded uppercase font-bold" data-i18n="btn_restore">Réactiver Accès</button>
-                <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                <button onclick="addSource()" id="btn-scan" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                <label class="btn-jazz cursor-pointer flex items-center bg-lime-900/20">
+                    + iCloud / Photos
+                    <input type="file" multiple onchange="handleVintageFiles(this.files)" class="hidden" accept="image/*,application/pdf">
+                </label>
             </div>
         </div>
+        
         <div id="alpha-bar" class="sticky top-0 z-20"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
@@ -155,25 +206,29 @@
             </div>
             <div id="page-info" class="text-white/20 font-bold text-[10px] pr-4 italic">0 / 0</div>
         </div>
+
         <div id="fx-toolbar">
             <div class="flex flex-col gap-3">
-                <label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_bright">Luminosité</label>
-                <input type="range" min="0.2" max="2.5" step="0.1" value="1" oninput="updateFX('bright', this.value)">
-                <label class="text-[9px] uppercase font-bold text-zinc-500 mt-2" data-i18n="fx_contrast">Contraste</label>
-                <input type="range" min="0.2" max="4" step="0.1" value="1" oninput="updateFX('contrast', this.value)">
+                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_bright">Luminosité</label><span id="val-bright" class="text-[9px] text-lime-400">100%</span></div>
+                <input type="range" min="0.2" max="2.5" step="0.01" value="1" oninput="updateFX('bright', this.value)">
+                <div class="flex justify-between items-center"><label class="text-[9px] uppercase font-bold text-zinc-500" data-i18n="fx_contrast">Contraste</label><span id="val-contrast" class="text-[9px] text-lime-400">100%</span></div>
+                <input type="range" min="0.2" max="4" step="0.01" value="1" oninput="updateFX('contrast', this.value)">
             </div>
         </div>
+
         <div id="anno-toolbar">
             <div class="flex gap-3 border-r border-white/10 pr-4">
-                <div onclick="setAnnoColor('#ccff00', this)" class="w-8 h-8 bg-[#ccff00] rounded cursor-pointer"></div>
-                <div onclick="setAnnoColor('#00f0ff', this)" class="w-8 h-8 bg-[#00f0ff] rounded cursor-pointer"></div>
-                <div onclick="setAnnoColor('eraser', this)" class="w-8 h-8 bg-zinc-800 flex items-center justify-center text-[7px] text-zinc-400 font-bold" data-i18n="btn_del">Del</div>
+                <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="background: #ccff00;"></div>
+                <div onclick="setAnnoColor('#00f0ff', this)" class="color-dot" style="background: #00f0ff;"></div>
+                <div onclick="setAnnoColor('eraser', this)" class="color-dot bg-zinc-800 flex items-center justify-center text-[7px] text-zinc-400 font-bold uppercase" data-i18n="btn_del">Del</div>
             </div>
-            <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-lime-400 rounded cursor-pointer"></div>
+            <div onclick="setAnnoSize(6, this)" class="w-6 h-6 bg-white/10 border border-white/20 rounded cursor-pointer hover:bg-lime-400 transition"></div>
         </div>
+
         <div id="scroll-container" onwheel="handleWheel(event)" ondblclick="resetZoom()" onclick="toggleUI()">
             <div id="viewer-content"></div>
         </div>
+
         <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-10 pointer-events-none z-[400]">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
@@ -182,8 +237,22 @@
 
     <script>
         const i18n = {
-            fr: { nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse", btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier", set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider", btn_close: "✕ Fermer", btn_settings: "Réglages", btn_draw: "Dessin", fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Del", btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Add" },
-            en: { nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer", btn_restore: "Restore Access", btn_scan: "Scan Folder", set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear", btn_close: "✕ Close", btn_settings: "Settings", btn_draw: "Draw", fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Del", btn_prev: "Previous", btn_next: "Next", btn_add: "Add" }
+            fr: {
+                nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
+                btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier",
+                set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
+                btn_close: "✕ Fermer", btn_settings: "Réglages", btn_draw: "Dessin",
+                fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Del",
+                btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter"
+            },
+            en: {
+                nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
+                btn_restore: "Restore Access", btn_scan: "Scan Folder",
+                set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
+                btn_close: "✕ Close", btn_settings: "Settings", btn_draw: "Draw",
+                fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Del",
+                btn_prev: "Previous", btn_next: "Next", btn_add: "Add"
+            }
         };
 
         let currentLang = localStorage.getItem('part_lang') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
@@ -192,43 +261,83 @@
         let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        function setLang(l) { currentLang = l; localStorage.setItem('part_lang', l); document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = i18n[l][el.getAttribute('data-i18n')]; }); document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active')); document.getElementById('lang-' + l).classList.add('active'); renderLibrary(); }
-
-        const scEl = document.getElementById('scroll-container');
-        scEl.addEventListener('touchstart', (e) => { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
-        scEl.addEventListener('touchmove', (e) => { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 300); initialPinchDist = d; } }, { passive: false });
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-        async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Neon_Stable", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
-        async function loadSources() { if (!window.showDirectoryPicker) return; const db = await openDB(); const req = db.transaction("sources", "readonly").objectStore("sources").getAll(); req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); }; }
-        async function addSource() { try { const h = await window.showDirectoryPicker(); if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles(); } } catch(e){} }
-        async function scanFolder(h) { const res = []; for await (const e of h.values()) { if (e.kind === 'file' && e.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) res.push({entry:e}); else if (e.kind === 'directory') res.push(...(await scanFolder(e))); } return res; }
-        
-        async function refreshFiles() { 
-            files = []; 
-            for(const h of sources) { const found = await scanFolder(h); files = files.concat(found); }
-            renderLibrary(); renderSourcesUI(); 
+        function setLang(lang) {
+            currentLang = lang; localStorage.setItem('part_lang', lang);
+            document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = i18n[lang][el.getAttribute('data-i18n')]; });
+            document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
+            document.getElementById('lang-' + lang).classList.add('active');
+            renderLibrary();
         }
 
-        function renderSourcesUI() { const c = document.getElementById('source-list'); c.innerHTML = ''; sources.forEach((s, i) => { const t = document.createElement('div'); t.className = 'source-tag'; t.innerHTML = `${s.name} <span style="color:red;cursor:pointer" onclick="removeSource(${i})">✕</span>`; c.appendChild(t); }); }
+        // --- GESTION TACTILE ANDROID (PINCH-TO-ZOOM) ---
+        const scEl = document.getElementById('scroll-container');
+        scEl.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            }
+        }, { passive: false });
+
+        scEl.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDist) {
+                e.preventDefault();
+                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                const zoomFactor = (dist - initialPinchDist) / 300;
+                adjustZoom(zoomFactor);
+                initialPinchDist = dist;
+            }
+        }, { passive: false });
+
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        // --- PERSISTANCE ET SCAN RÉCURSIF (Restauré de index3.html) ---
+        async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Hybrid_Final", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
+        async function loadSources() { 
+            if (!window.showDirectoryPicker) return; 
+            document.getElementById('btn-scan').classList.remove('hidden');
+            const db = await openDB(); 
+            const req = db.transaction("sources", "readonly").objectStore("sources").getAll(); 
+            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); }; 
+        }
+        async function addSource() { try { const h = await window.showDirectoryPicker(); if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles(); } } catch(e){} }
+        async function scanFolder(h) { const res = []; for await (const e of h.values()) { if (e.kind === 'file' && e.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) res.push({entry:e}); else if (e.kind === 'directory') res.push(...(await scanFolder(e))); } return res; }
+        async function refreshFiles() { files = []; for(const h of sources) { const found = await scanFolder(h); files = files.concat(found); } const vintage = files.filter(f => f.isVintage); files = files.concat(vintage); renderLibrary(); renderSourcesUI(); }
+        
+        function handleVintageFiles(fileList) {
+            let count = 0;
+            Array.from(fileList).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (!files.find(f => f.entry.name === file.name)) {
+                        files.push({ entry: { name: file.name, getFile: async () => file }, data: e.target.result, isVintage: true });
+                    }
+                    count++; if(count === fileList.length) { localStorage.setItem('part_vintage_v2', JSON.stringify(files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data})))); renderLibrary(); }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderSourcesUI() { const c = document.getElementById('source-list'); c.innerHTML = ''; sources.forEach((s, i) => { const tag = document.createElement('div'); tag.className = 'source-tag'; tag.innerHTML = `♪ ${s.name} <span class="source-delete" onclick="removeSource(${i})">✕</span>`; c.appendChild(tag); }); }
         async function removeSource(i) { const n = sources[i].name; sources.splice(i, 1); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(n); refreshFiles(); }
         async function restoreAccess() { try { for(const h of sources) { if(await h.requestPermission() !== 'granted') return; } document.getElementById('btn-restore').classList.add('hidden'); refreshFiles(); } catch(e) {} }
 
         function renderLibrary(f = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
+            const sorted = files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name));
+            sorted.forEach(file => {
                 const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-3 px-4";
-                row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[12px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">Add</button>`;
+                row.innerHTML = `<div class="flex-grow font-medium text-zinc-400 text-[12px]" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-3">${i18n[currentLang].btn_add}</button>`;
                 l.appendChild(row);
             });
         }
 
-        function viewSingle(n) { const f = files.find(x => x.entry.name === n); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
+        function viewSingle(name) { const f = files.find(x => x.entry.name === name); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
+
         async function openFile(obj) {
             if(!obj) return; switchTab('view');
             const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
-            const blob = await obj.entry.getFile(); const fileData = URL.createObjectURL(blob);
+            let fileData = obj.isVintage ? obj.data : URL.createObjectURL(await obj.entry.getFile());
+
             if(obj.entry.name.toLowerCase().endsWith('.pdf')) {
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
@@ -244,8 +353,8 @@
                 const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
                 const img = document.createElement('img'); img.src = fileData;
                 const anno = document.createElement('canvas'); anno.className = "anno-canvas";
-                wrapper.appendChild(img); wrapper.appendChild(anno); container.appendChild(wrapper);
-                img.onload = () => { anno.width = img.naturalWidth; anno.height = img.naturalHeight; setupDrawing(anno, obj.entry.name, 0); };
+                wrapper.appendChild(img); container.appendChild(wrapper);
+                img.onload = () => { anno.width = img.naturalWidth; anno.height = img.naturalHeight; wrapper.appendChild(anno); setupDrawing(anno, obj.entry.name, 0); };
             }
             applyVisuals(); document.getElementById('scroll-container').scrollTop = 0; 
             document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
@@ -256,9 +365,9 @@
             if(annotations[key]) { const img = new Image(); img.src = annotations[key]; img.onload = () => ctx.drawImage(img,0,0); }
             let drawing = false;
             const getPos = (e) => { const r = canvas.getBoundingClientRect(); const sx = canvas.width/r.width, sy = canvas.height/r.height; const cx = (e.clientX || (e.touches ? e.touches[0].clientX : 0)); const cy = (e.clientY || (e.touches ? e.touches[0].clientY : 0)); return { x: (cx-r.left)*sx, y: (cy-r.top)*sy }; };
-            canvas.onmousedown = canvas.ontouchstart = (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); };
-            canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); };
-            window.onmouseup = window.ontouchend = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
+            canvas.addEventListener('mousedown', (e) => { if(!isDrawingMode) return; drawing=true; ctx.beginPath(); const p=getPos(e); ctx.moveTo(p.x, p.y); });
+            canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); });
+            window.addEventListener('mouseup', () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }});
         }
 
         function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
@@ -272,22 +381,26 @@
         function updateFX(t, v) { const r = document.documentElement; if(t === 'bright') r.style.setProperty('--page-bright', v); if(t === 'contrast') r.style.setProperty('--page-contrast', v); }
         function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'transparent'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
         function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
-        function setAnnoColor(c, el) { annoColor = c; }
+        function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); el.classList.add('active'); }
         function setAnnoSize(s) { annoSize = s; }
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(n) { const d = document.createElement('div'); d.className = "flex justify-between items-center bg-[#1a1a1a] p-2 mb-2 rounded border border-white/5"; d.dataset.name = n; d.innerHTML = `<span class="font-medium text-[11px] text-zinc-300">${n}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold text-sm px-2">✕</button>`; document.getElementById('set-list-current').appendChild(d); }
-        function saveCurrentSet() { const n = prompt("Nom de la Setlist :"); if (n) { localStorage.setItem('part_set_' + n, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets(); } }
+        function saveCurrentSet() { const n = prompt(currentLang === 'fr' ? "Nom de la Setlist :" : "Setlist Name :"); if (n) { localStorage.setItem('part_set_' + n, JSON.stringify(Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name))); renderSavedSets(); } }
         function renderSavedSets() { const l = document.getElementById('saved-sets-list'); l.innerHTML = ''; Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(k => { const d = document.createElement('div'); d.className = "flex justify-between items-center bg-zinc-900/50 border border-white/5 p-2 px-3 rounded"; d.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px]" onclick="loadSet('${k}')">${k.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${k}'); renderSavedSets()" class="text-zinc-600 hover:text-white transition px-2">✕</button>`; l.appendChild(d); }); }
         function loadSet(k) { const ns = JSON.parse(localStorage.getItem(k)); setFiles = []; document.getElementById('set-list-current').innerHTML = ''; ns.forEach(n => { const f = files.find(x => x.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } }); if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); } }
 
         window.onload = () => {
+            const savedVintage = localStorage.getItem('part_vintage_v2');
+            if(savedVintage) files = JSON.parse(savedVintage).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
             loadSources(); setLang(currentLang); renderSavedSets();
             const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
             const bar = document.getElementById('alpha-bar');
             alpha.forEach(l => {
                 const b = document.createElement('button');
-                b.innerText = l; b.onclick = () => renderLibrary(l); bar.appendChild(b);
+                b.innerText = l;
+                b.onclick = () => renderLibrary(l);
+                bar.appendChild(b);
             });
         };
     </script>
