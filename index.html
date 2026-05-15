@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Master Hybrid Deep-Scan</title>
+    <title>Partoches - Neon Master Hybrid Fix</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -36,11 +36,11 @@
 
         .glass { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 
-        /* LIGNES BIBLIOTHÈQUE LISIBLES */
+        /* Lignes bibliothèque */
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
         .file-row:hover { background: rgba(204, 255, 0, 0.1); padding-left: 10px; }
 
-        /* VISIONNEUSE V4 RESTAURÉE */
+        /* Visionneuse */
         #scroll-container {
             height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: auto; 
             background: black; scroll-behavior: auto; touch-action: none;
@@ -88,7 +88,7 @@
             color: var(--neon-blue); font-weight: 900; font-size: 1.2rem; padding: 15px 30px; border-radius: 8px;
         }
 
-        /* BARRE ALPHABÉTIQUE STANDARD LISIBLE */
+        /* Barre alphabétique standard */
         #alpha-bar {
             display: flex; flex-wrap: wrap; justify-content: center;
             gap: 4px; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222;
@@ -121,7 +121,7 @@
     </nav>
 
     <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-6">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <h1 class="jazz-title text-5xl font-black italic">Partoches</h1>
             <div class="flex flex-wrap justify-center gap-3">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden border-2 border-blue-500 text-blue-400 px-4 py-2 rounded-full text-[10px] animate-pulse font-black uppercase" data-i18n="btn_restore">Réactiver Accès</button>
@@ -189,16 +189,20 @@
     </section>
 
     <script>
-        const i18n = {
-            fr: { nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse", btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier", set_title: "Programmation", btn_save_set: "Sauvegarder Set", btn_clear: "Vider", btn_close: "✕ Fermer", btn_settings: "Image", btn_draw: "Annoter", fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Gomme", btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter" },
-            en: { nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer", btn_restore: "Restore Access", btn_scan: "Scan Folder", set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear", btn_close: "✕ Close", btn_settings: "FX", btn_draw: "Annotate", fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Eraser", btn_prev: "Previous", btn_next: "Next", btn_add: "Add" }
-        };
+        // --- LOGIQUE CORE index3.html INTÉGRALE ---
+        var pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        let currentLang = localStorage.getItem('part_lang') || (navigator.language.startsWith('fr') ? 'fr' : 'en');
         let files = [], setFiles = [], currentIndex = 0, sources = [];
         let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
         let annoColor = '#ccff00', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
+
+        // BILINGUE
+        const i18n = {
+            fr: { nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse", btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier", set_title: "Programmation", btn_save_set: "Sauvegarder Set", btn_clear: "Vider", btn_close: "✕ Fermer", btn_settings: "Image", btn_draw: "Annoter", fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Gomme", btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter" },
+            en: { nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer", btn_restore: "Restore Access", btn_scan: "Scan Folder", set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear", btn_close: "✕ Close", btn_settings: "FX", btn_draw: "Annotate", fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Eraser", btn_prev: "Previous", btn_next: "Next", btn_add: "Add" }
+        };
 
         function setLang(l) {
             currentLang = l; localStorage.setItem('part_lang', l);
@@ -208,32 +212,18 @@
             renderLibrary();
         }
 
-        // --- GESTION TACTILE ANDROID PINCH-TO-ZOOM ---
-        const scEl = document.getElementById('scroll-container');
-        scEl.addEventListener('touchstart', function(e) { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
-        scEl.addEventListener('touchmove', function(e) { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 300); initialPinchDist = d; } }, { passive: false });
-
-        // --- LOGIQUE CORE index3.html AVEC CORRECTIF SCAN ---
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-        async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Hybrid_Recursive_Fix", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
+        // DATABASE
+        async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Hybrid_Final", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
         
         async function loadSources() { 
             if (!window.showDirectoryPicker) return; 
-            document.getElementById('btn-scan').classList.remove('hidden');
             const db = await openDB(); 
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll(); 
-            req.onsuccess = async () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); await refreshFiles(); }; 
+            req.onsuccess = () => { sources = req.result; if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden'); refreshFiles(); }; 
         }
 
-        async function addSource() { 
-            try { 
-                const h = await window.showDirectoryPicker(); 
-                if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); await refreshFiles(); } 
-            } catch(e){} 
-        }
+        async function addSource() { try { const h = await window.showDirectoryPicker(); if(!sources.find(s => s.name === h.name)) { sources.push(h); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name); refreshFiles(); } } catch(e){} }
 
-        // SCAN RÉCURSIF PROFOND CORRIGÉ
         async function scanFolder(handle) {
             const results = [];
             async function recursive(h) {
@@ -265,7 +255,10 @@
                     if (!files.find(f => f.entry.name === file.name)) {
                         files.push({ entry: { name: file.name, getFile: async () => file }, data: e.target.result, isVintage: true });
                     }
-                    count++; if(count === fileList.length) { localStorage.setItem('part_vintage_v2', JSON.stringify(files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data})))); renderLibrary(); }
+                    count++; if(count === fileList.length) { 
+                        localStorage.setItem('part_vintage_v2', JSON.stringify(files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data})))); 
+                        renderLibrary(); 
+                    }
                 };
                 reader.readAsDataURL(file);
             });
@@ -273,17 +266,18 @@
 
         function renderSourcesUI() { const c = document.getElementById('source-list'); c.innerHTML = ''; sources.forEach((s, i) => { const tag = document.createElement('span'); tag.className = 'bg-zinc-900 border border-zinc-800 text-[10px] px-3 py-1 rounded-full text-zinc-400'; tag.innerHTML = `♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1" onclick="removeSource(${i})">✕</b>`; c.appendChild(tag); }); }
         
-        async function removeSource(i) { const n = sources[i].name; sources.splice(i, 1); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(n); await refreshFiles(); }
+        async function removeSource(i) { const n = sources[i].name; sources.splice(i, 1); const db = await openDB(); db.transaction("sources", "readwrite").objectStore("sources").delete(n); refreshFiles(); }
 
         function renderLibrary(f = '') {
             const l = document.getElementById('library-list'); l.innerHTML = '';
             files.filter(x => !f || x.entry.name.toUpperCase().indexOf(f.toUpperCase()) === 0).sort((a,b) => a.entry.name.localeCompare(b.entry.name)).forEach(file => {
                 const row = document.createElement('div'); row.className = "file-row flex justify-between items-center p-5";
-                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">${i18n[currentLang].btn_add}</button>`;
+                row.innerHTML = `<div class="flex-grow font-bold text-zinc-300 text-lg" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div><button onclick="addToSet('${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 !px-4">Add</button>`;
                 l.appendChild(row);
             });
         }
 
+        // NAVIGATION
         function viewSingle(name) { const f = files.find(x => x.entry.name === name); if(f) { setFiles = [f]; currentIndex = 0; openFile(f); } }
 
         async function openFile(obj) {
@@ -321,6 +315,10 @@
             canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x, p.y); ctx.lineCap='round'; if(annoColor==='eraser'){ctx.globalCompositeOperation='destination-out'; ctx.lineWidth=annoSize*4;} else {ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=annoColor; ctx.lineWidth=annoSize;} ctx.stroke(); if(e.touches) e.preventDefault(); };
             window.onmouseup = window.ontouchend = () => { if(drawing) { drawing=false; annotations[key]=canvas.toDataURL(); localStorage.setItem('partoches_annotations', JSON.stringify(annotations)); }};
         }
+
+        // ZOOM TACTILE ANDROID
+        scEl.addEventListener('touchstart', function(e) { if (e.touches.length === 2) initialPinchDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); }, { passive: false });
+        scEl.addEventListener('touchmove', function(e) { if (e.touches.length === 2 && initialPinchDist) { e.preventDefault(); const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); adjustZoom((d - initialPinchDist) / 300); initialPinchDist = d; } }, { passive: false });
 
         function handleWheel(e) { if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
         window.addEventListener('keydown', (e) => { const sc = document.getElementById('scroll-container'); if(e.key === "ArrowRight") nextFile(); if(e.key === "ArrowLeft") prevFile(); if(e.key === "ArrowDown") sc.scrollBy(0, 150); if(e.key === "ArrowUp") sc.scrollBy(0, -150); });
