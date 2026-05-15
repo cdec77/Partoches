@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Pro Master iPad Deluxe</title>
+    <title>Partoches - Pro Master Hybrid Fix</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#efb810">
@@ -25,7 +25,7 @@
         .file-row { border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; }
         .file-row:hover { background: rgba(239, 184, 16, 0.15); padding-left: 10px; }
 
-        /* VISIONNEUSE : NAVIGATION LUXE SANS BOUTONS GRIS */
+        /* VISIONNEUSE : NAVIGATION LUXE SANS ÉLÉMENTS GRIS */
         #scroll-container {
             height: 100vh; width: 100vw; 
             overflow-y: scroll; overflow-x: auto; 
@@ -53,9 +53,9 @@
 
         .tab-btn { font-weight: 800; letter-spacing: 1px; color: #444; transition: 0.3s; }
         .tab-active { color: var(--gold); text-shadow: 0 0 10px rgba(239, 184, 16, 0.3); }
-        .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 0.75rem; font-weight: bold; background: black; padding: 12px 24px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-jazz { border: 1px solid var(--gold); color: var(--gold); font-size: 0.75rem; font-weight: bold; background: black; padding: 12px 24px; border-radius: 4px; text-transform: uppercase; }
         
-        /* TOOLBARS IPAD : DESIGN RECTANGULAIRE OR */
+        /* TOOLBARS RECTANGULAIRES ÉLÉGANTES */
         #anno-toolbar, #fx-toolbar {
             position: fixed; left: 50%; transform: translateX(-50%);
             display: none; gap: 15px; padding: 20px; border-radius: 8px;
@@ -65,9 +65,9 @@
         #fx-toolbar { bottom: 40px; width: 340px; flex-direction: column; }
 
         .color-dot { width: 38px; height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s; }
-        .color-dot.active { border-color: var(--gold); transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
+        .color-dot.active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
         
-        /* NAVIGATION IPAD : BOUTONS RECTANGULAIRES GRANDS ET ÉLÉGANTS */
+        /* NAVIGATION IPAD & PC : BOUTONS RECTANGULAIRES GRANDS */
         .nav-rect {
             pointer-events: auto; background: rgba(5,5,5,0.9);
             border: 2px solid var(--gold); color: var(--gold);
@@ -82,7 +82,7 @@
         .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
         input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; height: 8px; }
 
-        /* OVERLAY IMPORTATION ANTI-FREEZE */
+        /* OVERLAY IMPORTATION ANTI-FREEZE POUR IPAD */
         #loading-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95);
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -96,10 +96,10 @@
 
     <div id="loading-overlay">
         <div class="jazz-title text-4xl mb-2 italic">Traitement de l'Album</div>
-        <div id="load-name" class="text-[12px] uppercase tracking-widest text-zinc-400 mb-6 px-10 text-center">Préparation des partitions...</div>
+        <div id="load-name" class="text-[12px] uppercase tracking-widest text-zinc-400 mb-6 px-10 text-center">Extraction en cours...</div>
         <div id="load-prog" class="text-7xl font-black">0%</div>
         <div id="load-bar-bg"><div id="load-bar-fill"></div></div>
-        <div class="mt-10 text-zinc-500 italic text-sm">Veuillez patienter, Safari traite vos fichiers.</div>
+        <div class="mt-10 text-zinc-500 italic text-sm">Veuillez patienter, iPad optimise vos fichiers.</div>
     </div>
 
     <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
@@ -114,10 +114,12 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
             <h1 class="jazz-title text-5xl font-black italic">Partoches</h1>
             <div class="flex flex-wrap justify-center gap-4">
+                <button id="btn-restore" onclick="restoreAccess()" class="hidden border border-blue-500 text-blue-400 px-4 py-2 rounded-lg text-[10px] animate-pulse font-black uppercase">Réactiver</button>
+                
                 <button onclick="addSource()" id="btn-scan" class="btn-jazz hidden md:block">Scanner Dossier PC</button>
                 
                 <label class="btn-jazz cursor-pointer flex items-center bg-gold/10 border-gold/40">
-                    <span class="mr-3 text-xl">📥</span> IMPORTER (PHOTOS / ICLOUD)
+                    <span class="mr-3 text-xl">📥</span> IMPORTER PHOTOS / ICLOUD
                     <input type="file" multiple onchange="startSmartImport(this.files)" class="hidden" accept="image/*,application/pdf">
                 </label>
             </div>
@@ -190,11 +192,11 @@
 
         let files = [], setFiles = [], currentIndex = 0, sources = [];
         let uiVisible = true, currentZoom = 1.0, isDrawingMode = false;
-        let annoColor = 'red', annoSize = 6;
+        let annoColor = 'red', annoSize = 6, initialPinchDist = null;
         let annotations = JSON.parse(localStorage.getItem('partoches_annotations') || '{}');
 
-        // DATABASE PC/ANDROID
-        const DB_NAME = "PartochesDB_Hybrid_V7";
+        // DATABASE PC/ANDROID (IndexedDB pour directories)
+        const DB_NAME = "PartochesDB_Hybrid_V8";
         async function openDB() {
             return new Promise((r) => {
                 const req = indexedDB.open(DB_NAME, 1);
@@ -210,6 +212,7 @@
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
             req.onsuccess = () => {
                 sources = req.result;
+                if(sources.length > 0) document.getElementById('btn-restore').classList.remove('hidden');
                 refreshFiles();
             };
         }
@@ -247,10 +250,10 @@
             }
             const vintage = files.filter(f => f.isVintage);
             files = [...pickerFiles, ...vintage];
-            renderLibrary();
+            renderLibrary(); renderSourcesUI();
         }
 
-        // --- IMPORTATION IPAD : MODE SMART ULTRA-SÉQUENTIEL (ANTI-BLOCAGE) ---
+        // --- IMPORT IPAD SMART SÉQUENTIEL (ANTI-BLOCAGE) ---
         function startSmartImport(fileList) {
             if (!fileList || fileList.length === 0) return;
             const overlay = document.getElementById('loading-overlay');
@@ -268,44 +271,59 @@
                 }
 
                 const file = fileList[i];
-                nameDisp.innerText = `Lecture de : ${file.name}`;
+                nameDisp.innerText = `Lecture : ${file.name}`;
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    // Vérifier doublon
                     if (!files.find(f => f.entry.name === file.name)) {
-                        files.push({ 
-                            entry: { name: file.name }, 
-                            data: e.target.result, 
-                            isVintage: true 
-                        });
+                        files.push({ entry: { name: file.name }, data: e.target.result, isVintage: true });
                     }
                     i++;
                     const percent = Math.round((i / fileList.length) * 100);
                     prog.innerText = percent + "%";
                     fill.style.width = percent + "%";
-                    
-                    // Pause CPU de 150ms pour laisser l'iPad 2 traiter les données binaires
-                    setTimeout(processNextFile, 150);
+                    // Délai pour laisser l'iPad 2 vider le cache RAM
+                    setTimeout(processNextFile, 200);
                 };
 
                 reader.onerror = () => { i++; processNextFile(); };
                 reader.readAsDataURL(file);
             }
-
             processNextFile();
         }
 
         function saveLibraryAndFinish() {
             const vintage = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
             try {
-                localStorage.setItem('part_vintage_vFinal', JSON.stringify(vintage));
+                localStorage.setItem('part_vintage_final', JSON.stringify(vintage));
                 renderLibrary();
                 document.getElementById('loading-overlay').style.display = 'none';
             } catch(e) {
-                alert("Mémoire de l'iPad saturée. Réduisez le nombre de photos.");
+                alert("Mémoire iPad pleine ! Réduisez la taille des photos.");
                 document.getElementById('loading-overlay').style.display = 'none';
             }
+        }
+
+        function renderSourcesUI() {
+            const c = document.getElementById('source-list'); c.innerHTML = '';
+            sources.forEach((s, i) => {
+                c.innerHTML += `<span class="bg-zinc-900 border border-zinc-800 text-[10px] px-3 py-1 rounded-full text-zinc-400">♪ ${s.name} <b class="text-red-500 cursor-pointer ml-1" onclick="removeSource(${i})">✕</b></span>`;
+            });
+        }
+
+        async function removeSource(i) {
+            const name = sources[i].name; sources.splice(i, 1);
+            const db = await openDB();
+            db.transaction("sources", "readwrite").objectStore("sources").delete(name);
+            refreshFiles();
+        }
+
+        async function restoreAccess() {
+            try {
+                for(const h of sources) { if(await h.requestPermission() !== 'granted') return; }
+                document.getElementById('btn-restore').classList.add('hidden');
+                refreshFiles();
+            } catch(e) {}
         }
 
         function renderLibrary(f = '') {
@@ -320,6 +338,7 @@
                  });
         }
 
+        // --- VISIONNEUSE MULTI-FORMAT ---
         function viewSingle(name) {
             const f = files.find(x => x.entry.name === name);
             if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
@@ -421,7 +440,7 @@
         }
 
         window.onload = () => {
-            const saved = localStorage.getItem('part_vintage_vFinal');
+            const saved = localStorage.getItem('part_vintage_final');
             if(saved) files = JSON.parse(saved).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
             loadSources(); renderSavedSets();
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l => {
