@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Neon Pro Master Final</title>
+    <title>Partoches - Neon Master Hybrid</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -17,36 +17,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Outfit:wght@200;400;900&display=swap" rel="stylesheet">
     
     <style>
+        /* VARIABLES DE DESIGN NÉON DYNAMIQUE */
         :root { 
-            --neon-lime: #ccff00; --neon-blue: #00f0ff; --neon-pink: #ff00ff;
-            --gold: #efb810; --bg: #050505; --page-bright: 1; --page-contrast: 1; 
+            --neon-lime: #ccff00; 
+            --neon-blue: #00f0ff; 
+            --neon-pink: #ff00ff;
+            --gold: #efb810; 
+            --bg: #050505; 
+            --page-bright: 1; 
+            --page-contrast: 1; 
         }
         
         body { 
-            background: var(--bg); color: #e0e0e0; font-family: 'Space Grotesk', sans-serif; 
-            overflow: hidden; margin: 0; touch-action: none; -webkit-tap-highlight-color: transparent; 
+            background: var(--bg); 
+            color: #e0e0e0; 
+            font-family: 'Space Grotesk', sans-serif; 
+            overflow: hidden; 
+            margin: 0; 
+            touch-action: none; 
+            -webkit-tap-highlight-color: transparent; 
         }
 
         .jazz-title { 
-            font-family: 'Outfit', sans-serif; text-transform: uppercase; font-weight: 900;
+            font-family: 'Outfit', sans-serif; 
+            text-transform: uppercase; 
+            font-weight: 900;
             background: linear-gradient(to right, var(--neon-lime), var(--neon-blue));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
             filter: drop-shadow(0 0 8px rgba(204, 255, 0, 0.2));
         }
 
-        .glass { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-
-        /* Lignes de la bibliothèque avec surbrillance Neon */
-        .file-row { 
-            border-bottom: 1px solid #1a1a1a; transition: all 0.2s; cursor: pointer; 
+        .glass { 
+            background: rgba(10, 10, 12, 0.95); 
+            backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
         }
-        .file-row:hover { background: rgba(204, 255, 0, 0.1); padding-left: 10px; }
 
-        /* Visionneuse originale restaurée */
+        /* Lignes de la bibliothèque d'origine avec style Neon */
+        .file-row { 
+            border-bottom: 1px solid #1a1a1a; 
+            transition: all 0.2s; 
+            cursor: pointer; 
+        }
+        .file-row:hover { 
+            background: rgba(204, 255, 0, 0.1); 
+            padding-left: 10px; 
+        }
+
+        /* Visionneuse originale */
         #scroll-container {
-            height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: auto; 
-            background: black; scroll-behavior: auto; touch-action: none;
-            display: grid; place-items: start center; -webkit-overflow-scrolling: touch;
+            height: 100vh; width: 100vw; 
+            overflow-y: scroll; overflow-x: auto; 
+            background: black; scroll-behavior: auto; 
+            touch-action: none; /* Désactivé pour laisser le script gérer le pinch */
+            display: grid; place-items: start center; 
+            -webkit-overflow-scrolling: touch;
         }
         
         #viewer-content { 
@@ -90,7 +116,7 @@
             color: var(--neon-blue); font-weight: 900; font-size: 1.2rem; padding: 15px 30px; border-radius: 8px;
         }
 
-        /* Barre alphabétique standard lisible */
+        /* Barre alphabétique optimisée pour la lisibilité */
         #alpha-bar {
             display: flex; flex-wrap: wrap; justify-content: center;
             gap: 4px; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222;
@@ -189,12 +215,13 @@
         </div>
 
         <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 pointer-events-none z-[400]">
-            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">◄</button>
-            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">►</button>
+            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect">◄</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect">►</button>
         </div>
     </section>
 
     <script>
+        // DICTIONNAIRE BILINGUE
         const i18n = {
             fr: { nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse", btn_restore: "Réactiver Accès", btn_scan: "Scanner Dossier", set_title: "Programmation", btn_save_set: "Sauvegarder Set", btn_clear: "Vider", btn_close: "✕ Fermer", btn_settings: "Image", btn_draw: "Annoter", fx_bright: "Luminosité", fx_contrast: "Contraste", btn_del: "Gomme", btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter" },
             en: { nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer", btn_restore: "Restore Access", btn_scan: "Scan Folder", set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear", btn_close: "✕ Close", btn_settings: "FX", btn_draw: "Annotate", fx_bright: "Brightness", fx_contrast: "Contrast", btn_del: "Eraser", btn_prev: "Previous", btn_next: "Next", btn_add: "Add" }
@@ -232,7 +259,7 @@
             }
         }, { passive: false });
 
-        // --- LOGIQUE ORIGINALE index3.html RESTAURÉE ---
+        // --- LOGIQUE ORIGINALE index3.html INTÉGRALE ---
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         async function openDB() { return new Promise((r) => { const req = indexedDB.open("PartochesDB_Hybrid_Final", 1); req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); req.onsuccess = (e) => r(req.target.result); }); }
@@ -277,7 +304,10 @@
                     if (!files.find(f => f.entry.name === file.name)) {
                         files.push({ entry: { name: file.name, getFile: async () => file }, data: e.target.result, isVintage: true });
                     }
-                    count++; if(count === fileList.length) { localStorage.setItem('part_vintage_v2', JSON.stringify(files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data})))); renderLibrary(); }
+                    count++; if(count === fileList.length) { 
+                        localStorage.setItem('part_vintage_v2', JSON.stringify(files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data})))); 
+                        renderLibrary(); 
+                    }
                 };
                 reader.readAsDataURL(file);
             });
@@ -354,14 +384,16 @@
         function renderSavedSets() { const l = document.getElementById('saved-sets-list'); l.innerHTML = ''; Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(k => { const d = document.createElement('div'); d.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-2xl mb-3"; d.innerHTML = `<div class="font-black text-neon-lime cursor-pointer italic text-lg" onclick="loadSet('${k}')">${k.replace('part_set_', '')}</div><button onclick="localStorage.removeItem('${k}'); renderSavedSets()" class="text-red-900 font-black text-xl px-2">✕</button>`; l.appendChild(d); }); }
         function loadSet(k) { const ns = JSON.parse(localStorage.getItem(k)); setFiles = []; document.getElementById('set-list-current').innerHTML = ''; ns.forEach(n => { const f = files.find(x => x.entry.name === n); if (f) { setFiles.push(f); addToSet(n); } }); if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); } }
 
-        window.onload = () => {
+        window.onload = function() {
+            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
             const savedVintage = localStorage.getItem('part_vintage_v2');
             if(savedVintage) files = JSON.parse(savedVintage).map(f => ({ entry: {name: f.name}, data: f.data, isVintage: true }));
             loadSources(); setLang(currentLang); renderSavedSets();
             const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
             const bar = document.getElementById('alpha-bar');
             alpha.forEach(l => {
-                const b = document.createElement('button'); b.innerText = l; b.onclick = () => renderLibrary(l); bar.appendChild(b);
+                const b = document.createElement('button');
+                b.innerText = l; b.onclick = function() { renderLibrary(l); }; bar.appendChild(b);
             });
         };
     </script>
