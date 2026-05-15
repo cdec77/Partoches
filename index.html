@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Partoches - Pro Master Final</title>
+    <title>Partoches - Pro Master iPad Final</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#efb810">
@@ -71,6 +71,13 @@
         #scroll-container::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
         .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 11px; color: #444; letter-spacing: 4px; z-index: 50; }
         input[type=range] { accent-color: var(--gold); cursor: pointer; width: 100%; height: 6px; }
+
+        /* IPAD OPTIMIZATIONS */
+        @media (max-width: 1024px) {
+            .btn-jazz { font-size: 0.7rem; padding: 12px 20px; }
+            .jazz-title { font-size: 2.5rem; }
+            #viewer-header { padding: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -84,19 +91,26 @@
     </nav>
 
     <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-6">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <h1 class="jazz-title text-5xl font-black italic">Partoches</h1>
-            <div class="flex gap-3">
+            <div class="flex flex-wrap justify-center gap-3">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden border-2 border-blue-500 text-blue-400 px-4 py-2 rounded-full text-[10px] animate-pulse font-black uppercase">Réactiver</button>
                 <button onclick="addSource()" id="btn-scan" class="btn-jazz uppercase tracking-widest hidden md:block">Scanner Dossier</button>
-                <label class="btn-jazz uppercase tracking-widest cursor-pointer flex items-center">
-                    + iCloud / Photos
+                
+                <label class="btn-jazz uppercase tracking-widest cursor-pointer flex items-center bg-gold/10 hover:bg-gold/20 transition">
+                    <span class="mr-2">📥</span> Importer (Photos/iCloud)
                     <input type="file" multiple onchange="handleVintageFiles(this.files)" class="hidden" accept="image/*,application/pdf">
                 </label>
             </div>
         </div>
+        
         <div id="source-list" class="flex flex-wrap gap-2 mb-6"></div>
         <div id="alpha-bar" class="sticky top-0 bg-[#050505] py-4 z-20 flex flex-wrap justify-center gap-2 border-b border-zinc-800"></div>
+        
+        <div id="import-status" class="hidden text-center p-4 text-gold font-bold italic text-sm animate-pulse">
+            Traitement de la sélection en cours...
+        </div>
+
         <div id="library-list" class="pb-48 mt-4"></div>
     </section>
 
@@ -115,13 +129,13 @@
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
         <div id="viewer-header" class="glass absolute top-0 w-full p-4 flex justify-between items-center z-[400]">
             <button onclick="switchTab('lib')" class="text-[10px] text-zinc-500 font-black px-5 py-2 hover:text-white transition uppercase">✕ Quitter</button>
-            <div class="flex items-center gap-8">
-                <button onclick="toggleFX()" class="btn-jazz px-4 py-2 rounded uppercase tracking-tighter shadow-sm">☼ Image</button>
-                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz px-5 py-2 rounded uppercase tracking-tighter shadow-sm">✎ Annoter</button>
+            <div class="flex items-center gap-4 md:gap-8">
+                <button onclick="toggleFX()" class="btn-jazz px-3 md:px-4 py-2 rounded uppercase shadow-sm">☼ Image</button>
+                <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz px-3 md:px-5 py-2 rounded uppercase shadow-sm">✎ Annoter</button>
                 <div class="flex items-center bg-black/60 border border-zinc-800 rounded-xl overflow-hidden shadow-inner">
-                    <button onclick="adjustZoom(-0.1)" class="px-5 py-2 text-gold text-2xl hover:bg-gold/10 transition">-</button>
-                    <span id="zoom-level" class="text-[11px] w-14 text-center font-black border-x border-zinc-800">100%</span>
-                    <button onclick="adjustZoom(0.1)" class="px-5 py-2 text-gold text-2xl hover:bg-gold/10 transition">+</button>
+                    <button onclick="adjustZoom(-0.1)" class="px-4 py-2 text-gold text-2xl hover:bg-gold/10 transition">-</button>
+                    <span id="zoom-level" class="text-[11px] w-12 text-center font-black border-x border-zinc-800">100%</span>
+                    <button onclick="adjustZoom(0.1)" class="px-4 py-2 text-gold text-2xl hover:bg-gold/10 transition">+</button>
                 </div>
             </div>
             <div id="page-info" class="text-gold font-black italic text-base tracking-widest pr-4">1 / 1</div>
@@ -143,9 +157,9 @@
                 <div onclick="setAnnoColor('eraser', this)" class="color-dot flex items-center justify-center bg-white text-black text-[8px] font-black uppercase shadow-lg">Gomme</div>
             </div>
             <div class="flex items-center gap-6 pl-2">
-                <div onclick="setAnnoSize(2, this)" class="w-2 h-2 bg-white rounded-full cursor-pointer hover:scale-150 transition"></div>
-                <div onclick="setAnnoSize(6, this)" class="w-5 h-5 bg-white rounded-full cursor-pointer border-2 border-yellow-500 hover:scale-125 transition"></div>
-                <div onclick="setAnnoSize(15, this)" class="w-8 h-8 bg-white rounded-full cursor-pointer hover:scale-110 transition"></div>
+                <div onclick="setAnnoSize(2, this)" class="w-2 h-2 bg-white rounded-full cursor-pointer"></div>
+                <div onclick="setAnnoSize(6, this)" class="w-5 h-5 bg-white rounded-full border-2 border-yellow-500"></div>
+                <div onclick="setAnnoSize(12, this)" class="w-8 h-8 bg-white rounded-full"></div>
             </div>
         </div>
 
@@ -153,9 +167,9 @@
             <div id="viewer-content"></div>
         </div>
 
-        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-16 pointer-events-none z-[400]">
-            <button onclick="event.stopPropagation(); prevFile()" class="pointer-events-auto w-20 h-20 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">◀</button>
-            <button onclick="event.stopPropagation(); nextFile()" class="pointer-events-auto w-20 h-20 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">▶</button>
+        <div id="viewer-nav" class="absolute bottom-10 w-full flex justify-between px-10 md:px-16 pointer-events-none z-[400]">
+            <button onclick="event.stopPropagation(); prevFile()" class="pointer-events-auto w-16 h-16 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">◀</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="pointer-events-auto w-16 h-16 rounded-full glass border-2 border-gold text-gold text-2xl flex items-center justify-center hover:bg-gold/20 shadow-2xl transition">▶</button>
         </div>
     </section>
 
@@ -176,7 +190,7 @@
             return new Promise((r) => {
                 const req = indexedDB.open(DB_NAME, 1);
                 req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources");
-                req.onsuccess = (e) => r(e.target.result);
+                req.onsuccess = (e) => r(req.result);
             });
         }
 
@@ -204,7 +218,6 @@
             } catch(e){}
         }
 
-        // --- SCAN RÉCURSIF DES SOUS-RÉPERTOIRES ---
         async function scanFolder(handle) {
             const results = [];
             for await (const entry of handle.values()) {
@@ -229,9 +242,13 @@
             renderLibrary(); renderSourcesUI();
         }
 
-        // --- GESTION IPAD / ICLOUD / PHOTOS (VINTAGE) ---
+        // --- GESTION IPAD OPTIMISÉE (MASS IMPORT ALBUMS & ICLOUD) ---
         function handleVintageFiles(fileList) {
-            let count = 0;
+            const status = document.getElementById('import-status');
+            status.classList.remove('hidden');
+            let processed = 0;
+            const targetCount = fileList.length;
+
             Array.from(fileList).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -240,22 +257,33 @@
                         data: e.target.result, 
                         isVintage: true 
                     };
+                    
+                    // Éviter les doublons par nom
                     if (!files.find(f => f.entry.name === file.name)) {
                         files.push(fileObj);
-                        count++;
                     }
-                    if(count === fileList.length) {
+                    
+                    processed++;
+                    status.innerText = `Traitement : ${processed} / ${targetCount}`;
+
+                    if(processed === targetCount) {
                         saveVintageToLocal();
                         renderLibrary();
+                        status.classList.add('hidden');
                     }
                 };
+                // Correction bug iCloud iOS 10 : Utiliser readAsDataURL pour forcer la mise en cache locale
                 reader.readAsDataURL(file);
             });
         }
 
         function saveVintageToLocal() {
             const vintageFiles = files.filter(f => f.isVintage).map(f => ({name: f.entry.name, data: f.data}));
-            try { localStorage.setItem('part_vintage_v2', JSON.stringify(vintageFiles)); } catch(e) {}
+            try { 
+                localStorage.setItem('part_vintage_v2', JSON.stringify(vintageFiles)); 
+            } catch(e) {
+                alert("Attention : Mémoire de l'iPad saturée. Supprimez quelques partitions.");
+            }
         }
 
         function renderSourcesUI() {
@@ -292,7 +320,7 @@
                  });
         }
 
-        // --- VISIONNEUSE MULTI-PLATFORME ---
+        // --- VISIONNEUSE ---
         function viewSingle(name) {
             const f = files.find(x => x.entry.name === name);
             if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
@@ -303,6 +331,7 @@
             const container = document.getElementById('viewer-content'); container.innerHTML = ''; 
             
             let fileData;
+            // Support iPad 2 / iOS 10 : Utilisation du DataURL stocké
             if (obj.isVintage) { fileData = obj.data; } 
             else { const blob = await obj.entry.getFile(); fileData = URL.createObjectURL(blob); }
 
@@ -310,7 +339,9 @@
                 const pdf = await pdfjsLib.getDocument(fileData).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
                     const page = await pdf.getPage(i); 
-                    const viewport = page.getViewport({scale: 2.5}); 
+                    // Ajustement auto du scale selon l'appareil
+                    const scale = (window.innerWidth < 768) ? 1.5 : 2.5;
+                    const viewport = page.getViewport({scale: scale}); 
                     const wrapper = document.createElement('div'); wrapper.className = "page-wrapper";
                     const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
                     wrapper.appendChild(canvas);
@@ -330,7 +361,7 @@
             document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
         }
 
-        // --- DESSIN & NAVIGATION ---
+        // --- DESSIN & ZOOM ---
         function setupDrawing(canvas, fileName, pIdx) {
             const ctx = canvas.getContext('2d'); const key = fileName + "_" + pIdx;
             if(annotations[key]) { const img = new Image(); img.src = annotations[key]; img.onload = () => ctx.drawImage(img,0,0); }
@@ -376,7 +407,7 @@
         function toggleDrawingMode() { isDrawingMode = !isDrawingMode; document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode); document.getElementById('draw-toggle').style.background = isDrawingMode ? 'red' : 'black'; document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none'; }
         function toggleUI() { if(isDrawingMode) return; uiVisible = !uiVisible; document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0"; document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0"; }
         function setAnnoColor(c, el) { annoColor = c; document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); el.classList.add('active'); }
-        function setAnnoSize(s, el) { annoSize = size; }
+        function setAnnoSize(s, el) { annoSize = s; }
 
         new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         function addToSet(name) {
