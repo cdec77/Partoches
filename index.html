@@ -110,9 +110,27 @@
             position: relative; flex-shrink: 0; background: white; 
             box-shadow: 0 0 45px rgba(0,0,0,0.9);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
-            border-radius: 4px; transition: filter 0.2s ease, transform 0.04s ease-out;
-            transform-origin: center top;
+            border-radius: 4px; transition: filter 0.2s ease;
+            /* Le zoom est géré via transform sur chaque wrapper,
+               MAIS on applique aussi une compensation de marge pour éviter
+               tout chevauchement lorsqu'il y a plusieurs pages (PDF multi-pages).
+               transform-origin: top center garantit que la page scale vers le bas
+               et non vers le haut, ce qui évite le recouvrement du header. */
+            transform-origin: top center;
+            /* La valeur de margin-bottom est injectée dynamiquement par applyPageScales()
+               pour compenser l'espace "volé" par le scale transform */
             max-width: 96vw;
+        }
+
+        /* Conteneur de rotation : enveloppe chaque page-wrapper pour
+           appliquer la rotation INDÉPENDAMMENT du zoom, sans interférence */
+        .rotation-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            /* La largeur/hauteur sera ajustée dynamiquement selon l'angle de rotation */
+            transition: width 0.25s ease, height 0.25s ease;
+            flex-shrink: 0;
         }
 
         /* AUTO-ADAPTATION DES INFRASTRUCTURES DE PAGES SUR ECRANS MOBILES */
@@ -284,6 +302,12 @@
             <div class="flex items-center gap-1 md:gap-3">
                 <button onclick="toggleFX()" id="fx-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_settings">Filtres</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !px-2" data-i18n="btn_draw">Dessin</button>
+                <!-- Boutons rotation : antihoraire / horaire — reset automatique à chaque partition -->
+                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Rotation (non conservée)">
+                    <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation antihoraire">↺</button>
+                    <span id="rotate-label" class="text-[10px] w-7 text-center font-bold text-zinc-500">↺↻</span>
+                    <button onclick="event.stopPropagation(); rotatePage(+1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation horaire">↻</button>
+                </div>
                 <div id="page-info" class="text-white/40 font-bold text-[10px] pr-1 italic hidden sm:block">0 / 0</div>
             </div>
         </div>
@@ -363,6 +387,8 @@
         let annoColor = '#ccff00', annoSize = 7;
         let annotations = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
         let undoStack = [];
+        let currentRotation = 0;  // 0, 90, 180, 270 — reset à chaque partition
+        let zoomMemory = 1.0;     // Zoom conservé entre partitions d'un même set
         
         let tpCache = [];
         let startDist = 0;
@@ -545,6 +571,11 @@
 
         async function refreshFiles() {
             files = [];
+            // Activer le pré-cache contenu sur mobile (handles FileSystem Access stables pendant le scan)
+            mobilePrecacheEnabled = shouldPrecacheOnMobile();
+            if (mobilePrecacheEnabled) {
+                console.log('[Partoches] Mode pré-cache mobile activé — lecture anticipée des fichiers');
+            }
             for(const h of sources) {
                 try {
                     if (h._virtual) {
@@ -561,12 +592,8 @@
         }
 
         async function scanFolder(handle) {
-            const results = [];
-            for await (const entry of handle.values()) {
-                if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) results.push({entry});
-                else if (entry.kind === 'directory') results.push(...(await scanFolder(entry)));
-            }
-            return results;
+            // Déléguer au scanner avec cache pour permettre le re-scan sur NotFoundError
+            return scanFolderWithCache(handle, null);
         }
 
         function renderSourcesUI() {
@@ -668,107 +695,407 @@
 
         // --- CONSERVATION DU ZOOM ENTRE PARTITIONS DU MÊME SET ---
         // On conserve le zoom courant lors de la navigation entre partitions
-        let zoomMemory = 1.0; // Zoom mémorisé entre les fichiers d'un même set
-
         // --- DÉTECTION MOBILE ROBUSTE ---
         function isMobilePlatform() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                 || (navigator.maxTouchPoints > 1 && /MacIntel/.test(navigator.platform)); // iPad iOS 13+
         }
 
-        // --- LECTURE FICHIER EN ARRAYBUFFER COMPATIBLE TOUS NAVIGATEURS ---
-        // Sur mobile (iOS Safari, Chrome Android), les object URLs créées depuis
-        // l'API File System Access sont bloquées par la politique de sécurité.
-        // Solution : lire les fichiers en ArrayBuffer (PDF) ou base64 dataURL (images).
+        // =====================================================================
+        // COUCHE D'ABSTRACTION LECTURE FICHIER — ROBUSTE MULTI-PLATEFORME
+        // =====================================================================
+        //
+        // Diagnostic de l'erreur "NotFoundError" sur mobile :
+        //
+        //  Sur Chrome Android et iOS Safari avec l'API File System Access,
+        //  un FileSystemFileHandle peut devenir "stale" (périmé) dès lors que :
+        //   • La page a été mise en arrière-plan quelques secondes
+        //   • L'application a été suspendue par l'OS mobile (économie batterie)
+        //   • La permission d'accès au dossier a expiré silencieusement
+        //   • Un autre onglet a verrouillé le fichier (rare, mais possible)
+        //
+        //  Dans ce cas, fileHandle.getFile() lève NotFoundError même si le fichier
+        //  existe bien sur le disque. C'est un bug/comportement documenté des
+        //  navigateurs mobiles avec l'Origin Private File System.
+        //
+        //  STRATÉGIE DE RÉSOLUTION EN 3 NIVEAUX :
+        //   1. Vérifier/redemander la permission sur le handle parent (dossier source)
+        //   2. Relancer getFile() après un délai court (le navigateur peut avoir besoin
+        //      d'un tick pour rafraîchir le handle)
+        //   3. Si toujours NotFoundError : re-scanner le dossier source pour obtenir
+        //      un handle frais sur le même fichier, par nom
+        //
+        // =====================================================================
+
+        // =====================================================================
+        // STRATÉGIE CACHE CONTENU FICHIER POUR MOBILE
+        // =====================================================================
+        //
+        //  Sur Android Chrome avec l'API File System Access, un FileSystemFileHandle
+        //  devient invalide ("stale") entre deux ouvertures de fichier dans la session,
+        //  notamment après que l'OS a suspendu le processus ou que la permission
+        //  a expiré silencieusement. Le résultat : NotFoundError dans FileReader.
+        //
+        //  SOLUTION DÉFINITIVE :
+        //  Sur mobile, on lit le contenu de chaque fichier IMMÉDIATEMENT lors du scan
+        //  initial (pendant que la permission est fraîche) et on le met en cache en RAM.
+        //  Lors de l'affichage, on utilise ce cache plutôt que de re-lire le handle.
+        //
+        //  Sur PC, on ne fait PAS ce pré-chargement (inutile et coûteux en mémoire
+        //  pour de grandes bibliothèques) : les handles y restent stables.
+        //
+        //  Cache structure : Map<fileName, { arrayBuffer?: ArrayBuffer, dataUrl?: string }>
+        // =====================================================================
+        const fileContentCache = new Map();
+        const fileHandleParentCache = new Map(); // Map<fileName, { dirHandle, sourceHandle }>
+        let mobilePrecacheEnabled = false; // activé uniquement sur mobile après détection
+
+        // Détecte si on est sur mobile et active le pré-cache si nécessaire
+        function shouldPrecacheOnMobile() {
+            return isMobilePlatform() && typeof window.showDirectoryPicker !== 'undefined';
+        }
+
+        // Pré-lit le contenu d'un fichier et le met en cache (mobile uniquement)
+        async function precacheFileContent(entry) {
+            if (!mobilePrecacheEnabled) return;
+            if (fileContentCache.has(entry.name)) return; // déjà en cache
+
+            try {
+                const file = await entry.getFile();
+                const isPdf = entry.name.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                    const buf = await file.arrayBuffer();
+                    fileContentCache.set(entry.name, { arrayBuffer: buf, type: 'pdf' });
+                } else {
+                    // Pour les images : dataURL via FileReader
+                    const dataUrl = await new Promise((res, rej) => {
+                        const fr = new FileReader();
+                        fr.onload  = e => res(e.target.result);
+                        fr.onerror = e => rej(e.target.error);
+                        fr.readAsDataURL(file);
+                    });
+                    fileContentCache.set(entry.name, { dataUrl, type: 'image' });
+                }
+                console.log('[Partoches] Pré-cache OK:', entry.name);
+            } catch (e) {
+                // Pré-cache échoue silencieusement : sera retentée à l'ouverture
+                console.warn('[Partoches] Pré-cache échoué pour', entry.name, e.name);
+            }
+        }
+
+        // Scanner récursif avec cache de dossier parent ET pré-cache contenu sur mobile
+        async function scanFolderWithCache(handle, parentHandle) {
+            const results = [];
+            for await (const entry of handle.values()) {
+                if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
+                    results.push({ entry });
+                    // Mémoriser le dossier contenant ce fichier (pour re-scan sur NotFoundError)
+                    fileHandleParentCache.set(entry.name, { dirHandle: handle, sourceHandle: parentHandle || handle });
+                    // Sur mobile : pré-lire le contenu pendant que la permission est fraîche
+                    if (mobilePrecacheEnabled) {
+                        await precacheFileContent(entry);
+                    }
+                } else if (entry.kind === 'directory') {
+                    results.push(...(await scanFolderWithCache(entry, parentHandle || handle)));
+                }
+            }
+            return results;
+        }
+
+        // Tenter de retrouver un handle frais par re-scan du dossier parent
+        async function refreshFileHandle(fileName) {
+            const cached = fileHandleParentCache.get(fileName);
+            if (!cached) return null;
+            try {
+                // Re-scanner uniquement le dossier direct contenant le fichier
+                for await (const entry of cached.dirHandle.values()) {
+                    if (entry.kind === 'file' && entry.name === fileName) {
+                        console.log('[Partoches] Handle rafraîchi via re-scan pour:', fileName);
+                        return entry;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Partoches] Re-scan échoué:', e);
+            }
+            return null;
+        }
+
+        // Lecture robuste d'un File depuis un FileSystemFileHandle avec cache + retry + re-scan
+        // Ordre de priorité :
+        //   1. Cache contenu (mobile pré-cache) → pas besoin de handle du tout
+        //   2. getFile() direct → fonctionne si handle encore valide
+        //   3. Re-permission + retry → handle redevient valide après permission
+        //   4. Re-scan dossier parent → nouveau handle frais
+        async function getFileRobust(fileEntry) {
+            // Priorité 0 : blob direct (fallback iOS sans File System Access API)
+            if (fileEntry._blob) return fileEntry._blob;
+
+            // Priorité 1 : CACHE CONTENU MOBILE
+            // Si le contenu a été pré-lu lors du scan, on retourne un File synthétique
+            // construit depuis le cache — aucun handle nécessaire, aucun NotFoundError possible
+            if (mobilePrecacheEnabled && fileContentCache.has(fileEntry.name)) {
+                const cached = fileContentCache.get(fileEntry.name);
+                console.log('[Partoches] Lecture depuis cache mobile:', fileEntry.name);
+                // Reconstruire un File depuis le cache pour que FileReader puisse le lire
+                if (cached.type === 'pdf' && cached.arrayBuffer) {
+                    const blob = new Blob([cached.arrayBuffer], { type: 'application/pdf' });
+                    return new File([blob], fileEntry.name, { type: 'application/pdf' });
+                }
+                if (cached.type === 'image' && cached.dataUrl) {
+                    // Décoder le dataURL → Blob → File
+                    const res    = await fetch(cached.dataUrl);
+                    const blob   = await res.blob();
+                    return new File([blob], fileEntry.name, { type: blob.type });
+                }
+            }
+
+            // Priorité 2 : lecture directe du handle (comportement normal, PC et mobile frais)
+            try {
+                const file = await fileEntry.getFile();
+                if (file && file.size >= 0) return file;
+            } catch (err1) {
+                console.warn('[Partoches] getFile() tentative 1 échouée:', err1.name, err1.message);
+
+                if (err1.name === 'NotFoundError' || err1.name === 'SecurityError' || err1.name === 'NotAllowedError') {
+
+                    // Priorité 3 : re-demander la permission sur les sources parentes
+                    for (const src of sources) {
+                        if (src._virtual) continue;
+                        try {
+                            const perm = await src.queryPermission({ mode: 'read' });
+                            if (perm !== 'granted') {
+                                console.log('[Partoches] Re-demande permission pour:', src.name);
+                                await src.requestPermission({ mode: 'read' });
+                            }
+                        } catch (permErr) {
+                            console.warn('[Partoches] requestPermission échoué:', permErr);
+                        }
+                    }
+
+                    // Délai court : laisser le navigateur traiter la permission
+                    await new Promise(r => setTimeout(r, 150));
+
+                    // Retry après permission
+                    try {
+                        const file = await fileEntry.getFile();
+                        if (file && file.size >= 0) {
+                            console.log('[Partoches] getFile() OK après re-permission');
+                            // Mettre à jour le cache pour la prochaine fois
+                            if (mobilePrecacheEnabled) precacheFileContent(fileEntry);
+                            return file;
+                        }
+                    } catch (err2) {
+                        console.warn('[Partoches] getFile() tentative 2 échouée:', err2.name);
+
+                        // Priorité 4 : re-scan du dossier parent → handle neuf
+                        const freshHandle = await refreshFileHandle(fileEntry.name);
+                        if (freshHandle) {
+                            try {
+                                const file = await freshHandle.getFile();
+                                if (file && file.size >= 0) {
+                                    console.log('[Partoches] getFile() OK via handle frais (re-scan)');
+                                    // Mettre à jour le handle dans setFiles
+                                    const idx = setFiles.findIndex(f => f.entry.name === fileEntry.name);
+                                    if (idx >= 0) setFiles[idx].entry = freshHandle;
+                                    // Pré-cacher le contenu pour éviter une 5ème tentative
+                                    if (mobilePrecacheEnabled) await precacheFileContent(freshHandle);
+                                    return file;
+                                }
+                            } catch (err3) {
+                                console.error('[Partoches] Toutes tentatives épuisées:', err3);
+                                throw new Error(`NotFoundError: impossible d'accéder à "${fileEntry.name}" — ${err3.message}`);
+                            }
+                        }
+
+                        throw new Error(`NotFoundError: "${fileEntry.name}" inaccessible — ${err2.message}`);
+                    }
+                } else {
+                    throw err1;
+                }
+            }
+        }
+
+        // Lit un fichier et retourne un ArrayBuffer
+        // Optimisation mobile : utilise directement le cache ArrayBuffer si disponible
+        // (évite le round-trip File → FileReader → ArrayBuffer)
         async function readFileAsArrayBuffer(fileEntry) {
-            const file = await fileEntry.getFile();
+            // Court-circuit pour les PDF en cache mobile : ArrayBuffer déjà disponible
+            if (mobilePrecacheEnabled && fileContentCache.has(fileEntry.name)) {
+                const cached = fileContentCache.get(fileEntry.name);
+                if (cached.type === 'pdf' && cached.arrayBuffer) {
+                    console.log('[Partoches] PDF depuis cache ArrayBuffer direct:', fileEntry.name);
+                    // Copie obligatoire : pdfjsLib transfère le buffer (detach)
+                    return cached.arrayBuffer.slice(0);
+                }
+            }
+            const file = await getFileRobust(fileEntry);
+            // Utiliser file.arrayBuffer() si disponible (plus rapide que FileReader)
+            if (typeof file.arrayBuffer === 'function') {
+                try {
+                    return await file.arrayBuffer();
+                } catch (e) {
+                    // Fallback FileReader si arrayBuffer() échoue (Safari < 14)
+                }
+            }
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = (e) => reject(new Error("FileReader erreur: " + e.target.error));
+                reader.onload  = (e) => resolve(e.target.result);
+                reader.onerror = (e) => {
+                    const errName = e.target.error ? e.target.error.name : 'unknown';
+                    const errMsg  = e.target.error ? e.target.error.message : 'FileReader error';
+                    reject(new Error(`FileReader [${errName}]: ${errMsg}`));
+                };
+                reader.onabort = () => reject(new Error('FileReader: lecture annulée'));
                 reader.readAsArrayBuffer(file);
             });
         }
 
+        // Lit un fichier et retourne une base64 dataURL
+        // Optimisation mobile : utilise directement le cache dataUrl si disponible
         async function readFileAsDataURL(fileEntry) {
-            const file = await fileEntry.getFile();
+            // Court-circuit pour les images en cache mobile : dataURL déjà disponible
+            if (mobilePrecacheEnabled && fileContentCache.has(fileEntry.name)) {
+                const cached = fileContentCache.get(fileEntry.name);
+                if (cached.type === 'image' && cached.dataUrl) {
+                    console.log('[Partoches] Image depuis cache dataURL direct:', fileEntry.name);
+                    return cached.dataUrl;
+                }
+            }
+            const file = await getFileRobust(fileEntry);
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = (e) => reject(new Error("FileReader erreur: " + e.target.error));
+                reader.onload  = (e) => resolve(e.target.result);
+                reader.onerror = (e) => {
+                    const errName = e.target.error ? e.target.error.name : 'unknown';
+                    const errMsg  = e.target.error ? e.target.error.message : 'FileReader error';
+                    reject(new Error(`FileReader [${errName}]: ${errMsg}`));
+                };
+                reader.onabort = () => reject(new Error('FileReader: lecture annulée'));
                 reader.readAsDataURL(file);
             });
         }
 
         // --- AFFICHAGE DU SPINNER DE CHARGEMENT ---
-        function showLoadingSpinner(container) {
+        function showLoadingSpinner(container, label) {
+            const msg = label || (currentLang === 'fr' ? 'Chargement...' : 'Loading...');
             container.innerHTML = `
                 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:20px;">
-                    <div style="width:48px;height:48px;border:3px solid #333;border-top-color:var(--neon-lime);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-                    <div style="color:var(--neon-lime);font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">
-                        ${currentLang === 'fr' ? 'Chargement...' : 'Loading...'}
-                    </div>
+                    <div style="width:48px;height:48px;border:3px solid #1a1a22;border-top-color:var(--neon-lime);
+                                border-radius:50%;animation:spin 0.75s linear infinite;"></div>
+                    <div style="color:var(--neon-lime);font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">${msg}</div>
                 </div>
                 <style>@keyframes spin { to { transform: rotate(360deg); } }</style>`;
         }
 
-        // --- GESTION ET COMPATIBILITÉ RENDU DES FICHIERS ET PDF SUR TOUTES PLATEFORMES ---
+        // --- AFFICHAGE D'UNE ERREUR AVEC DIAGNOSTIC ET ACTIONS ---
+        function showFileError(container, err, fileName) {
+            console.error('[Partoches] Erreur lecture fichier:', fileName, err);
+
+            const isNotFound   = err.message && (err.message.includes('NotFoundError') || err.message.includes('NotFound'));
+            const isPermission = err.message && (err.message.includes('NotAllowedError') || err.message.includes('SecurityError') || err.message.includes('permission'));
+            const isMem        = err.message && (err.message.includes('out of memory') || err.message.includes('QuotaExceeded'));
+
+            let title, detail, action = '';
+            if (isNotFound) {
+                title  = currentLang === 'fr' ? 'Fichier introuvable' : 'File not found';
+                detail = currentLang === 'fr'
+                    ? `Le handle du fichier "<b>${fileName}</b>" est devenu invalide. Cela arrive sur mobile quand l'appli a été mise en veille. Retournez au Répertoire et réouvrez le fichier.`
+                    : `The file handle for "<b>${fileName}</b>" became invalid. This happens on mobile when the app was suspended. Go back to Library and reopen the file.`;
+                action = `<button onclick="switchTab('lib')" class="btn-jazz" style="margin-top:10px;">
+                            ${currentLang === 'fr' ? '→ Répertoire' : '→ Library'}
+                          </button>`;
+            } else if (isPermission) {
+                title  = currentLang === 'fr' ? 'Permission expirée' : 'Permission expired';
+                detail = currentLang === 'fr'
+                    ? 'L\'accès au dossier a expiré. Appuyez sur "Rétablir Accès" pour continuer.'
+                    : 'Folder access has expired. Press "Restore Access" to continue.';
+                action = `<button onclick="switchTab('lib'); document.getElementById('btn-restore').classList.remove('hidden')" class="btn-jazz" style="margin-top:10px;">
+                            ${currentLang === 'fr' ? '→ Rétablir Accès' : '→ Restore Access'}
+                          </button>`;
+            } else if (isMem) {
+                title  = currentLang === 'fr' ? 'Mémoire insuffisante' : 'Out of memory';
+                detail = currentLang === 'fr'
+                    ? 'Ce fichier est trop volumineux pour être chargé. Fermez d\'autres onglets et réessayez.'
+                    : 'This file is too large to load. Close other tabs and try again.';
+            } else {
+                title  = currentLang === 'fr' ? 'Erreur lecture' : 'Read error';
+                detail = `<small style="color:#888;font-family:monospace;font-size:10px;">${err.message || err}</small>`;
+            }
+
+            container.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                            min-height:50vh;gap:16px;padding:30px;text-align:center;">
+                    <div style="font-size:38px;">⚠️</div>
+                    <div style="color:var(--neon-orange);font-weight:900;font-size:14px;letter-spacing:1px;text-transform:uppercase;">${title}</div>
+                    <div style="color:#c0c0cc;font-size:12px;max-width:320px;line-height:1.7;">${detail}</div>
+                    ${action}
+                </div>`;
+        }
+
+        // =====================================================================
+        // OUVERTURE ET RENDU D'UN FICHIER — TOUTES PLATEFORMES
+        // =====================================================================
         async function openFile(obj) {
-            if(!obj) return; switchTab('view');
+            if(!obj) return;
+            switchTab('view');
+
             const container = document.getElementById('viewer-content');
 
-            // Conserver le zoom du set en cours, sauf si on revient à 1.0 volontairement
+            // Conserver le zoom entre les fichiers d'un même set (> 1 fichier)
             const zoomToApply = (setFiles.length > 1) ? zoomMemory : 1.0;
+
+            // Rotation toujours réinitialisée à 0 pour chaque nouvelle partition
+            currentRotation = 0;
+            const rotLabel = document.getElementById('rotate-label');
+            if (rotLabel) rotLabel.innerText = '↺↻';
 
             showLoadingSpinner(container);
 
             const isMobile = isMobilePlatform();
+            const fileName = obj.entry.name;
+            const fileExt  = fileName.toLowerCase();
 
             try {
-                const fileName = obj.entry.name.toLowerCase();
+                if (fileExt.endsWith('.pdf')) {
+                    // -------------------------------------------------------
+                    // RENDU PDF
+                    // Passage par ArrayBuffer : évite toute object URL bloquée
+                    // sur iOS Safari et Chrome Android (politiques cross-origin)
+                    // -------------------------------------------------------
+                    showLoadingSpinner(container, currentLang === 'fr' ? 'Lecture PDF...' : 'Reading PDF...');
 
-                if (fileName.endsWith('.pdf')) {
-                    // --- RENDU PDF : ArrayBuffer passé directement à pdf.js ---
-                    // Évite complètement les object URLs bloquées sur iOS Safari
-                    let pdfData;
-                    try {
-                        pdfData = await readFileAsArrayBuffer(obj.entry);
-                    } catch (readErr) {
-                        throw new Error("Impossible de lire le PDF: " + readErr.message);
-                    }
+                    const pdfRaw = await readFileAsArrayBuffer(obj.entry);
 
-                    // Copie du buffer car pdf.js transfère la propriété (detached ArrayBuffer sinon)
-                    const pdfDataCopy = pdfData.slice(0);
+                    showLoadingSpinner(container, currentLang === 'fr' ? 'Décodage PDF...' : 'Decoding PDF...');
 
-                    let pdf;
-                    try {
-                        pdf = await pdfjsLib.getDocument({ data: pdfDataCopy }).promise;
-                    } catch (pdfErr) {
-                        throw new Error("Erreur décodage PDF: " + pdfErr.message);
-                    }
+                    // Copie obligatoire : pdfjsLib.getDocument() transfère
+                    // la propriété du buffer (ArrayBuffer devient detached)
+                    const pdfBuffer = pdfRaw.slice(0);
+                    const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
 
-                    // Vider le container APRÈS chargement réussi du PDF
+                    // Vider le spinner seulement après décodage réussi
                     container.innerHTML = '';
 
-                    // Échelle adaptée : mobile = 1.6, tablette = 1.8, desktop = 2.2
+                    // Échelle de rendu adaptée à la densité écran et taille viewport
+                    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2 : 3);
                     const pdfScale = isMobile
-                        ? (window.innerWidth < 430 ? 1.4 : 1.7)
+                        ? (window.innerWidth < 430 ? 1.3 * dpr : 1.6 * dpr) / dpr
                         : (window.innerWidth < 1024 ? 1.9 : 2.2);
 
                     for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
+                        const page     = await pdf.getPage(i);
                         const viewport = page.getViewport({ scale: pdfScale });
 
                         const wrapper = document.createElement('div');
                         wrapper.className = "page-wrapper";
 
                         const canvas = document.createElement('canvas');
-                        canvas.width = viewport.width;
+                        canvas.width  = viewport.width;
                         canvas.height = viewport.height;
 
                         const anno = document.createElement('canvas');
                         anno.className = "anno-canvas";
-                        anno.width = canvas.width;
+                        anno.width  = canvas.width;
                         anno.height = canvas.height;
 
                         wrapper.appendChild(canvas);
@@ -780,32 +1107,29 @@
                             viewport
                         }).promise;
 
-                        setupDrawing(anno, obj.entry.name, i);
+                        setupDrawing(anno, fileName, i);
                     }
 
                 } else {
-                    // --- RENDU IMAGE : base64 dataURL pour compatibilité mobile totale ---
-                    // URL.createObjectURL() sur des FileHandle peut être bloqué par
-                    // la politique de sécurité de certains navigateurs mobiles (iOS Safari,
-                    // Chrome Android avec restrictions). On passe par FileReader→dataURL.
-                    let dataUrl;
-                    try {
-                        dataUrl = await readFileAsDataURL(obj.entry);
-                    } catch (readErr) {
-                        throw new Error("Impossible de lire l'image: " + readErr.message);
-                    }
+                    // -------------------------------------------------------
+                    // RENDU IMAGE (PNG / JPG / JPEG / WEBP)
+                    // Base64 dataURL : seul format garanti sans restriction
+                    // d'origine sur iOS Safari et Chrome Android
+                    // -------------------------------------------------------
+                    showLoadingSpinner(container, currentLang === 'fr' ? 'Lecture image...' : 'Reading image...');
 
-                    // Vider le container APRÈS lecture réussie
+                    const dataUrl = await readFileAsDataURL(obj.entry);
+
+                    // Vider le spinner seulement après lecture réussie
                     container.innerHTML = '';
 
                     const wrapper = document.createElement('div');
                     wrapper.className = "page-wrapper";
 
                     const img = document.createElement('img');
-                    img.src = dataUrl;
-                    img.alt = obj.entry.name;
-                    // Empêche le context menu sur pression longue mobile
-                    img.oncontextmenu = (e) => e.preventDefault();
+                    img.alt = fileName;
+                    img.draggable = false;
+                    img.oncontextmenu = (e) => e.preventDefault(); // Empêche menu long-press mobile
 
                     const anno = document.createElement('canvas');
                     anno.className = "anno-canvas";
@@ -814,46 +1138,25 @@
                     wrapper.appendChild(anno);
                     container.appendChild(wrapper);
 
+                    // Assigner src APRÈS avoir inséré dans le DOM
                     img.onload = () => {
-                        anno.width = img.naturalWidth || img.width;
-                        anno.height = img.naturalHeight || img.height;
-                        setupDrawing(anno, obj.entry.name, 0);
+                        anno.width  = img.naturalWidth  || img.offsetWidth  || 800;
+                        anno.height = img.naturalHeight || img.offsetHeight || 600;
+                        setupDrawing(anno, fileName, 0);
                     };
 
                     img.onerror = () => {
-                        container.innerHTML = `<div class="text-pink-500 font-bold p-8 text-center">
-                            ⚠️ ${currentLang === 'fr' ? "Impossible d'afficher l'image." : "Cannot display image."}
-                        </div>`;
+                        showFileError(container, new Error('Image decode failed'), fileName);
                     };
+
+                    img.src = dataUrl;
                 }
 
             } catch (err) {
-                console.error("Erreur lecture fichier:", err);
-                const needsReauth = err.message && (
-                    err.message.includes('NotAllowedError') ||
-                    err.message.includes('permission') ||
-                    err.message.includes('SecurityError')
-                );
-                container.innerHTML = `
-                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                                height:60vh;gap:20px;padding:30px;text-align:center;">
-                        <div style="font-size:40px;">⚠️</div>
-                        <div style="color:#ff6060;font-weight:bold;font-size:13px;max-width:300px;line-height:1.6;">
-                            ${needsReauth
-                                ? (currentLang === 'fr'
-                                    ? 'Accès au dossier expiré. Appuyez sur "Rétablir Accès" dans le Répertoire.'
-                                    : 'Folder access expired. Press "Restore Access" in the Library.')
-                                : (currentLang === 'fr'
-                                    ? `Erreur lecture fichier :<br><small style="color:#888">${err.message}</small>`
-                                    : `File read error:<br><small style="color:#888">${err.message}</small>`)
-                            }
-                        </div>
-                        ${needsReauth ? `<button onclick="switchTab('lib'); document.getElementById('btn-restore').classList.remove('hidden')"
-                            class="btn-jazz">${currentLang === 'fr' ? 'Aller au Répertoire' : 'Go to Library'}</button>` : ''}
-                    </div>`;
+                showFileError(container, err, fileName);
             }
 
-            // Appliquer le zoom mémorisé
+            // Appliquer le zoom mémorisé ou initial
             currentZoom = zoomToApply;
             applyPageScales();
 
@@ -1054,23 +1357,106 @@
 
         function applyPageScales() {
             const wrappers = document.querySelectorAll('.page-wrapper');
+
             wrappers.forEach(w => {
+                const isRotated90 = (currentRotation === 90 || currentRotation === 270);
+
+                // --- ZOOM via transform scale ---
+                // transform: scale() ne modifie pas le flux du document, la page garde
+                // sa taille "naturelle" dans le layout. Pour compenser et éviter le 
+                // chevauchement entre pages successives, on calcule le surplus de hauteur
+                // créé par le scale et on l'ajoute en margin-bottom.
                 w.style.transform = `scale(${currentZoom})`;
+                w.style.transformOrigin = 'top center';
+
+                const naturalH = w.offsetHeight;
+                const naturalW = w.offsetWidth;
+
+                // Surplus vertical créé par le scale
+                const scaledH    = naturalH * currentZoom;
+                const scaledW    = naturalW * currentZoom;
+                const surplusH   = scaledH - naturalH;
+
+                // Lorsque la page est tournée de 90°/270°, la hauteur perçue devient
+                // la largeur naturelle × zoom, ce qui crée un espace encore plus grand.
+                // On doit alors compenser différemment.
+                let marginBottom;
+                if (isRotated90) {
+                    // Page tournée : la dimension verticale visible = largeur × zoom
+                    // La hauteur dans le DOM reste naturalH (non-rotated)
+                    // On ajoute la différence entre la dimension horizontale scalée
+                    // (qui devient verticale après rotation) et la hauteur DOM.
+                    const visibleH = scaledW; // après rotation 90°, la largeur devient la hauteur
+                    marginBottom = Math.max(0, visibleH - naturalH) + 40;
+                } else {
+                    marginBottom = Math.max(0, surplusH) + 40;
+                }
+                w.style.marginBottom = marginBottom + 'px';
+                // Aussi compenser la largeur si nécessaire (scroll horizontal)
+                w.style.marginLeft  = '0px';
+                w.style.marginRight = '0px';
             });
-            
+
             if (currentZoom > 1.05) {
                 document.getElementById('viewer-header').style.opacity = "1";
                 document.getElementById('viewer-header').style.pointerEvents = "auto";
                 document.getElementById('viewer-nav').style.opacity = "1";
                 uiVisible = true;
             }
-            
+
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + "%";
+        }
+
+        // --- ROTATION DES PARTITIONS ---
+        // La rotation est appliquée page par page via CSS transform.
+        // Elle n'est PAS conservée d'une partition à l'autre (reset à chaque openFile).
+        function rotatePage(direction) {
+            // direction : +1 = horaire, -1 = antihoraire
+            currentRotation = (currentRotation + direction * 90 + 360) % 360;
+            applyRotation();
+        }
+
+        function applyRotation() {
+            const wrappers = document.querySelectorAll('.page-wrapper');
+            wrappers.forEach(w => {
+                // On combine zoom et rotation dans un seul transform
+                // pour éviter les conflits CSS
+                w.style.transform = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+                w.style.transformOrigin = 'center center';
+
+                const naturalH   = w.offsetHeight;
+                const naturalW   = w.offsetWidth;
+                const isRotated90 = (currentRotation === 90 || currentRotation === 270);
+
+                // Après rotation 90°/270°, les dimensions width/height s'inversent.
+                // On calcule la marge de compensation en tenant compte de cet échange.
+                let marginBottom;
+                if (isRotated90) {
+                    const visibleH   = naturalW * currentZoom; // largeur × zoom = hauteur visible après rotation
+                    marginBottom = Math.max(0, visibleH - naturalH) + 60;
+                } else if (currentRotation === 180) {
+                    const surplusH = naturalH * currentZoom - naturalH;
+                    marginBottom = Math.max(0, surplusH) + 40;
+                } else {
+                    const surplusH = naturalH * currentZoom - naturalH;
+                    marginBottom = Math.max(0, surplusH) + 40;
+                }
+                w.style.marginBottom = marginBottom + 'px';
+            });
+            document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + "%";
+            // Afficher l'angle dans le bouton de rotation
+            const rotLabel = document.getElementById('rotate-label');
+            if (rotLabel) rotLabel.innerText = currentRotation === 0 ? '↺↻' : currentRotation + '°';
         }
 
         function adjustZoom(d) { 
             currentZoom = Math.max(0.4, Math.min(3.5, currentZoom + d)); 
-            applyPageScales();
+            // Si une rotation est active, applyRotation recalcule tout (zoom + rotation)
+            if (currentRotation !== 0) {
+                applyRotation();
+            } else {
+                applyPageScales();
+            }
         }
 
         function handleWheel(e) { if(e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
