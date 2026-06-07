@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Partoches - Pro Mobile & Desktop</title>
+    <title>Partoches - Mobile</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -105,9 +105,9 @@
         
         #viewer-content { 
             display: flex; flex-direction: column; align-items: center; 
-            padding: 100px 30px 250px 30px; 
+            padding: 120px 30px 450px 30px; 
             width: max-content; min-width: 100%; height: fit-content; 
-            gap: 30px; margin: 0 auto;
+            gap: 40px; margin: 0 auto;
         }
         
         .page-wrapper { 
@@ -116,14 +116,10 @@
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
             border-radius: 4px; transition: filter 0.2s ease;
             transform-origin: top center;
-            max-width: 98vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            max-width: 96vw;
         }
-
         #viewer-content.dual-page-mode .page-wrapper {
-            max-width: 49vw;
+            max-width: 48vw;
         }
 
         .rotation-wrapper {
@@ -134,23 +130,8 @@
             flex-shrink: 0;
         }
 
-        /* RENDU OPTIMISÉ POUR ORDINATEURS ET ÉCRANS LARGES (PLEINE PAGE PAR DÉFAUT) */
-        canvas { 
-            display: block; 
-            max-width: 100%; 
-            max-height: calc(100vh - 140px) !important; 
-            width: auto !important; 
-            height: auto !important; 
-            object-fit: contain;
-        }
-        img { 
-            max-height: calc(100vh - 140px) !important; 
-            width: auto !important; 
-            height: auto !important; 
-            object-fit: contain; 
-            display: block; 
-            max-width: 100%; 
-        }
+        canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; }
+        img { height: 80vh !important; width: auto !important; object-fit: contain; display: block; max-width: 100%; }
         
         .anno-canvas { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -180,7 +161,7 @@
         .nav-rect {
             pointer-events: auto; background: rgba(10, 10, 14, 0.94); border: 1px solid var(--neon-blue); 
             color: var(--neon-blue); font-weight: 700; font-size: 11px; padding: 12px 24px; border-radius: 6px;
-            text-transform: uppercase; transition: all 0.2s ease; box-shadow: 0 4px 20px rgba(0,240,255,0.15);
+            text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 20px rgba(0,240,255,0.15);
         }
 
         .right-control-dock {
@@ -216,7 +197,7 @@
             .toolbar-divider { height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
             .size-btn, .color-dot { width: 28px; height: 28px; }
             #anno-toolbar .btn-jazz { width: auto; padding: 4px 8px; font-size: 8px; }
-            canvas, img { max-height: 55vh !important; }
+            canvas, img { height: 62vh !important; }
         }
         
         .color-dot { border-radius: 6px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
@@ -266,13 +247,27 @@
         }
 
         .fx-indicator { font-size: 9px; color: #626272; font-weight: bold; text-transform: uppercase; text-align: center; }
+
+        /* DIALOGUE MODAL CUSTOM POUR IPAD / PWA ROBUSTE */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #0a0a0e; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 400px;
+            padding: 24px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transform: scale(0.9); transition: transform 0.25s ease;
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
     </style>
 </head>
 <body>
 
     <div class="copyright font-black uppercase">© Cdchtp</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[250]">
+    <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
         <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
         <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
         <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20" data-i18n="nav_view">Visionneuse</button>
@@ -282,28 +277,28 @@
         </div>
     </nav>
 
-    <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-4 md:px-6 pb-48">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 mt-4">
+    <section id="sec-lib" class="pt-22 h-screen overflow-y-auto px-4 md:px-6">
+        <div class="flex justify-between items-end mb-6 mt-4">
             <div>
                 <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex gap-2 z-[100]">
+            <div class="flex gap-2">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
                 <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
         <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl rounded-md"></div>
-        <div id="library-list" class="pb-60 mt-4"></div>
+        <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
-    <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-4 md:px-6 pb-48">
+    <section id="sec-set" class="hidden pt-22 h-screen overflow-y-auto px-4 md:px-6">
         <div class="max-w-xl mx-auto text-center mt-4">
             <h2 class="jazz-title text-2xl mb-6" data-i18n="set_title">Programmation</h2>
             <div id="set-list-current" class="bg-[#050508] border border-white/5 rounded-lg min-h-[220px] mb-6 p-4"></div>
             <div class="grid grid-cols-2 gap-4 mb-10">
-                <button onclick="saveCurrentSet()" class="btn-jazz !py-4 text-[11px]" data-i18n="btn_save_set">Enregistrer Set</button>
-                <button onclick="clearCurrentSet()" class="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition" data-i18n="btn_clear">Vider</button>
+                <button onclick="uiPromptSaveSet()" class="btn-jazz !py-4 text-[11px]" data-i18n="btn_save_set">Enregistrer Set</button>
+                <button onclick="uiConfirmClearSet()" class="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition" data-i18n="btn_clear">Vider</button>
             </div>
             <div class="text-left">
                 <h3 class="text-[10px] uppercase tracking-widest text-zinc-500 mb-4 font-bold">Sauvegardes</h3>
@@ -313,7 +308,6 @@
     </section>
 
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
-        
         <div id="viewer-header" class="glass absolute top-0 w-full p-2 md:p-3 flex justify-between items-center z-[500] transition-opacity duration-300">
             <div class="flex items-center gap-1 md:gap-2">
                 <button onclick="goToHome()" class="btn-jazz !border-none !text-lime-400 !px-2 font-bold" data-i18n="btn_home">🏠 Accueil</button>
@@ -321,33 +315,26 @@
                 <button onclick="toggleSidebar()" class="btn-jazz !border-zinc-800 !px-2">☰ Menu</button>
             </div>
             
-            <div class="flex items-center gap-2">
-                <button onclick="event.stopPropagation(); prevFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2" title="Morceau Précédent">◀ Morceau</button>
-                
-                <div id="pdf-internal-nav" class="hidden flex items-center bg-zinc-950 rounded-lg p-0.5 border border-cyan-500/40 shadow-[0_0_10px_rgba(0,240,255,0.1)]">
-                    <button onclick="event.stopPropagation(); changePDFPage(-1)" class="px-2 py-1 text-cyan-400 hover:text-white font-bold text-xs">◀ Page</button>
-                    <span id="pdf-page-display" class="text-[10px] px-1 text-center font-bold text-zinc-300 min-w-[50px]">1 / 1</span>
-                    <button onclick="event.stopPropagation(); changePDFPage(1)" class="px-2 py-1 text-cyan-400 hover:text-white font-bold text-xs">Page ▶</button>
+            <div class="flex items-center gap-2 md:gap-3">
+                <button onclick="prevFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2">◀</button>
+                <div class="flex items-center bg-zinc-900 rounded-lg px-1 border border-white/5">
+                    <button onclick="adjustZoom(-0.15)" class="px-2 md:px-3 py-1 text-zinc-400 hover:text-white font-bold text-sm">-</button>
+                    <span id="zoom-level" class="text-[11px] w-12 text-center font-bold text-lime-400">100%</span>
+                    <button onclick="adjustZoom(0.15)" class="px-2 md:px-3 py-1 text-zinc-400 hover:text-white font-bold text-sm">+</button>
                 </div>
-
-                <button onclick="event.stopPropagation(); nextFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2" title="Morceau Suivant">Morceau ▶</button>
+                <button onclick="nextFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2">▶</button>
             </div>
 
-            <div class="flex items-center gap-1 md:gap-2">
-                <div class="flex items-center bg-zinc-900 rounded-lg px-1 border border-white/5">
-                    <button onclick="adjustZoom(-0.15)" class="px-2 py-0.5 text-zinc-400 hover:text-white font-bold text-sm">-</button>
-                    <span id="zoom-level" class="text-[11px] w-12 text-center font-bold text-lime-400">100%</span>
-                    <button onclick="adjustZoom(0.15)" class="px-2 py-0.5 text-zinc-400 hover:text-white font-bold text-sm">+</button>
-                </div>
+            <div class="flex items-center gap-1 md:gap-3">
                 <button onclick="toggleFX()" id="fx-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_settings">Filtres</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !px-2" data-i18n="btn_draw">Dessin</button>
-                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5">
-                    <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-1.5 py-0.5 text-zinc-400 hover:text-white font-bold text-sm">↺</button>
-                    <span id="rotate-label" class="text-[9px] w-5 text-center font-bold text-zinc-500">R</span>
-                    <button onclick="event.stopPropagation(); rotatePage(+1)" class="px-1.5 py-0.5 text-zinc-400 hover:text-white font-bold text-sm">↻</button>
+                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Rotation (non conservée)">
+                    <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation antihoraire">↺</button>
+                    <span id="rotate-label" class="text-[10px] w-7 text-center font-bold text-zinc-500">↺↻</span>
+                    <button onclick="event.stopPropagation(); rotatePage(+1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation horaire">↻</button>
                 </div>
-                <button onclick="event.stopPropagation(); toggleDualPage()" id="dual-page-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-1.5" title="2 pages">⧉</button>
-                <div id="page-info" class="text-white/40 font-bold text-[10px] pr-1 italic hidden lg:block">0 / 0</div>
+                <button onclick="event.stopPropagation(); toggleDualPage()" id="dual-page-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" title="2 pages côte à côte">⧉</button>
+                <div id="page-info" class="text-white/40 font-bold text-[10px] pr-1 italic hidden sm:block">0 / 0</div>
             </div>
         </div>
 
@@ -362,9 +349,9 @@
             </div>
         </div>
 
-        <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-12 pointer-events-none z-[400] transition-all duration-300">
-            <button id="nav-btn-prev" onclick="event.stopPropagation(); prevFile()" class="nav-rect transition-all duration-300" data-i18n="btn_prev">Précédent</button>
-            <button id="nav-btn-next" onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
+        <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-12 pointer-events-none z-[400] transition-opacity duration-300 sm:flex">
+            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
         </div>
 
         <div class="right-control-dock">
@@ -400,6 +387,20 @@
         </div>
     </section>
 
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h4 id="modal-title" class="text-lime-400 font-bold uppercase tracking-wider mb-3">Confirmation</h4>
+            <p id="modal-text" class="text-zinc-400 text-sm mb-5"></p>
+            <div id="modal-input-container" class="mb-5 hidden">
+                <input type="text" id="modal-input" class="w-full bg-zinc-900 border border-white/10 rounded p-2 text-white focus:outline-none focus:border-lime-400">
+            </div>
+            <div class="flex justify-end gap-3">
+                <button id="modal-btn-cancel" onclick="closeModal()" class="text-zinc-500 uppercase text-xs font-bold px-4 py-2 hover:text-white transition">Annuler</button>
+                <button id="modal-btn-confirm" class="btn-jazz">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const i18n = {
             fr: {
@@ -426,7 +427,7 @@
         let annoColor = '#ccff00', annoSize = 7;
         let annotations = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
         let undoStack = [];
-        let currentRotation = 0; 
+        let currentRotation = 0;  
         let zoomMemory = 1.0;     
         let isDualPage = false;   
         
@@ -434,12 +435,45 @@
         let startDist = 0;
         let startZoom = 1.0;
 
-        // Variables pour gérer la pagination interne des PDF multipages
-        let currentPdfDocument = null;
-        let currentPdfInternalPage = 1;
-        let totalPdfInternalPages = 1;
-
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        // --- GESTION INTERNE MODALE SANS BLOCAGE INTERFACE (IPAD/PWA FIX) ---
+        let modalResolve = null;
+        function showModal(title, text, hasInput = false, defaultValue = '') {
+            return new Promise((resolve) => {
+                modalResolve = resolve;
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-text').innerText = text;
+                
+                const inputContainer = document.getElementById('modal-input-container');
+                const inputEl = document.getElementById('modal-input');
+                if (hasInput) {
+                    inputContainer.classList.remove('hidden');
+                    inputEl.value = defaultValue;
+                    setTimeout(() => inputEl.focus(), 50);
+                } else {
+                    inputContainer.classList.add('hidden');
+                }
+                
+                const confirmBtn = document.getElementById('modal-btn-confirm');
+                confirmBtn.onclick = () => {
+                    const value = hasInput ? inputEl.value : true;
+                    closeModal();
+                    resolve(value);
+                };
+                
+                document.getElementById('custom-modal').classList.add('active');
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.remove('active');
+            if (modalResolve) {
+                const res = modalResolve;
+                modalResolve = null;
+                res(false);
+            }
+        }
 
         function setLang(lang) {
             currentLang = lang; localStorage.setItem('part_lang', lang);
@@ -447,6 +481,7 @@
                 const key = el.getAttribute('data-i18n');
                 el.innerText = i18n[lang][key] || key;
             });
+            document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('remove'));
             document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
             document.getElementById('lang-' + lang).classList.add('active');
             renderLibrary();
@@ -468,8 +503,11 @@
             const btnScan = document.querySelector('[data-i18n="btn_scan"]');
             if (typeof window.showDirectoryPicker === 'undefined') {
                 btnScan.setAttribute('data-i18n-ios', '1');
-                const iosLabel = { fr: '+ Album / Fichiers', en: '+ Album / Files' };
+                const iosLabel = { fr: '+ Ajouter Fichiers', en: '+ Add Files' };
                 btnScan.innerText = iosLabel[currentLang];
+                btnScan.title = currentLang === 'fr'
+                    ? 'Sur iOS, sélectionnez des fichiers individuels (PDF, images)'
+                    : 'On iOS, select individual files (PDF, images)';
             }
 
             const db = await openDB();
@@ -536,11 +574,17 @@
                 await refreshFiles();
             } catch(e) {
                 if (e.name === 'AbortError') return;
-                addSourceFallbackIOS();
+                const confirmManual = await showModal(
+                    currentLang === 'fr' ? "Erreur d'accès" : "Access Error",
+                    currentLang === 'fr' ? "Impossible d'accéder aux dossiers. Sélectionner manuellement ?" : "Cannot access folders. Select manually ?",
+                    false
+                );
+                if (confirmManual) {
+                    addSourceFallbackIOS();
+                }
             }
         }
 
-        // PERMET DESORMAIS DE SELECTIONNER PLUSIEURS ÉLÉMENTS D'UN COUP DEPUIS LA PHOTOTHÈQUE OU FICHIERS (ALBUMS)
         function addSourceFallbackIOS() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -548,16 +592,15 @@
             input.accept = '.pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf';
             input.style.display = 'none';
             document.body.appendChild(input);
-            
             input.onchange = async () => {
                 if (!input.files || input.files.length === 0) { input.remove(); return; }
                 const newFiles = [];
                 for (const file of input.files) {
-                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i) || file.type.startsWith('image/')) {
+                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
                         newFiles.push({ entry: { name: file.name, _blob: file, getFile: () => Promise.resolve(file) } });
                     }
                 }
-                const virtualSourceName = currentLang === 'fr' ? 'Album / Fichiers Importés' : 'Imported Album / Files';
+                const virtualSourceName = currentLang === 'fr' ? 'Fichiers sélectionnés' : 'Selected Files';
                 if (!sources.find(s => s.name === virtualSourceName)) {
                     sources.push({ name: virtualSourceName, _virtual: true, _files: [] });
                 }
@@ -567,11 +610,8 @@
                 renderLibrary();
                 renderSourcesUI();
                 input.remove();
-                
                 if (newFiles.length > 0) {
-                    const msg = currentLang === 'fr' 
-                        ? `${newFiles.length} fichier(s) ajouté(s) à la bibliothèque.` 
-                        : `${newFiles.length} file(s) added to library.`;
+                    const msg = currentLang === 'fr' ? `${newFiles.length} fichier(s) ajouté(s).` : `${newFiles.length} file(s) added.`;
                     const banner = document.createElement('div');
                     banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--neon-lime);color:#000;font-weight:bold;font-size:11px;padding:8px 20px;border-radius:6px;z-index:9999;letter-spacing:1px;';
                     banner.innerText = msg;
@@ -583,7 +623,12 @@
         }
 
         async function removeSource(name) {
-            if(!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier ?" : "Remove access to this folder?")) return;
+            const confirmRem = await showModal(
+                currentLang === 'fr' ? "Suppression" : "Remove",
+                currentLang === 'fr' ? "Supprimer l'accès à ce dossier ?" : "Remove access to this folder?",
+                false
+            );
+            if(!confirmRem) return;
             const src = sources.find(s => s.name === name);
             if (src && !src._virtual) {
                 const db = await openDB();
@@ -610,13 +655,13 @@
         }
 
         async function scanFolder(handle) {
-            let entries = [];
+            let list = [];
             for await (const entry of handle.values()) {
-                if(entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
-                    entries.push({ handle, entry });
+                if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
+                    list.push({ entry, handle });
                 }
             }
-            return entries;
+            return list;
         }
 
         function renderSourcesUI() {
@@ -641,17 +686,16 @@
         }
 
         function renderLibrary(filter = '') {
-            const l = document.getElementById('library-list');
-            l.innerHTML = '';
+            const l = document.getElementById('library-list'); l.innerHTML = '';
             files.filter(x => !filter || x.entry.name.toUpperCase().startsWith(filter))
-                .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
-                .forEach(file => {
+                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
+                 .forEach(file => {
                     const row = document.createElement('div');
                     row.className = "file-row flex justify-between items-center p-3 px-4";
                     row.innerHTML = `<div class="flex-grow font-medium text-zinc-300 text-[12px] truncate pr-4" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
                                      <button onclick="handleSelectLibraryItem(this, '${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 transition-all duration-200">${i18n[currentLang].btn_add}</button>`;
                     l.appendChild(row);
-                });
+                 });
         }
 
         function handleSelectLibraryItem(buttonEl, filename) {
@@ -668,10 +712,8 @@
         function generateAlphaBar() {
             const bar = document.getElementById('alpha-bar');
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
-                const b = document.createElement('button');
-                b.innerText = l;
-                b.onclick = () => renderLibrary(l);
-                bar.appendChild(b);
+                const b = document.createElement('button'); b.innerText = l;
+                b.onclick = () => renderLibrary(l); bar.appendChild(b);
             });
         }
 
@@ -679,40 +721,56 @@
             const div = document.createElement('div');
             div.className = "flex justify-between items-center bg-[#141419] p-3 mb-2 rounded border border-white/5 cursor-move";
             div.dataset.name = name;
-            div.innerHTML = `<span class="text-[11px] text-zinc-300 font-bold truncate pr-3">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
+            div.innerHTML = `<span class="text-[11px] text-zinc-300 font-bold truncate pr-3">${name}</span>
+                             <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
             document.getElementById('set-list-current').appendChild(div);
-            new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         }
 
-        function saveCurrentSet() {
-            const name = prompt(currentLang === 'fr' ? "Nom de la Setlist :" : "Setlist Name :");
-            if (!name) return;
+        // --- CORRECTIONS PROMPT / CONFIRM COMPATIBLE IPAD APP ---
+        async function uiPromptSaveSet() {
+            const name = await showModal(
+                currentLang === 'fr' ? "Enregistrer Setlist" : "Save Setlist",
+                currentLang === 'fr' ? "Veuillez saisir le nom de votre Setlist :" : "Please enter the name of the Setlist :",
+                true,
+                ""
+            );
+            if (!name || name.trim() === "") return;
             const items = Array.from(document.getElementById('set-list-current').children).map(c => c.dataset.name);
-            localStorage.setItem('part_set_' + name, JSON.stringify(items));
+            localStorage.setItem('part_set_' + name.trim(), JSON.stringify(items));
             renderSavedSets();
         }
 
-        function clearCurrentSet() {
-            if(confirm("Vider la liste actuelle ?")) document.getElementById('set-list-current').innerHTML = '';
+        async function uiConfirmClearSet() {
+            const conf = await showModal(
+                currentLang === 'fr' ? "Vider la programmation" : "Clear list",
+                currentLang === 'fr' ? "Voulez-vous vraiment vider la liste actuelle ?" : "Are you sure you want to clear the current list ?",
+                false
+            );
+            if(conf) document.getElementById('set-list-current').innerHTML = '';
+        }
+
+        async function uiConfirmDeleteSet(key) {
+            const conf = await showModal(
+                currentLang === 'fr' ? "Suppression" : "Delete",
+                currentLang === 'fr' ? "Supprimer définitivement cette sauvegarde ?" : "Permanently delete this save ?",
+                false
+            );
+            if(conf) {
+                localStorage.removeItem(key);
+                renderSavedSets();
+            }
         }
 
         function renderSavedSets() {
-            const list = document.getElementById('saved-sets-list');
-            list.innerHTML = '';
+            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
             Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
                 const name = key.replace('part_set_', '');
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-zinc-900/30 border border-white/5 p-3 rounded";
-                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px] truncate pr-4" onclick="loadSet('${key}')">${name}</div> <button onclick="deleteSet('${key}')" class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
+                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px] truncate pr-4" onclick="loadSet('${key}')">${name}</div>
+                                 <button onclick="uiConfirmDeleteSet('${key}')" class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
                 list.appendChild(div);
             });
-        }
-
-        function deleteSet(key) {
-            if(confirm("Supprimer ce set ?")) {
-                localStorage.removeItem(key);
-                renderSavedSets();
-            }
         }
 
         function loadSet(key) {
@@ -721,20 +779,14 @@
             document.getElementById('set-list-current').innerHTML = '';
             names.forEach(n => {
                 const f = files.find(file => file.entry.name === n);
-                if (f) {
-                    setFiles.push(f);
-                    addToSet(n);
-                }
+                if (f) { setFiles.push(f); addToSet(n); }
             });
-            if (setFiles.length > 0) {
-                currentIndex = 0;
-                openFile(setFiles[0]);
-            }
+            if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
         }
 
-        function viewSingle(name) {
-            const f = files.find(x => x.entry.name === name);
-            if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
+        function isMobilePlatform() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   (navigator.maxTouchPoints > 1 && /MacIntel/.test(navigator.platform));
         }
 
         function switchTab(t) {
@@ -742,259 +794,390 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
             
             document.getElementById('sec-' + t).classList.remove('hidden');
-            const targetTab = document.getElementById('tab-' + t);
-            if(targetTab) {
-                targetTab.classList.add('tab-active');
-                targetTab.classList.remove('opacity-20');
-            }
-        }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('viewer-sidebar');
-            const navBtnPrev = document.getElementById('nav-btn-prev');
-            sidebar.classList.toggle('collapsed');
+            document.getElementById('tab-' + t).classList.add('tab-active');
             
-            // DÉCALAGE PROACTIF DU BOUTON PRÉCÉDENT EN MODE EXPANSÉ POUR ÉVITER LE CHEVAUCHEMENT
-            if (!sidebar.classList.contains('collapsed')) {
-                navBtnPrev.style.transform = 'translateX(290px)';
-            } else {
-                navBtnPrev.style.transform = 'translateX(0px)';
-            }
+            if(t !== 'view') document.getElementById('sec-view').classList.add('hidden');
         }
 
-        function goToHome() {
-            switchTab('lib');
+        function viewSingle(name) {
+            const f = files.find(x => x.entry.name === name);
+            if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
         }
 
-        async function openFile(f) {
-            if (!f) return;
+        async function openFile(file) {
             switchTab('view');
-            document.getElementById('viewer-content').innerHTML = `<div class="text-zinc-500 font-bold uppercase tracking-widest animate-pulse mt-20">Chargement...</div>`;
-            
-            currentRotation = 0;
-            document.getElementById('rotate-label').innerText = "0°";
-            
-            // Conserver le niveau de zoom mémorisé pour le morceau suivant
-            currentZoom = zoomMemory;
-            document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
-            
-            // Reset de l'état multipage par défaut
-            currentPdfDocument = null;
-            currentPdfInternalPage = 1;
-            totalPdfInternalPages = 1;
-            document.getElementById('pdf-internal-nav').classList.add('hidden');
-
-            try {
-                const fileObj = await f.entry.getFile();
-                renderSidebar();
-                document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
-
-                if (f.entry.name.toLowerCase().endsWith('.pdf')) {
-                    const arrayBuffer = await fileObj.arrayBuffer();
-                    currentPdfDocument = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    totalPdfInternalPages = currentPdfDocument.numPages;
-                    
-                    // Activer l'UI multipage interne si nécessaire
-                    if (totalPdfInternalPages > 1) {
-                        document.getElementById('pdf-internal-nav').classList.remove('hidden');
-                        updatePdfPageDisplay();
-                    }
-                    
-                    await renderPdfPage(currentPdfInternalPage);
-                } else {
-                    // Traitement Image standard
-                    const url = URL.createObjectURL(fileObj);
-                    document.getElementById('viewer-content').innerHTML = `
-                        <div class="rotation-wrapper" id="rot-wrap-0">
-                            <div class="page-wrapper" id="page-wrap-0">
-                                <img src="${url}" id="img-0" onload="applyPageScales();" alt="partition">
-                                <canvas class="anno-canvas" id="canvas-0"></canvas>
-                            </div>
-                        </div>`;
-                    setupCanvas(0, f.entry.name + "_p0");
-                    applyPageScales();
-                }
-            } catch(e) {
-                console.error(e);
-                document.getElementById('viewer-content').innerHTML = `<div class="text-pink-500 font-bold p-8">⚠️ Erreur de chargement de l'élément</div>`;
-            }
-        }
-
-        // FONCTION DE RENDU INTERNE DÉDIÉE POUR RENDRE LES PAGES UNIQUES DES PDF MULTIPAGES
-        async function renderPdfPage(pageNumber) {
-            if (!currentPdfDocument) return;
+            document.getElementById('sec-view').classList.remove('hidden');
+            document.getElementById('tab-view').classList.remove('opacity-20');
             
             const container = document.getElementById('viewer-content');
-            container.innerHTML = `<div class="text-zinc-600 font-bold text-xs animate-pulse">Calcul de la page...</div>`;
+            container.innerHTML = '<div class="text-lime-400 font-bold text-sm tracking-wider animate-pulse py-10">CHARGEMENT / LOADING...</div>';
             
-            const page = await currentPdfDocument.getPage(pageNumber);
+            currentRotation = 0;
+            document.getElementById('rotate-label').innerText = "↺↻";
             
-            // Résolution d'affichage optimale forcée sur ordinateur et tablette
-            const viewport = page.getViewport({ scale: 2.0 }); 
-            
-            const divRot = document.createElement('div');
-            divRot.className = "rotation-wrapper";
-            divRot.id = `rot-wrap-0`;
-            
-            const divWrap = document.createElement('div');
-            divWrap.className = "page-wrapper";
-            divWrap.id = `page-wrap-0`;
-            
-            const canvas = document.createElement('canvas');
-            canvas.id = `pdf-canvas-0`;
-            
-            const ctx = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            
-            const annoCanvas = document.createElement('canvas');
-            annoCanvas.className = "anno-canvas";
-            annoCanvas.id = `canvas-0`;
-            
-            divWrap.appendChild(canvas);
-            divWrap.appendChild(annoCanvas);
-            divRot.appendChild(divWrap);
-            container.innerHTML = '';
-            container.appendChild(divRot);
-            
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-            
-            // Liaison des clés d'annotations basée sur le nom du fichier ET le numéro de page interne du PDF
-            const fileKey = setFiles[currentIndex].entry.name + "_pdfpage_" + pageNumber;
-            setupCanvas(0, fileKey);
-            applyPageScales();
-        }
-
-        function updatePdfPageDisplay() {
-            document.getElementById('pdf-page-display').innerText = currentPdfInternalPage + " / " + totalPdfInternalPages;
-        }
-
-        // CHANGER DE PAGE INTERNE AU PDF SANS CHANGER DE MORCEAU DANS LA TRACKLIST
-        function changePDFPage(direction) {
-            if (!currentPdfDocument) return;
-            let targetPage = currentPdfInternalPage + direction;
-            if (targetPage >= 1 && targetPage <= totalPdfInternalPages) {
-                currentPdfInternalPage = targetPage;
-                updatePdfPageDisplay();
-                renderPdfPage(currentPdfInternalPage);
+            try {
+                const fObj = await file.entry.getFile();
+                if (file.entry.name.toLowerCase().endsWith('.pdf')) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        const typedarray = new Uint8Array(e.target.result);
+                        const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
+                        container.innerHTML = '';
+                        
+                        document.getElementById('page-info').innerText = (currentIndex+1) + " / " + setFiles.length;
+                        
+                        for(let i=1; i<=pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            
+                            const rotWrapper = document.createElement('div');
+                            rotWrapper.className = "rotation-wrapper";
+                            
+                            const wrapper = document.createElement('div');
+                            wrapper.className = "page-wrapper";
+                            wrapper.dataset.pageIndex = i;
+                            
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            
+                            const viewport = page.getViewport({scale: isMobilePlatform() ? 1.4 : 1.8});
+                            canvas.width = viewport.width;
+                            canvas.height = viewport.height;
+                            
+                            const renderContext = { canvasContext: ctx, viewport: viewport };
+                            await page.render(renderContext).promise;
+                            
+                            const annoCanvas = document.createElement('canvas');
+                            annoCanvas.className = "anno-canvas";
+                            annoCanvas.width = viewport.width;
+                            annoCanvas.height = viewport.height;
+                            
+                            wrapper.appendChild(canvas);
+                            wrapper.appendChild(annoCanvas);
+                            rotWrapper.appendChild(wrapper);
+                            container.appendChild(rotWrapper);
+                            
+                            initDrawing(annoCanvas, file.entry.name, i);
+                        }
+                        renderSidebar();
+                        setTimeout(applyPageScales, 50);
+                    };
+                    reader.readAsArrayBuffer(fObj);
+                } else {
+                    container.innerHTML = '';
+                    document.getElementById('page-info').innerText = (currentIndex+1) + " / " + setFiles.length;
+                    
+                    const rotWrapper = document.createElement('div');
+                    rotWrapper.className = "rotation-wrapper";
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "page-wrapper";
+                    wrapper.dataset.pageIndex = 1;
+                    
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(fObj);
+                    img.onload = () => {
+                        const annoCanvas = document.createElement('canvas');
+                        annoCanvas.className = "anno-canvas";
+                        annoCanvas.width = img.naturalWidth || img.clientWidth || 1200;
+                        annoCanvas.height = img.naturalHeight || img.clientHeight || 1600;
+                        
+                        wrapper.appendChild(img);
+                        wrapper.appendChild(annoCanvas);
+                        rotWrapper.appendChild(wrapper);
+                        container.appendChild(rotWrapper);
+                        
+                        initDrawing(annoCanvas, file.entry.name, 1);
+                        renderSidebar();
+                        setTimeout(applyPageScales, 50);
+                    };
+                }
+            } catch(err) {
+                container.innerHTML = `<div class="text-red-500 font-bold p-8 text-center border border-red-900/30 bg-red-950/10 rounded">✕ Erreur de lecture du fichier (${err.name}).<br><span class="text-xs text-zinc-500 font-normal">Veuillez utiliser "Rétablir Accès" ou re-scanner le dossier.</span></div>`;
             }
         }
 
         function renderSidebar() {
-            const container = document.getElementById('sidebar-items');
-            container.innerHTML = '';
+            const container = document.getElementById('sidebar-items'); container.innerHTML = '';
             setFiles.forEach((f, idx) => {
                 const div = document.createElement('div');
-                div.className = `sidebar-item ${idx === currentIndex ? 'active' : ''}`;
-                div.innerHTML = `<span class="truncate pr-2">${f.entry.name}</span>`;
-                div.onclick = () => { currentIndex = idx; openFile(setFiles[idx]); };
+                div.className = "sidebar-item" + (idx === currentIndex ? " active" : "");
+                div.innerHTML = `<span class="truncate pr-2">${f.entry.name}</span><span class="text-[9px] opacity-40 font-mono">#${idx+1}</span>`;
+                div.onclick = () => { currentIndex = idx; openFile(f); };
                 container.appendChild(div);
             });
         }
 
-        function prevFile() {
-            if(currentIndex > 0) { currentIndex--; openFile(setFiles[currentIndex]); }
+        function toggleSidebar() {
+            document.getElementById('viewer-sidebar').classList.toggle('collapsed');
+            setTimeout(applyPageScales, 300);
         }
 
-        function nextFile() {
-            if(currentIndex < setFiles.length - 1) { currentIndex++; openFile(setFiles[currentIndex]); }
-        }
+        function prevFile() { if(currentIndex > 0) { currentIndex--; openFile(setFiles[currentIndex]); } }
+        function nextFile() { if(currentIndex < setFiles.length - 1) { currentIndex++; openFile(setFiles[currentIndex]); } }
+        function goToHome() { switchTab('lib'); }
 
-        function adjustZoom(amount) {
-            currentZoom = Math.max(0.4, Math.min(4.0, currentZoom + amount));
-            zoomMemory = currentZoom; // Mémorisation globale du zoom demandé
+        function adjustZoom(delta) {
+            currentZoom = Math.max(0.5, Math.min(3.0, currentZoom + delta));
+            zoomMemory = currentZoom; 
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
-            applyPageScales();
-        }
-
-        // SYSTÈME DE REDIMENTIONNEMENT ADAPTATIF INTELLIGENT COMPENSANT LES DIFFÉRENCES ENTRE ÉCRANS ORDINATEURS ET MOBILES
-        function applyPageScales() {
-            const wrappers = document.querySelectorAll('.page-wrapper');
-            wrappers.forEach(wrap => {
-                if(!wrap) return;
-                
-                // Transformation combinée propre incluant les zooms mémorisés et les rotations
-                wrap.style.transform = `scale(${currentZoom})`;
-                
-                const rWrap = wrap.parentElement;
-                if(rWrap && rWrap.classList.contains('rotation-wrapper')) {
-                    rWrap.style.transform = `rotate(${currentRotation}deg)`;
-                }
-                
-                // Ajustement dynamique des marges basses pour éviter les collisions de layout dues aux calculs de scale CSS
-                if (currentZoom > 1.0) {
-                    const baseHeight = wrap.offsetHeight || 600;
-                    const dynamicMargin = (baseHeight * (currentZoom - 1.0)) / 2;
-                    wrap.style.marginBottom = `${dynamicMargin + 20}px`;
-                } else {
-                    wrap.style.marginBottom = `20px`;
-                }
-            });
-        }
-
-        function rotatePage(dir) {
-            currentRotation = (currentRotation + (dir * 90)) % 360;
-            if (currentRotation < 0) currentRotation += 360;
-            document.getElementById('rotate-label').innerText = currentRotation + "°";
             applyPageScales();
         }
 
         function toggleDualPage() {
             isDualPage = !isDualPage;
-            const content = document.getElementById('viewer-content');
             const btn = document.getElementById('dual-page-btn');
-            if(isDualPage) {
-                content.classList.add('dual-page-mode');
+            const content = document.getElementById('viewer-content');
+            if (isDualPage) {
                 btn.classList.add('dual-active');
+                content.classList.add('dual-page-mode');
             } else {
-                content.classList.remove('dual-page-mode');
                 btn.classList.remove('dual-active');
+                content.classList.remove('dual-page-mode');
             }
-            setTimeout(applyPageScales, 150);
+            applyPageScales();
         }
 
-        function toggleUI() {
-            if (isDrawingMode || isFxMode || currentZoom > 1.05) return; 
-            uiVisible = !uiVisible;
-            document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0";
-            document.getElementById('viewer-header').style.pointerEvents = uiVisible ? "auto" : "none";
-            document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0";
+        function rotatePage(dir) {
+            currentRotation = (currentRotation + dir * 90) % 360;
+            if (currentRotation < 0) currentRotation += 360;
+            document.getElementById('rotate-label').innerText = currentRotation + "°";
+            applyPageScales();
+        }
+
+        function applyPageScales() {
+            const wrappers = document.querySelectorAll('.page-wrapper');
+            wrappers.forEach(w => {
+                const canvas = w.querySelector('canvas, img');
+                if(!canvas) return;
+                
+                const origW = canvas.naturalWidth || canvas.width || 800;
+                const origH = canvas.naturalHeight || canvas.height || 1100;
+                
+                w.style.transform = `scale(${currentZoom})`;
+                
+                const rotWrap = w.parentElement;
+                if(rotWrap && rotWrap.classList.contains('rotation-wrapper')) {
+                    w.style.transform = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+                    
+                    if (currentRotation === 90 || currentRotation === 270) {
+                        const scaledW = origW * currentZoom;
+                        const scaledH = origH * currentZoom;
+                        rotWrap.style.width = `${scaledH}px`;
+                        rotWrap.style.height = `${scaledW}px`;
+                        
+                        const offset = (scaledH - scaledW) / 2;
+                        w.style.top = `${offset}px`;
+                        w.style.left = `-${offset}px`;
+                        w.style.marginBottom = `${offset * 2}px`;
+                    } else {
+                        rotWrap.style.width = 'auto';
+                        rotWrap.style.height = 'auto';
+                        w.style.top = '0px';
+                        w.style.left = '0px';
+                        w.style.marginBottom = '0px';
+                        
+                        const scaledH = origH * currentZoom;
+                        const renderedH = w.getBoundingClientRect().height;
+                        if(currentZoom < 1.0) {
+                            w.style.marginBottom = `-${origH - scaledH}px`;
+                        } else {
+                            w.style.marginBottom = '0px';
+                        }
+                    }
+                }
+            });
+        }
+
+        function handleWheel(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                adjustZoom(e.deltaY < 0 ? 0.08 : -0.08);
+            }
+        }
+
+        function setupPinchZoom() {
+            const sc = document.getElementById('scroll-container');
+            sc.addEventListener('touchstart', e => {
+                if (isDrawingMode) return;
+                if (e.touches.length === 2) {
+                    tpCache = [e.touches[0], e.touches[1]];
+                    startDist = Math.hypot(tpCache[0].clientX - tpCache[1].clientX, tpCache[0].clientY - tpCache[1].clientY);
+                    startZoom = currentZoom;
+                }
+            }, { passive: true });
+
+            sc.addEventListener('touchmove', e => {
+                if (isDrawingMode || e.touches.length !== 2 || startDist === 0) return;
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                const factor = dist / startDist;
+                currentZoom = Math.max(0.5, Math.min(3.0, startZoom * factor));
+                zoomMemory = currentZoom;
+                document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
+                applyPageScales();
+            }, { passive: true });
+
+            sc.addEventListener('touchend', e => {
+                if (e.touches.length < 2) startDist = 0;
+            }, { passive: true });
         }
 
         function toggleDrawingMode() {
             isDrawingMode = !isDrawingMode;
-            const container = document.getElementById('scroll-container');
+            const sc = document.getElementById('scroll-container');
             const btn = document.getElementById('draw-toggle');
-            const toolbar = document.getElementById('anno-toolbar');
+            const tb = document.getElementById('anno-toolbar');
             
-            if(isDrawingMode) {
-                container.classList.add('anno-active');
-                btn.classList.add('btn-add-success');
-                toolbar.style.display = 'flex';
-                isFxMode = false; document.getElementById('fx-toolbar').style.display = 'none';
-                document.getElementById('fx-toggle-btn').classList.remove('btn-add-success');
+            if (isDrawingMode) {
+                if(isFxMode) toggleFX();
+                sc.classList.add('anno-active');
+                btn.style.background = "var(--neon-lime)";
+                btn.style.color = "black";
+                tb.style.display = "flex";
             } else {
-                container.classList.remove('anno-active');
-                btn.classList.remove('btn-add-success');
-                toolbar.style.display = 'none';
+                sc.classList.remove('anno-active');
+                btn.style.background = "rgba(204, 255, 0, 0.04)";
+                btn.style.color = "var(--neon-lime)";
+                tb.style.display = "none";
             }
         }
 
         function toggleFX() {
             isFxMode = !isFxMode;
             const btn = document.getElementById('fx-toggle-btn');
-            const toolbar = document.getElementById('fx-toolbar');
-            
+            const tb = document.getElementById('fx-toolbar');
             if(isFxMode) {
-                toolbar.style.display = 'flex';
-                btn.classList.add('btn-add-success');
-                isDrawingMode = false; document.getElementById('anno-toolbar').style.display = 'none';
-                document.getElementById('draw-toggle').classList.remove('btn-add-success');
-                document.getElementById('scroll-container').classList.remove('anno-active');
+                if(isDrawingMode) toggleDrawingMode();
+                btn.style.background = "var(--neon-blue)";
+                btn.style.color = "black";
+                tb.style.display = "flex";
             } else {
-                toolbar.style.display = 'none';
-                btn.classList.remove('btn-add-success');
+                btn.style.background = "rgba(204, 255, 0, 0.04)";
+                btn.style.color = "var(--neon-blue)";
+                tb.style.display = "none";
             }
+        }
+
+        function initDrawing(canvas, fileName, pageIdx) {
+            const ctx = canvas.getContext('2d');
+            const key = `${fileName}_p${pageIdx}`;
+            
+            function redraw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const list = annotations[key] || [];
+                list.forEach(drawPath);
+            }
+            
+            function drawPath(path) {
+                if(path.points.length < 1) return;
+                ctx.beginPath();
+                ctx.strokeStyle = path.color;
+                ctx.lineWidth = path.size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                if(path.color === 'eraser') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = path.size * 2.5;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                
+                ctx.moveTo(path.points[0].x, path.points[0].y);
+                for(let i = 1; i < path.points.length; i++) {
+                    ctx.lineTo(path.points[i].x, path.points[i].y);
+                }
+                ctx.stroke();
+            }
+
+            redraw();
+
+            let drawing = false;
+            let currentPath = null;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                let normX = (clientX - rect.left) / rect.width;
+                let normY = (clientY - rect.top) / rect.height;
+                
+                return { x: normX * canvas.width, y: normY * canvas.height };
+            }
+
+            function start(e) {
+                if(!isDrawingMode) return;
+                e.preventDefault();
+                e.stopPropagation();
+                drawing = true;
+                currentPath = { color: annoColor, size: annoSize, points: [getPos(e)] };
+            }
+
+            function move(e) {
+                if(!drawing || !isDrawingMode) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const p = getPos(e);
+                currentPath.points.push(p);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const list = annotations[key] || [];
+                list.forEach(drawPath);
+                drawPath(currentPath);
+            }
+
+            function end(e) {
+                if(!drawing) return;
+                drawing = false;
+                if(currentPath && currentPath.points.length > 0) {
+                    if(!annotations[key]) annotations[key] = [];
+                    annotations[key].push(currentPath);
+                    undoStack.push({ key, canvas });
+                    localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+                }
+                currentPath = null;
+                redraw();
+            }
+
+            canvas.onmousedown = start; canvas.onmousemove = move; window.addEventListener('mouseup', end);
+            canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = end;
+            
+            canvas.style.pointerEvents = "none";
+            canvas._redraw = redraw;
+        }
+
+        function undoLast() {
+            if(undoStack.length === 0) return;
+            const last = undoStack.pop();
+            if(annotations[last.key]) {
+                annotations[last.key].pop();
+                localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+                if(last.canvas._redraw) last.canvas._redraw();
+            }
+        }
+
+        function clearCurrentPage() {
+            const wrappers = document.querySelectorAll('.page-wrapper');
+            wrappers.forEach(w => {
+                const canvas = w.querySelector('.anno-canvas');
+                if (canvas && canvas._redraw) {
+                    const idx = w.dataset.pageIndex;
+                    const key = `${setFiles[currentIndex].entry.name}_p${idx}`;
+                    annotations[key] = [];
+                    canvas._redraw();
+                }
+            });
+            localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+        }
+
+        function toggleUI() {
+            if (isDrawingMode || isFxMode || currentZoom > 1.05) {
+                return; 
+            }
+            uiVisible = !uiVisible;
+            document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0";
+            document.getElementById('viewer-header').style.pointerEvents = uiVisible ? "auto" : "none";
+            document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0";
         }
 
         function updateFX(t, v) {
@@ -1006,166 +1189,13 @@
         function setAnnoColor(c, el) { 
             annoColor = c; 
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); 
-            document.querySelectorAll('#anno-toolbar .btn-jazz').forEach(b => b.classList.remove('btn-add-success'));
-            if(el) {
-                if(el.classList.contains('color-dot')) el.classList.add('active');
-                else el.classList.add('btn-add-success');
-            }
+            if(el) el.classList.add('active'); 
         }
         
         function setAnnoSize(s, el) { 
             annoSize = s; 
             document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active')); 
             if(el) el.classList.add('active'); 
-        }
-
-        function setupCanvas(index, fileKey) {
-            const c = document.getElementById(`canvas-${index}`);
-            if(!c) return;
-            const pWrap = document.getElementById(`page-wrap-${index}`);
-            
-            setTimeout(() => {
-                c.width = pWrap.clientWidth || 600;
-                c.height = pWrap.clientHeight || 800;
-                
-                const ctx = c.getContext('2d');
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                
-                if(annotations[fileKey]) {
-                    const img = new Image();
-                    img.onload = () => ctx.drawImage(img, 0, 0, c.width, c.height);
-                    img.src = annotations[fileKey];
-                }
-                
-                let drawing = false;
-                let lastX = 0, lastY = 0;
-                
-                // Unbind anciens listeners
-                const clone = c.cloneNode(true);
-                c.parentNode.replaceChild(clone, c);
-                
-                const initDraw = (x, y) => {
-                    drawing = true;
-                    lastX = x; lastY = y;
-                    undoStack.push(clone.toDataURL());
-                };
-                
-                const drawMove = (x, y) => {
-                    if(!drawing) return;
-                    ctx.beginPath();
-                    ctx.moveTo(lastX, lastY);
-                    ctx.lineTo(x, y);
-                    
-                    if(annoColor === 'eraser') {
-                        ctx.globalCompositeOperation = 'destination-out';
-                        ctx.lineWidth = annoSize * 2;
-                    } else {
-                        ctx.globalCompositeOperation = 'source-over';
-                        ctx.strokeStyle = annoColor;
-                        ctx.lineWidth = annoSize;
-                    }
-                    ctx.stroke();
-                    lastX = x; lastY = y;
-                };
-                
-                const stopDraw = () => {
-                    if(drawing) {
-                        drawing = false;
-                        annotations[fileKey] = clone.toDataURL();
-                        localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
-                    }
-                };
-                
-                clone.addEventListener('mousedown', e => {
-                    const r = clone.getBoundingClientRect();
-                    initDraw((e.clientX - r.left) * (clone.width / r.width), (e.clientY - r.top) * (clone.height / r.height));
-                });
-                clone.addEventListener('mousemove', e => {
-                    const r = clone.getBoundingClientRect();
-                    drawMove((e.clientX - r.left) * (clone.width / r.width), (e.clientY - r.top) * (clone.height / r.height));
-                });
-                clone.addEventListener('mouseup', stopDraw);
-                clone.addEventListener('mouseleave', stopDraw);
-                
-                clone.addEventListener('touchstart', e => {
-                    if(e.touches.length === 1) {
-                        const r = clone.getBoundingClientRect();
-                        initDraw((e.touches[0].clientX - r.left) * (clone.width / r.width), (e.touches[0].clientY - r.top) * (clone.height / r.height));
-                    }
-                }, { passive: true });
-                clone.addEventListener('touchmove', e => {
-                    if(e.touches.length === 1) {
-                        const r = clone.getBoundingClientRect();
-                        drawMove((e.touches[0].clientX - r.left) * (clone.width / r.width), (e.touches[0].clientY - r.top) * (clone.height / r.height));
-                    }
-                }, { passive: true });
-                clone.addEventListener('touchend', stopDraw);
-            }, 250);
-        }
-
-        function undoLast() {
-            if(undoStack.length > 0) {
-                const previousState = undoStack.pop();
-                const c = document.getElementById('canvas-0');
-                if(c) {
-                    const ctx = c.getContext('2d');
-                    ctx.clearRect(0, 0, c.width, c.height);
-                    const img = new Image();
-                    img.onload = () => ctx.drawImage(img, 0, 0);
-                    img.src = previousState;
-                    
-                    const fileKey = setFiles[currentIndex].entry.name + (setFiles[currentIndex].entry.name.toLowerCase().endsWith('.pdf') ? "_pdfpage_" + currentPdfInternalPage : "_p0");
-                    annotations[fileKey] = previousState;
-                    localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
-                }
-            }
-        }
-
-        function clearCurrentPage() {
-            if(confirm(currentLang === 'fr' ? "Effacer tous les dessins de cette page ?" : "Clear annotations on this page?")) {
-                const c = document.getElementById('canvas-0');
-                if(c) {
-                    const ctx = c.getContext('2d');
-                    ctx.clearRect(0, 0, c.width, c.height);
-                    const fileKey = setFiles[currentIndex].entry.name + (setFiles[currentIndex].entry.name.toLowerCase().endsWith('.pdf') ? "_pdfpage_" + currentPdfInternalPage : "_p0");
-                    delete annotations[fileKey];
-                    localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
-                }
-            }
-        }
-
-        function handleWheel(e) {
-            if (e.ctrlKey) {
-                e.preventDefault();
-                adjustZoom(e.deltaY < 0 ? 0.1 : -0.1);
-            }
-        }
-
-        function setupPinchZoom() {
-            const sc = document.getElementById('scroll-container');
-            sc.addEventListener('touchstart', e => {
-                if (e.touches.length === 2) {
-                    tpCache = [e.touches[0], e.touches[1]];
-                    startDist = Math.hypot(tpCache[0].clientX - tpCache[1].clientX, tpCache[0].clientY - tpCache[1].clientY);
-                    startZoom = currentZoom;
-                }
-            }, { passive: true });
-
-            sc.addEventListener('touchmove', e => {
-                if (e.touches.length === 2 && startDist > 0) {
-                    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                    const scale = dist / startDist;
-                    currentZoom = Math.max(0.5, Math.min(3.5, startZoom * scale));
-                    zoomMemory = currentZoom;
-                    document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
-                    applyPageScales();
-                }
-            }, { passive: true });
-
-            sc.addEventListener('touchend', e => {
-                if (e.touches.length < 2) startDist = 0;
-            });
         }
 
         window.onload = init;
