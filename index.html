@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Partoches - Mobile</title>
+    <title>Partoches - Mobile Pro</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -92,16 +92,20 @@
         }
         #viewer-sidebar.collapsed { margin-left: -280px; }
 
-        /* SCROLL CONTAINER HYBRIDE OPTIMISÉ MOBILES ET TACTILE */
         #scroll-container {
-            flex-grow: 1; height: 100vh; overflow: auto; 
-            background: #000; scroll-behavior: auto; 
-            position: relative; display: block;
+    	    flex-grow: 1;
+    	    height: 100vh;
+    	    overflow: auto;
+    	    background: #000;
+    	    scroll-behavior: auto;
+    	    position: relative;
+    	    display: flex;
+    	    justify-content: center;
+    	    align-items: center;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-x pan-y;
         }
         
-        /* En mode dessin, bloquer le scroll tactile */
         #scroll-container.anno-active {
             touch-action: none;
         }
@@ -121,12 +125,11 @@
             transform-origin: top center;
             max-width: 96vw;
         }
-        /* En mode 2 pages, chaque page prend ~48% */
+        
         #viewer-content.dual-page-mode .page-wrapper {
             max-width: 48vw;
         }
 
-        /* Conteneur de rotation */
         .rotation-wrapper {
             display: flex;
             justify-content: center;
@@ -135,7 +138,6 @@
             flex-shrink: 0;
         }
 
-        /* AUTO-ADAPTATION DES INFRASTRUCTURES DE PAGES SUR ECRANS MOBILES */
         canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; }
         img { height: 80vh !important; width: auto !important; object-fit: contain; display: block; max-width: 100%; }
         
@@ -165,12 +167,19 @@
         .btn-jazz:hover { background: var(--neon-lime); color: black; box-shadow: 0 0 15px rgba(204, 255, 0, 0.3); }
         
         .nav-rect {
-            pointer-events: auto; background: rgba(10, 10, 14, 0.94); border: 1px solid var(--neon-blue); 
-            color: var(--neon-blue); font-weight: 700; font-size: 11px; padding: 12px 24px; border-radius: 6px;
-            text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 20px rgba(0,240,255,0.15);
-        }
+    	    pointer-events: auto;
+    	    background: rgba(10,10,14,0.94);
+   	        border: 1px solid var(--neon-blue);
+    	    color: var(--neon-blue);
+    	    font-weight: 700;
+    	    font-size: 11px;
+    	    padding: 10px 18px;
+	        min-width: 110px;
+	        text-align: center;
+	        border-radius: 6px;
+	        text-transform: uppercase;
+	    }
 
-        /* DOCK GENERAL CONTENANT LES OUTILS */
         .right-control-dock {
             position: fixed; z-index: 500; pointer-events: none;
             display: flex; gap: 15px;
@@ -181,31 +190,32 @@
             background: rgba(6, 6, 10, 0.96); box-shadow: 0 0 35px rgba(0,0,0,0.85);
         }
         
-        /* STYLE PAR DEFAUT POUR LES ECRANS LARGES ET MODE PAYSAGE */
         @media (min-width: 769px) or (orientation: landscape) {
             .right-control-dock {
                 right: 20px; top: 90px; flex-direction: column; bottom: auto; left: auto; width: auto;
             }
-            #anno-toolbar { flex-direction: column; border: 1px solid rgba(204, 255, 0, 0.3); width: 74px; align-items: center; gap: 12px;}
+            #anno-toolbar { flex-direction: column; border: 1px solid rgba(204, 255, 0, 0.3); width: 84px; align-items: center; gap: 10px;}
             #fx-toolbar { flex-direction: column; border: 1px solid rgba(0, 240, 255, 0.3); width: 84px; align-items: center; gap: 12px;}
-            input[type=range] { transform: rotate(-90deg); width: 90px; height: 4px; margin: 45px 0; cursor: pointer; }
+            .range-container { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; margin: 35px 0; }
+            .range-container input[type=range] { transform: rotate(-90deg); width: 80px; height: 4px; cursor: pointer; }
+            #fx-toolbar input[type=range] { transform: rotate(-90deg); width: 90px; height: 4px; margin: 45px 0; cursor: pointer; }
             .toolbar-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
         }
 
-        /* CONFIGURATION RESPONSIVE MODE PORTRAIT SUR SMARTPHONE */
         @media (max-width: 768px) and (orientation: portrait) {
             .right-control-dock {
                 left: 10px; right: 10px; bottom: 20px; top: auto; flex-direction: row; justify-content: center; width: calc(100vw - 20px);
             }
             #anno-toolbar, #fx-toolbar {
-                flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; width: 100%; border: 1px solid rgba(255,255,255,0.1);
+                flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; width: 100%; border: 1px solid rgba(255,255,255,0.1);
             }
             #anno-toolbar { border-color: var(--neon-lime); }
             #fx-toolbar { border-color: var(--neon-blue); }
-            input[type=range] { transform: none; width: 100px; height: 6px; margin: 0 5px; }
+            .range-container { display: flex; flex-direction: row; align-items: center; gap: 5px; }
+            input[type=range] { transform: none !important; width: 80px !important; height: 6px; margin: 0 5px !important; }
             .toolbar-divider { height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
-            .size-btn, .color-dot { width: 28px; height: 28px; }
-            #anno-toolbar .btn-jazz { width: auto; padding: 4px 8px; font-size: 8px; }
+            .size-btn, .color-dot { width: 26px; height: 26px; }
+            #anno-toolbar .btn-jazz { width: auto; padding: 4px 6px; font-size: 8px; }
             canvas, img { height: 62vh !important; }
         }
         
@@ -346,20 +356,20 @@
                 <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5">
                     <button onclick="event.stopPropagation(); toggleAutoScroll()" id="scroll-toggle-btn" class="btn-jazz !border-none !px-2" title="Auto-Scroll">⭥</button>
                     <button onclick="event.stopPropagation(); adjustScrollSpeed(-1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">-</button>
-                    <span id="scroll-speed-label" class="text-[9px] w-6 text-center font-bold text-zinc-400">2s</span>
+                    <span id="scroll-speed-label" class="text-[9px] w-6 text-center font-bold text-zinc-400">0.1px</span>
                     <button onclick="event.stopPropagation(); adjustScrollSpeed(1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">+</button>
                 </div>
 
                 <button onclick="event.stopPropagation(); toggleSunMode()" id="sun-mode-btn" class="btn-jazz !border-zinc-700 !text-amber-500 !px-2" data-i18n="btn_sun" title="Mode Soleil (Sepia)">☀️ Soleil</button>
-
                 <button onclick="toggleFX()" id="fx-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_settings">Filtres</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !px-2" data-i18n="btn_draw">Dessin</button>
-                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Rotation (non conservée)">
-                    <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation antihoraire">↺</button>
+                
+                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Rotation">
+                    <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm">↺</button>
                     <span id="rotate-label" class="text-[10px] w-7 text-center font-bold text-zinc-500">↺↻</span>
-                    <button onclick="event.stopPropagation(); rotatePage(+1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation horaire">↻</button>
+                    <button onclick="event.stopPropagation(); rotatePage(+1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm">↻</button>
                 </div>
-                <button onclick="event.stopPropagation(); toggleDualPage()" id="dual-page-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" title="2 pages côte à côte">⧉</button>
+                <button onclick="event.stopPropagation(); toggleDualPage()" id="dual-page-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" title="2 pages côte à côte">📖️</button>
                 <div id="page-info" class="text-white/40 font-bold text-[10px] pr-1 italic hidden sm:block">0 / 0</div>
             </div>
         </div>
@@ -390,12 +400,21 @@
                 
                 <div class="toolbar-divider"></div>
                 
-                <div onclick="setAnnoSize(3, this)" class="size-btn" style="width:32px; height:32px;"><div class="size-preview" style="width:4px; height:4px;"></div></div>
-                <div onclick="setAnnoSize(7, this)" class="size-btn active" style="width:32px; height:32px;"><div class="size-preview" style="width:8px; height:8px;"></div></div>
+                <div onclick="setAnnoSize(4, this)" class="size-btn" style="width:32px; height:32px;"><div class="size-preview" style="width:4px; height:4px;"></div></div>
+                <div onclick="setAnnoSize(8, this)" class="size-btn active" style="width:32px; height:32px;"><div class="size-preview" style="width:8px; height:8px;"></div></div>
                 <div onclick="setAnnoSize(15, this)" class="size-btn" style="width:32px; height:32px;"><div class="size-preview" style="width:14px; height:14px;"></div></div>
+                <div onclick="setAnnoSize(30, this)" class="size-btn" style="width:32px; height:32px;"><div class="size-preview" style="width:24px; height:24px;"></div></div>
                 
                 <div class="toolbar-divider"></div>
+
+                <div class="range-container" title="Opacité du trait">
+                    <div class="fx-indicator" style="margin-bottom:2px;"><span data-i18n="fx_alpha">Opac</span></div>
+                    <input type="range" id="anno-alpha-slider" min="0.1" max="1" step="0.05" value="1" oninput="updateAnnoOpacity(this.value)">
+                </div>
+
+                <div class="toolbar-divider"></div>
                 
+                <div onclick="setAnnoColor('text', this)" id="btn-tool-text" class="btn-jazz !px-2 !py-1 text-center !text-[9px]" data-i18n="btn_text">Texte</div>
                 <div onclick="setAnnoColor('eraser', this)" class="btn-jazz !px-2 !py-1 text-center !text-[9px]" data-i18n="btn_del">Gomme</div>
                 <button onclick="undoLast()" class="btn-jazz !px-2 !py-1 !text-[9px] !border-zinc-700 !text-zinc-400">Undo</button>
                 <button onclick="clearCurrentPage()" class="btn-jazz !px-2 !py-1 !text-[9px] !border-pink-950 !text-pink-500">Effacer</button>
@@ -420,25 +439,25 @@
                 btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier",
                 set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
                 btn_close: "✕ Fermer", btn_settings: "Filtres", btn_draw: "Dessin",
-                fx_bright: "Lum", fx_contrast: "Cont", btn_del: "Gomme",
+                fx_bright: "Lum", fx_contrast: "Cont", fx_alpha: "Opac", btn_del: "Gomme",
                 btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter", btn_home: "🏠 Accueil",
-                btn_sun: "☀️ Soleil"
+                btn_sun: "☀️ Soleil", btn_text: "Texte"
             },
             en: {
                 nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
                 btn_restore: "Restore Access", btn_scan: "Scan Folder",
                 set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
                 btn_close: "✕ Close", btn_settings: "Filters", btn_draw: "Draw",
-                fx_bright: "Bright", fx_contrast: "Cont", btn_del: "Eraser",
+                fx_bright: "Bright", fx_contrast: "Cont", fx_alpha: "Opac", btn_del: "Eraser",
                 btn_prev: "Previous", btn_next: "Next", btn_add: "Add", btn_home: "🏠 Home",
-                btn_sun: "☀️ Sun"
+                btn_sun: "☀️ Sun", btn_text: "Text"
             }
         };
 
         let currentLang = localStorage.getItem('part_lang') || 'fr';
         let files = [], setFiles = [], currentIndex = 0, sources = [];
         let uiVisible = true, currentZoom = 1.0, isDrawingMode = false, isFxMode = false;
-        let annoColor = '#ccff00', annoSize = 7;
+        let annoColor = '#ccff00', annoSize = 8, annoOpacity = 1.0;
         let annotations = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
         let undoStack = [];
         let currentRotation = 0;  
@@ -449,11 +468,10 @@
         let startDist = 0;
         let startZoom = 1.0;
 
-        // Nouvelles variables d'état
         let isSepiaMode = false;
         let isScrolling = false;
         let scrollInterval = null;
-        let scrollSpeed = 2; // Pixels par cycle d'auto-scroll
+        let scrollSpeed = 0.1; // Vitesse très lente initiale modifiée pour le live
         let currentPdfDoc = null;
         let currentPdfPageNum = 1;
 
@@ -488,9 +506,6 @@
                 btnScan.setAttribute('data-i18n-ios', '1');
                 const iosLabel = { fr: '+ Ajouter Fichiers', en: '+ Add Files' };
                 btnScan.innerText = iosLabel[currentLang];
-                btnScan.title = currentLang === 'fr'
-                    ? 'Sur iOS, sélectionnez des fichiers individuels (PDF, images)'
-                    : 'On iOS, select individual files (PDF, images)';
             }
 
             const db = await openDB();
@@ -532,12 +547,8 @@
                 }
             });
             
-            window.addEventListener("orientationchange", () => {
-                setTimeout(applyPageScales, 350);
-            });
-            window.addEventListener("resize", () => {
-                setTimeout(applyPageScales, 100);
-            });
+            window.addEventListener("orientationchange", () => { setTimeout(applyPageScales, 350); });
+            window.addEventListener("resize", () => { setTimeout(applyPageScales, 100); });
         }
 
         async function addSource() {
@@ -557,13 +568,7 @@
                 await refreshFiles();
             } catch(e) {
                 if (e.name === 'AbortError') return;
-                if (confirm(
-                    currentLang === 'fr'
-                        ? "Impossible d'accéder aux dossiers dans ce navigateur.\nVoulez-vous sélectionner vos fichiers manuellement ?"
-                        : "Cannot access folders in this browser.\nDo you want to select your files manually?"
-                )) {
-                    addSourceFallbackIOS();
-                }
+                addSourceFallbackIOS();
             }
         }
 
@@ -592,16 +597,6 @@
                 renderLibrary();
                 renderSourcesUI();
                 input.remove();
-                if (newFiles.length > 0) {
-                    const msg = currentLang === 'fr'
-                        ? `${newFiles.length} fichier(s) ajouté(s) avec succès.`
-                        : `${newFiles.length} file(s) added successfully.`;
-                    const banner = document.createElement('div');
-                    banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--neon-lime);color:#000;font-weight:bold;font-size:11px;padding:8px 20px;border-radius:6px;z-index:9999;letter-spacing:1px;';
-                    banner.innerText = msg;
-                    document.body.appendChild(banner);
-                    setTimeout(() => banner.remove(), 2500);
-                }
             };
             input.click();
         }
@@ -760,14 +755,12 @@
             if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
         }
 
-        // --- FONCTION DE RÉCUPÉRATION DU BLOB ---
         async function getFreshFileBlob(fileObj) {
             if (fileObj.entry._blob) return fileObj.entry._blob;
             try {
                 return await fileObj.entry.getFile();
             } catch (err) {
                 if (err.name === 'NotFoundError' && fileObj.parentHandle) {
-                    console.warn("[Partoches] Fichier introuvable/stale. Tentative de re-scan...");
                     const freshList = await scanFolderFresh(fileObj.parentHandle);
                     const freshMatch = freshList.find(x => x.entry.name === fileObj.entry.name);
                     if (freshMatch) {
@@ -791,7 +784,6 @@
             currentZoom = zoomMemory;
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
 
-            // Masquer les options contextuelles spécifiques par défaut
             document.getElementById('pdf-page-nav').classList.add('hidden');
             document.getElementById('txt-save-btn').classList.add('hidden');
             currentPdfDoc = null;
@@ -837,12 +829,15 @@
                         wrapper.style.userSelect = "text";
                         wrapper.style.webkitUserSelect = "text";
                         wrapper.innerText = text;
-                        setTimeout(applyPageScales, 50);
+                        setTimeout(() => {
+                            initAnnotationCanvas(wrapper, 1);
+                            applyPageScales();
+                        }, 60);
                     });
                 }
             } catch(e) {
                 console.error(e);
-                container.innerHTML = `<div class="text-red-500 p-6 font-bold">Erreur de lecture : ${fileObj.entry.name}<br><span class="text-xs text-zinc-600">${e.message}</span></div>`;
+                container.innerHTML = `<div class="text-red-500 p-6 font-bold">Erreur de lecture : ${fileObj.entry.name}</div>`;
             }
         }
 
@@ -853,7 +848,6 @@
             
             document.getElementById('pdf-page-label').innerText = `${pageNum} / ${currentPdfDoc.numPages}`;
 
-            // Mode 2 pages côte à côte actif et disponible
             const pagesToRender = (isDualPage && pageNum < currentPdfDoc.numPages) ? [pageNum, pageNum + 1] : [pageNum];
             
             if(isDualPage && pageNum < currentPdfDoc.numPages) {
@@ -866,7 +860,7 @@
                 const page = await currentPdfDoc.getPage(p);
                 createPageStructure(container, p, (wrapper, canvas) => {
                     const ctx = canvas.getContext('2d');
-                    const viewport = page.getViewport({ scale: 2.0 }); // Rendu HD stable
+                    const viewport = page.getViewport({ scale: 2.0 }); 
                     canvas.width = viewport.width;
                     canvas.height = viewport.height;
                     
@@ -949,10 +943,10 @@
         }
 
         function adjustScrollSpeed(val) {
-            scrollSpeed += val;
-            if (scrollSpeed < 1) scrollSpeed = 1;
-            if (scrollSpeed > 20) scrollSpeed = 20;
-            document.getElementById('scroll-speed-label').innerText = scrollSpeed + "px";
+            scrollSpeed += val * 0.1;
+            if (scrollSpeed < 0.05) scrollSpeed = 0.05;
+            if (scrollSpeed > 8) scrollSpeed = 8;
+            document.getElementById('scroll-speed-label').innerText = scrollSpeed.toFixed(1) + "px";
         }
 
         async function saveTxtFile() {
@@ -970,7 +964,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(blobUrl);
             } catch (err) {
-                alert("Erreur d'enregistrement : " + err.message);
+                alert("Erreur : " + err.message);
             }
         }
 
@@ -1016,9 +1010,7 @@
                 if (!document.getElementById('viewer-sidebar').classList.contains('collapsed') && window.innerWidth > 768) {
                     maxContainerW -= 280;
                 }
-                if (isDualPage) {
-                    maxContainerW = (maxContainerW / 2) - 20;
-                }
+                if (isDualPage) { maxContainerW = (maxContainerW / 2) - 20; }
 
                 let headerSpace = 100;
                 if(isPortrait && isMobilePlatform()) headerSpace = 80;
@@ -1029,8 +1021,6 @@
                 if (isMobilePlatform()) scale *= 1.15; 
 
                 const finalScale = scale * currentZoom;
-                wrapper.style.transform = `scale(${finalScale})`;
-
                 const scaledW = w * finalScale;
                 const scaledH = h * finalScale;
 
@@ -1041,9 +1031,6 @@
 
                 wrapper.style.transformOrigin = "center center";
                 wrapper.style.transform = `rotate(${currentRotation}deg) scale(${finalScale})`;
-
-                wrapper.style.marginBottom = "0px";
-                wrapper.style.marginTop = "0px";
             });
         }
 
@@ -1061,7 +1048,6 @@
         }
 
         function handleWheel(e) {
-            // Zoom à la molette (avec ou sans Ctrl pour s'adapter à tous les périphériques)
             e.preventDefault();
             const amount = e.deltaY < 0 ? 0.08 : -0.08;
             adjustZoom(amount);
@@ -1100,9 +1086,7 @@
         }
 
         function toggleUI() {
-            if (isDrawingMode || isFxMode || currentZoom > 1.05) {
-                return; 
-            }
+            if (isDrawingMode || isFxMode || currentZoom > 1.05) return; 
             uiVisible = !uiVisible;
             document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0";
             document.getElementById('viewer-header').style.pointerEvents = uiVisible ? "auto" : "none";
@@ -1111,20 +1095,27 @@
 
         function updateFX(t, v) {
             const r = document.documentElement;
-            if(t===('bright')) { r.style.setProperty('--page-bright', v); document.getElementById('val-bright').innerText = Math.round(v*100)+'%'; }
-            if(t===('contrast')) { r.style.setProperty('--page-contrast', v); document.getElementById('val-contrast').innerText = Math.round(v*100)+'%'; }
+            if(t==='bright') { r.style.setProperty('--page-bright', v); document.getElementById('val-bright').innerText = Math.round(v*100)+'%'; }
+            if(t==='contrast') { r.style.setProperty('--page-contrast', v); document.getElementById('val-contrast').innerText = Math.round(v*100)+'%'; }
         }
 
         function setAnnoColor(c, el) { 
             annoColor = c; 
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); 
-            if(el) el.classList.add('active'); 
+            document.querySelectorAll('.color-dot, #btn-tool-text').forEach(d => d.classList.remove('active', '!border-white', 'bg-lime-500/30')); 
+            if(el) {
+                if(el.id === 'btn-tool-text') el.classList.add('bg-lime-500/30');
+                else el.classList.add('active');
+            }
         }
         
         function setAnnoSize(s, el) { 
             annoSize = s; 
             document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active')); 
             if(el) el.classList.add('active');
+        }
+
+        function updateAnnoOpacity(v) {
+            annoOpacity = parseFloat(v);
         }
 
         function switchTab(tab) {
@@ -1202,9 +1193,6 @@
             }
         }
 
-        // =====================================================================
-        // MOTEUR D'ANNOTATIONS LOCALSTORAGE COMPATIBLE MULTI-PAGES & ROTATIONS
-        // =====================================================================
         function getFileKey() {
             if (currentIndex >= setFiles.length) return 'default';
             return setFiles[currentIndex].entry.name;
@@ -1229,9 +1217,12 @@
                 if (ref.tagName === 'IMG') {
                     cv.width = ref.naturalWidth || ref.clientWidth;
                     cv.height = ref.naturalHeight || ref.clientHeight;
-                } else {
+                } else if (ref.tagName === 'CANVAS') {
                     cv.width = ref.width;
                     cv.height = ref.height;
+                } else {
+                    cv.width = ref.offsetWidth || 800;
+                    cv.height = ref.offsetHeight || 1100;
                 }
                 redrawAnnotations(cv, pageIdx);
             }
@@ -1249,7 +1240,6 @@
                 const rect = cv.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
                 let x = (clientX - rect.left) / (rect.width / cv.width);
                 let y = (clientY - rect.top) / (rect.height / cv.height);
                 return { x, y };
@@ -1257,14 +1247,29 @@
 
             function startDraw(e) {
                 if(!isDrawingMode) return;
-                drawing = true;
                 const p = getPos(e);
+
+                if (annoColor === 'text') {
+                    const txt = prompt(currentLang === 'fr' ? "Texte à ajouter :" : "Text to add :");
+                    if (txt && txt.trim() !== "") {
+                        undoStack.push(JSON.parse(JSON.stringify(annotations[key])));
+                        annotations[key][pageIdx].push({
+                            type: 'text', x: p.x, y: p.y, text: txt,
+                            c: '#ff00ff', s: Math.max(annoSize * 2.5, 18)
+                        });
+                        localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+                        redrawAnnotations(cv, pageIdx);
+                    }
+                    return;
+                }
+
+                drawing = true;
                 lastX = p.x; lastY = p.y;
                 undoStack.push(JSON.parse(JSON.stringify(annotations[key])));
             }
 
             function draw(e) {
-                if(!drawing || !isDrawingMode) return;
+                if(!drawing || !isDrawingMode || annoColor === 'text') return;
                 const p = getPos(e);
                 const ctx = cv.getContext('2d');
 
@@ -1279,6 +1284,7 @@
                 } else {
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.strokeStyle = annoColor;
+                    ctx.globalAlpha = annoOpacity;
                     ctx.lineWidth = annoSize;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
@@ -1286,8 +1292,8 @@
                 }
 
                 annotations[key][pageIdx].push({
-                    x1: lastX, y1: lastY, x2: p.x, y2: p.y,
-                    c: annoColor, s: annoSize
+                    type: 'line', x1: lastX, y1: lastY, x2: p.x, y2: p.y,
+                    c: annoColor, s: annoSize, o: annoOpacity
                 });
 
                 lastX = p.x; lastY = p.y;
@@ -1306,7 +1312,7 @@
             cv.addEventListener('mouseleave', stopDraw);
 
             cv.addEventListener('touchstart', (e) => { startDraw(e); }, { passive: true });
-            cv.addEventListener('touchmove', (e) => { if(isDrawingMode) { e.preventDefault(); draw(e); } }, { passive: false });
+            cv.addEventListener('touchmove', (e) => { if(isDrawingMode && annoColor !== 'text') { e.preventDefault(); draw(e); } }, { passive: false });
             cv.addEventListener('touchend', stopDraw);
         }
 
@@ -1316,23 +1322,33 @@
             const key = getFileKey();
             if(!annotations[key] || !annotations[key][pageIdx]) return;
 
-            annotations[key][pageIdx].forEach(line => {
-                ctx.beginPath();
-                ctx.moveTo(line.x1, line.y1);
-                ctx.lineTo(line.x2, line.y2);
-                if(line.c === 'eraser') {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.lineWidth = line.s * 2;
-                } else {
+            annotations[key][pageIdx].forEach(item => {
+                ctx.save();
+                if (!item.type || item.type === 'line') {
+                    ctx.beginPath();
+                    ctx.moveTo(item.x1, item.y1);
+                    ctx.lineTo(item.x2, item.y2);
+                    if(item.c === 'eraser') {
+                        ctx.globalCompositeOperation = 'destination-out';
+                        ctx.lineWidth = item.s * 2;
+                    } else {
+                        ctx.globalCompositeOperation = 'source-over';
+                        ctx.strokeStyle = item.c;
+                        ctx.globalAlpha = item.o !== undefined ? item.o : 1.0;
+                        ctx.lineWidth = item.s;
+                    }
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+                } else if (item.type === 'text') {
                     ctx.globalCompositeOperation = 'source-over';
-                    ctx.strokeStyle = line.c;
-                    ctx.lineWidth = line.s;
+                    ctx.fillStyle = item.c || '#ff00ff';
+                    ctx.font = `bold ${item.s}px 'Space Grotesk', sans-serif`;
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(item.text, item.x, item.y);
                 }
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.stroke();
+                ctx.restore();
             });
-            ctx.globalCompositeOperation = 'source-over';
         }
 
         function undoLast() {
@@ -1348,7 +1364,7 @@
         }
 
         function clearCurrentPage() {
-            if(confirm("Effacer les dessins de cette partition ?")) {
+            if(confirm(currentLang === 'fr' ? "Effacer les dessins ?" : "Clear drawings?")) {
                 const key = getFileKey();
                 annotations[key] = {};
                 localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
