@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Partoches - Neon Pro Ultra Hybrid Mobile</title>
+    <title>Partoches - Mobile</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
@@ -11,10 +11,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link class="rounded-md" rel="apple-touch-icon" href="icon-512.png">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Outfit:wght@200;400;900&display=swap" rel="stylesheet">
+    <script src="[cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js)"></script>
+    <script src="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js)"></script>
+    <link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Outfit:wght@200;400;900&display=swap)" rel="stylesheet">
     
     <style>
         :root { 
@@ -117,34 +117,25 @@
             box-shadow: 0 0 45px rgba(0,0,0,0.9);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast));
             border-radius: 4px; transition: filter 0.2s ease;
-            /* Le zoom est géré via transform sur chaque wrapper,
-               MAIS on applique aussi une compensation de marge pour éviter
-               tout chevauchement lorsqu'il y a plusieurs pages (PDF multi-pages).
-               transform-origin: top center garantit que la page scale vers le bas
-               et non vers le haut, ce qui évite le recouvrement du header. */
             transform-origin: top center;
-            /* La valeur de margin-bottom est injectée dynamiquement par applyPageScales()
-               pour compenser l'espace "volé" par le scale transform */
             max-width: 96vw;
         }
+
         /* En mode 2 pages, chaque page prend ~48% */
         #viewer-content.dual-page-mode .page-wrapper {
             max-width: 48vw;
         }
 
-        /* Conteneur de rotation : enveloppe chaque page-wrapper pour
-           appliquer la rotation INDÉPENDAMMENT du zoom, sans interférence */
+        /* Conteneur de rotation */
         .rotation-wrapper {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            /* La largeur/hauteur sera ajustée dynamiquement selon l'angle de rotation */
             transition: width 0.25s ease, height 0.25s ease;
             flex-shrink: 0;
         }
 
         /* AUTO-ADAPTATION DES INFRASTRUCTURES DE PAGES SUR ECRANS MOBILES */
-        /* Les canvas PDF gardent leur taille naturelle (définie par pdfScale au rendu) */
         canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; }
         img { height: 80vh !important; width: auto !important; object-fit: contain; display: block; max-width: 100%; }
         
@@ -179,7 +170,7 @@
             text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 20px rgba(0,240,255,0.15);
         }
 
-        /* DOCK GENERAL CONTENANT LES OUTILS - S'ADAPTE AUTOMATIQUEMENT MOBILE VS PC */
+        /* DOCK GÉNÉRAL CONTENANT LES OUTILS */
         .right-control-dock {
             position: fixed; z-index: 500; pointer-events: none;
             display: flex; gap: 15px;
@@ -190,7 +181,7 @@
             background: rgba(6, 6, 10, 0.96); box-shadow: 0 0 35px rgba(0,0,0,0.85);
         }
         
-        /* STYLE PAR DEFAUT POUR LES ECRANS LARGES ET MODE PAYSAGE */
+        /* STYLE PAR DÉFAUT POUR LES ÉCRANS LARGES ET MODE PAYSAGE */
         @media (min-width: 769px) or (orientation: landscape) {
             .right-control-dock {
                 right: 20px; top: 90px; flex-direction: column; bottom: auto; left: auto; width: auto;
@@ -201,7 +192,7 @@
             .toolbar-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
         }
 
-        /* CONFIGURATION RESPONSIVE CRUCIALE POUR LE MODE PORTRAIT SUR SMARTPHONE */
+        /* CONFIGURATION RESPONSIVE POUR LE MODE PORTRAIT SUR SMARTPHONE */
         @media (max-width: 768px) and (orientation: portrait) {
             .right-control-dock {
                 left: 10px; right: 10px; bottom: 20px; top: auto; flex-direction: row; justify-content: center; width: calc(100vw - 20px);
@@ -215,7 +206,7 @@
             .toolbar-divider { height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
             .size-btn, .color-dot { width: 28px; height: 28px; }
             #anno-toolbar .btn-jazz { width: auto; padding: 4px 8px; font-size: 8px; }
-            canvas, img { height: 62vh !important; } /* Réduction pour laisser la place aux barres horizontales */
+            canvas, img { height: 62vh !important; }
         }
         
         .color-dot { border-radius: 6px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
@@ -235,6 +226,7 @@
         .sidebar-item:active { cursor: grabbing; }
         .sidebar-item.active { background: rgba(204, 255, 0, 0.06); color: var(--neon-lime); font-weight: bold; border-left: 4px solid var(--neon-lime); }
 
+        /* FIX: Boutons de langue positionnés sans débordement sur les boutons d'action */
         .lang-switch { font-size: 9px; border: 1px solid #2d2d37; padding: 3px 7px; border-radius: 4px; color: #727282; cursor: pointer; font-weight: bold; }
         .lang-switch.active { color: var(--neon-lime); border-color: var(--neon-lime); background: rgba(204, 255, 0, 0.08); }
 
@@ -245,7 +237,7 @@
         #alpha-bar button { padding: 6px 9px; font-size: 12px; font-weight: 800; color: #4b4b58; transition: 0.2s; }
         #alpha-bar button:hover { color: var(--neon-lime); transform: scale(1.2); }
         
-        /* MODE 2 PAGES CÔTE À CÔTE — sans persistance */
+        /* MODE 2 PAGES CÔTE À CÔTE */
         #viewer-content.dual-page-mode {
             flex-direction: row;
             flex-wrap: wrap;
@@ -267,38 +259,187 @@
         }
 
         .fx-indicator { font-size: 9px; color: #626272; font-weight: bold; text-transform: uppercase; text-align: center; }
+
+        /* ================================================================
+           NAVIGATION INTERNE PDF MULTI-PAGES
+           Barre dédiée distincte de la navigation entre fichiers/images.
+           Visible uniquement quand le PDF ouvert contient > 1 page.
+        ================================================================ */
+        #pdf-page-nav {
+            position: fixed;
+            /* Sur desktop : ancré en bas à droite, au-dessus de la nav principale */
+            right: 20px;
+            bottom: 90px;
+            z-index: 480;
+            display: none; /* affiché via JS uniquement pour les PDF multi-pages */
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            pointer-events: auto;
+        }
+
+        #pdf-page-nav.visible { display: flex; }
+
+        .pdf-nav-btn {
+            background: rgba(10, 10, 16, 0.95);
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+            font-weight: 700;
+            font-size: 16px;
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+            box-shadow: 0 4px 18px rgba(176,38,255,0.18);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pdf-nav-btn:hover, .pdf-nav-btn:active {
+            background: var(--neon-purple);
+            color: #fff;
+            box-shadow: 0 0 18px rgba(176,38,255,0.55);
+        }
+        .pdf-nav-btn:disabled {
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        #pdf-page-counter {
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--neon-purple);
+            letter-spacing: 1px;
+            background: rgba(10,10,16,0.92);
+            border: 1px solid rgba(176,38,255,0.3);
+            border-radius: 6px;
+            padding: 3px 8px;
+            text-align: center;
+            min-width: 42px;
+        }
+
+        /* Sur portrait mobile : barre horizontale en haut (juste sous le header) */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #pdf-page-nav {
+                right: auto;
+                bottom: auto;
+                top: 72px;
+                left: 50%;
+                transform: translateX(-50%);
+                flex-direction: row;
+                gap: 8px;
+            }
+            .pdf-nav-btn { width: 38px; height: 38px; font-size: 15px; }
+        }
+
+        /* ================================================================
+           FIX : BOUTON PRÉCÉDENT masqué sous la sidebar sur desktop
+           On décale la nav du bas pour tenir compte de la sidebar ouverte
+        ================================================================ */
+        #viewer-nav {
+            transition: padding-left 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        /* Quand la sidebar est visible (non collapsed), le bouton Précédent
+           reçoit un padding-left supplémentaire pour sortir de derrière elle */
+        #view-layout:not(.sidebar-collapsed) #viewer-nav {
+            padding-left: calc(280px + 20px);
+        }
+
+        /* ================================================================
+           AFFICHAGE PLEIN ÉCRAN PAR DÉFAUT — PC / GRANDS ÉCRANS
+           Le zoom initial est calculé dynamiquement dans computeInitialZoom()
+           pour que la partition remplisse la hauteur ou largeur disponible.
+           Sur iPad (déjà fonctionnel), on garde le comportement existant.
+        ================================================================ */
+
+        /* ================================================================
+           BIBLIOTHÈQUE — HEADER RESPONSIVE
+           Fix: boutons d'action + langue sur la même ligne sans chevauchement
+        ================================================================ */
+        .lib-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            /* S'assure que les boutons d'action restent visibles */
+            max-width: calc(100% - 10px);
+        }
+
+        /* Séparateur visuel dans la lib-header */
+        .lib-header-sep {
+            width: 1px; height: 20px;
+            background: rgba(255,255,255,0.08);
+            flex-shrink: 0;
+        }
+
+        /* Bannière feedback */
+        .feedback-banner {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--neon-lime);
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 8px 20px;
+            border-radius: 6px;
+            z-index: 9999;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.4s;
+        }
+        .feedback-banner.fade { opacity: 0; }
     </style>
 </head>
 <body>
 
-    <div class="copyright font-black uppercase">© Cyrille de Chanteloup</div>
+    <div class="copyright font-black uppercase">© Cdchtp</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
-        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
-        <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
-        <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20" data-i18n="nav_view">Visionneuse</button>
-        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
-            <span onclick="setLang('fr')" id="lang-fr" class="lang-switch">FR</span>
-            <span onclick="setLang('en')" id="lang-en" class="lang-switch">EN</span>
+    <!-- NAV PRINCIPALE : langue déplacée dans un conteneur dédié qui ne chevauche plus les onglets -->
+    <nav class="glass fixed top-0 w-full z-[200]">
+        <div class="flex justify-between items-center px-4 py-3">
+            <!-- Onglets centraux -->
+            <div class="flex gap-4 flex-1 justify-around">
+                <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
+                <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
+                <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20" data-i18n="nav_view">Visionneuse</button>
+            </div>
+            <!-- Sélecteur de langue : toujours à droite, ne chevauche plus rien -->
+            <div class="flex gap-1 flex-shrink-0 ml-3">
+                <span onclick="setLang('fr')" id="lang-fr" class="lang-switch">FR</span>
+                <span onclick="setLang('en')" id="lang-en" class="lang-switch">EN</span>
+            </div>
         </div>
     </nav>
 
-    <section id="sec-lib" class="pt-22 h-screen overflow-y-auto px-4 md:px-6">
-        <div class="flex justify-between items-end mb-6 mt-4">
-            <div>
-                <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
+    <!-- ================================================================
+         RÉPERTOIRE
+         Header réorganisé : titre + sources à gauche, boutons d'action
+         à droite dans un conteneur flex-wrap qui ne déborde pas.
+    ================================================================ -->
+    <section id="sec-lib" class="pt-16 h-screen overflow-y-auto px-4 md:px-6">
+        <div class="flex flex-wrap justify-between items-start gap-3 mb-5 mt-4">
+            <!-- Gauche : titre + tags sources -->
+            <div class="flex-1 min-w-0">
+                <h1 class="jazz-title text-3xl md:text-4xl mb-2">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex gap-2">
+            <!-- Droite : boutons d'action — ne chevauche plus les boutons de langue -->
+            <div class="lib-header-actions">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
-                <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                <button onclick="addSource()" id="btn-scan" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                <!-- Bouton Album iOS : visible uniquement sur iPad/iPhone -->
+                <button onclick="addAlbumIOS()" id="btn-album" class="hidden btn-jazz !border-purple-500 !text-purple-400" data-i18n="btn_album">📷 Album</button>
             </div>
         </div>
         <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl rounded-md"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
-    <section id="sec-set" class="hidden pt-22 h-screen overflow-y-auto px-4 md:px-6">
+    <section id="sec-set" class="hidden pt-16 h-screen overflow-y-auto px-4 md:px-6">
         <div class="max-w-xl mx-auto text-center mt-4">
             <h2 class="jazz-title text-2xl mb-6" data-i18n="set_title">Programmation</h2>
             <div id="set-list-current" class="bg-[#050508] border border-white/5 rounded-lg min-h-[220px] mb-6 p-4"></div>
@@ -313,35 +454,43 @@
         </div>
     </section>
 
+    <!-- ================================================================
+         VISIONNEUSE
+    ================================================================ -->
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
         
+        <!-- HEADER VISIONNEUSE -->
         <div id="viewer-header" class="glass absolute top-0 w-full p-2 md:p-3 flex justify-between items-center z-[500] transition-opacity duration-300">
+
+            <!-- Groupe gauche : navigation app -->
             <div class="flex items-center gap-1 md:gap-2">
                 <button onclick="goToHome()" class="btn-jazz !border-none !text-lime-400 !px-2 font-bold" data-i18n="btn_home">🏠 Accueil</button>
                 <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-1 md:px-2" data-i18n="btn_close">✕</button>
-                <button onclick="toggleSidebar()" class="btn-jazz !border-zinc-800 !px-2">☰ Menu</button>
+                <button onclick="toggleSidebar()" class="btn-jazz !border-zinc-800 !px-2">☰</button>
             </div>
             
-            <div class="flex items-center gap-2 md:gap-3">
-                <button onclick="prevFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2">◀</button>
+            <!-- Groupe centre : navigation entre fichiers + zoom -->
+            <div class="flex items-center gap-1 md:gap-2">
+                <button onclick="prevFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2" data-i18n="btn_prev">◀ Préc.</button>
                 <div class="flex items-center bg-zinc-900 rounded-lg px-1 border border-white/5">
                     <button onclick="adjustZoom(-0.15)" class="px-2 md:px-3 py-1 text-zinc-400 hover:text-white font-bold text-sm">-</button>
                     <span id="zoom-level" class="text-[11px] w-12 text-center font-bold text-lime-400">100%</span>
                     <button onclick="adjustZoom(0.15)" class="px-2 md:px-3 py-1 text-zinc-400 hover:text-white font-bold text-sm">+</button>
                 </div>
-                <button onclick="nextFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2">▶</button>
+                <button onclick="nextFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2" data-i18n="btn_next">Suiv. ▶</button>
             </div>
 
-            <div class="flex items-center gap-1 md:gap-3">
+            <!-- Groupe droite : outils -->
+            <div class="flex items-center gap-1 md:gap-2">
                 <button onclick="toggleFX()" id="fx-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_settings">Filtres</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !px-2" data-i18n="btn_draw">Dessin</button>
-                <!-- Boutons rotation : antihoraire / horaire — reset automatique à chaque partition -->
+                <!-- Rotation antihoraire / horaire -->
                 <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Rotation (non conservée)">
                     <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation antihoraire">↺</button>
                     <span id="rotate-label" class="text-[10px] w-7 text-center font-bold text-zinc-500">↺↻</span>
                     <button onclick="event.stopPropagation(); rotatePage(+1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation horaire">↻</button>
                 </div>
-                <!-- Bouton 2 pages côte à côte — sans persistance -->
+                <!-- Bouton 2 pages côte à côte -->
                 <button onclick="event.stopPropagation(); toggleDualPage()" id="dual-page-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" title="2 pages côte à côte">⧉</button>
                 <div id="page-info" class="text-white/40 font-bold text-[10px] pr-1 italic hidden sm:block">0 / 0</div>
             </div>
@@ -358,11 +507,29 @@
             </div>
         </div>
 
-        <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-12 pointer-events-none z-[400] transition-opacity duration-300 sm:flex">
-            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
-            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
+        <!-- ============================================================
+             NAVIGATION BAS : Précédent / Suivant entre fichiers
+             FIX : padding-left dynamique via CSS pour éviter le masquage
+             par la sidebar (géré via la classe sur #view-layout)
+        ============================================================ -->
+        <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-8 pointer-events-none z-[400] transition-all duration-300 sm:flex">
+            <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">◀ Précédent</button>
+            <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant ▶</button>
         </div>
 
+        <!-- ============================================================
+             NAVIGATION INTERNE PDF MULTI-PAGES
+             Boutons distincts (violet) pour ne pas interférer avec la
+             navigation entre fichiers (bleu). Affichés uniquement quand
+             le PDF courant a plus d'une page.
+        ============================================================ -->
+        <div id="pdf-page-nav">
+            <button id="pdf-prev-btn" class="pdf-nav-btn" onclick="event.stopPropagation(); scrollToPdfPage(-1)" title="Page PDF précédente">▲</button>
+            <div id="pdf-page-counter">1 / 1</div>
+            <button id="pdf-next-btn" class="pdf-nav-btn" onclick="event.stopPropagation(); scrollToPdfPage(+1)" title="Page PDF suivante">▼</button>
+        </div>
+
+        <!-- Outils dessin et filtres -->
         <div class="right-control-dock">
             <div id="anno-toolbar">
                 <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active style-lime" style="width:30px; height:30px; background:#ccff00; color:#ccff00;"></div>
@@ -397,46 +564,76 @@
     </section>
 
     <script>
+        // ================================================================
+        // INTERNATIONALISATION
+        // ================================================================
         const i18n = {
             fr: {
                 nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
                 btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier",
+                btn_album: "📷 Album",
                 set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
                 btn_close: "✕ Fermer", btn_settings: "Filtres", btn_draw: "Dessin",
                 fx_bright: "Lum", fx_contrast: "Cont", btn_del: "Gomme",
-                btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter", btn_home: "🏠 Accueil"
+                btn_prev: "◀ Préc.", btn_next: "Suiv. ▶", btn_add: "Ajouter", btn_home: "🏠 Accueil",
+                loading_pdf: "Lecture PDF...", decoding_pdf: "Décodage PDF...",
+                loading_img: "Lecture image...",
+                pdf_page: "Page PDF",
             },
             en: {
                 nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
                 btn_restore: "Restore Access", btn_scan: "Scan Folder",
+                btn_album: "📷 Album",
                 set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
                 btn_close: "✕ Close", btn_settings: "Filters", btn_draw: "Draw",
                 fx_bright: "Bright", fx_contrast: "Cont", btn_del: "Eraser",
-                btn_prev: "Previous", btn_next: "Next", btn_add: "Add", btn_home: "🏠 Home"
+                btn_prev: "◀ Prev.", btn_next: "Next ▶", btn_add: "Add", btn_home: "🏠 Home",
+                loading_pdf: "Reading PDF...", decoding_pdf: "Decoding PDF...",
+                loading_img: "Reading image...",
+                pdf_page: "PDF Page",
             }
         };
 
-        let currentLang = localStorage.getItem('part_lang') || 'fr';
-        let files = [], setFiles = [], currentIndex = 0, sources = [];
-        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false, isFxMode = false;
-        let annoColor = '#ccff00', annoSize = 7;
-        let annotations = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
-        let undoStack = [];
-        let currentRotation = 0;  // 0, 90, 180, 270 — reset à chaque partition
-        let zoomMemory = 1.0;     // Zoom conservé entre partitions d'un même set
-        let isDualPage = false;   // Mode 2 pages côte à côte — sans persistance
-        
-        let tpCache = [];
-        let startDist = 0;
-        let startZoom = 1.0;
+        // ================================================================
+        // ÉTAT GLOBAL
+        // ================================================================
+        let currentLang    = localStorage.getItem('part_lang') || 'fr';
+        let files          = [], setFiles = [], currentIndex = 0, sources = [];
+        let uiVisible      = true;
+        let currentZoom    = 1.0;
+        let isDrawingMode  = false, isFxMode = false;
+        let annoColor      = '#ccff00', annoSize = 7;
+        let annotations    = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
+        let undoStack      = [];
+        let currentRotation = 0;   // 0, 90, 180, 270 — reset à chaque partition
+        let zoomMemory      = 1.0; // zoom conservé entre partitions d'un même set
+        let isDualPage      = false;
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        // ----------------------------------------------------------------
+        // Navigation PDF multi-pages
+        // currentPdfPageIndex : index 0-based de la page PDF visible
+        // currentPdfTotalPages : nombre total de pages du PDF ouvert
+        // pdfPageOffsets[] : tableau des offsetTop de chaque page-wrapper PDF
+        //   → mis à jour après le rendu complet, utilisé par scrollToPdfPage()
+        // ----------------------------------------------------------------
+        let currentPdfPageIndex  = 0;
+        let currentPdfTotalPages = 0;
+        let pdfPageOffsets       = []; // offsetTop de chaque page-wrapper dans scroll-container
 
+        let tpCache = [], startDist = 0, startZoom = 1.0;
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            '[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js)';
+
+        // ================================================================
+        // LANGUE
+        // ================================================================
         function setLang(lang) {
-            currentLang = lang; localStorage.setItem('part_lang', lang);
+            currentLang = lang;
+            localStorage.setItem('part_lang', lang);
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                el.innerText = i18n[lang][key] || key;
+                if (i18n[lang][key]) el.innerText = i18n[lang][key];
             });
             document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
             document.getElementById('lang-' + lang).classList.add('active');
@@ -444,22 +641,27 @@
             renderSavedSets();
         }
 
+        // ================================================================
+        // INDEXEDDB
+        // ================================================================
         const DB_NAME = "PartochesDB_Ultimate";
         async function openDB() { 
             return new Promise((r) => { 
                 const req = indexedDB.open(DB_NAME, 1); 
                 req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); 
-                req.onsuccess = (e) => r(req.result); 
+                req.onsuccess = () => r(req.result); 
             }); 
         }
 
+        // ================================================================
+        // INITIALISATION
+        // ================================================================
         async function init() {
             setLang(currentLang);
 
-            // Adapter le label du bouton selon le support de l'API
-            const btnScan = document.querySelector('[data-i18n="btn_scan"]');
+            // Adapter le bouton selon le support de l'API
+            const btnScan = document.getElementById('btn-scan');
             if (typeof window.showDirectoryPicker === 'undefined') {
-                // iOS Safari ou navigateur sans File System Access API
                 btnScan.setAttribute('data-i18n-ios', '1');
                 const iosLabel = { fr: '+ Ajouter Fichiers', en: '+ Add Files' };
                 btnScan.innerText = iosLabel[currentLang];
@@ -468,17 +670,22 @@
                     : 'On iOS, select individual files (PDF, images)';
             }
 
-            const db = await openDB();
+            // Afficher le bouton Album uniquement sur iOS/iPadOS
+            if (isIOSPlatform()) {
+                document.getElementById('btn-album').classList.remove('hidden');
+            }
+
+            const db  = await openDB();
             const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
             req.onsuccess = async () => { 
                 sources = req.result; 
-                if(sources.length > 0) {
+                if (sources.length > 0) {
                     try {
                         let needsReauth = false;
-                        for(const h of sources) { 
+                        for (const h of sources) { 
                             if (!h._virtual) {
                                 const perm = await h.queryPermission({ mode: 'read' });
-                                if(perm !== 'granted') needsReauth = true;
+                                if (perm !== 'granted') needsReauth = true;
                             }
                         }
                         if (needsReauth) document.getElementById('btn-restore').classList.remove('hidden');
@@ -486,49 +693,59 @@
                     } catch(e) { console.error("Restauration échouée:", e); }
                 }
             };
+
             renderSavedSets();
             generateAlphaBar();
             setupPinchZoom();
+            setupPdfPageScrollSpy();
             
             new Sortable(document.getElementById('sidebar-items'), {
                 animation: 180,
                 onEnd: function (evt) {
                     const movedItem = setFiles.splice(evt.oldIndex, 1)[0];
                     setFiles.splice(evt.newIndex, 0, movedItem);
-                    if (currentIndex === evt.oldIndex) {
-                        currentIndex = evt.newIndex;
-                    } else if (currentIndex > evt.oldIndex && currentIndex <= evt.newIndex) {
-                        currentIndex--;
-                    } else if (currentIndex < evt.oldIndex && currentIndex >= evt.newIndex) {
-                        currentIndex++;
-                    }
+                    if      (currentIndex === evt.oldIndex)                                        currentIndex = evt.newIndex;
+                    else if (currentIndex > evt.oldIndex && currentIndex <= evt.newIndex)          currentIndex--;
+                    else if (currentIndex < evt.oldIndex && currentIndex >= evt.newIndex)          currentIndex++;
                     document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
                     renderSidebar();
                 }
             });
             
-            // Réaligner l'UI mobile lors d'un changement d'orientation
-            window.addEventListener("orientationchange", () => {
-                setTimeout(applyPageScales, 350);
-            });
-            window.addEventListener("resize", () => {
-                setTimeout(applyPageScales, 100);
-            });
+            window.addEventListener("orientationchange", () => setTimeout(() => {
+                applyPageScales();
+                rebuildPdfPageOffsets();
+            }, 350));
+            window.addEventListener("resize", () => setTimeout(() => {
+                applyPageScales();
+                rebuildPdfPageOffsets();
+            }, 100));
         }
 
-        // --- AJOUT DE SOURCE AVEC FALLBACK iOS/SAFARI ---
-        // showDirectoryPicker n'est pas disponible sur iOS Safari.
-        // Sur iOS, on propose un input file multiple comme alternative.
+        // ================================================================
+        // DÉTECTION PLATEFORME
+        // ================================================================
+        function isMobilePlatform() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                || (navigator.maxTouchPoints > 1 && /MacIntel/.test(navigator.platform));
+        }
+
+        function isIOSPlatform() {
+            return /iPhone|iPad|iPod/i.test(navigator.userAgent)
+                || (navigator.maxTouchPoints > 1 && /MacIntel/.test(navigator.platform));
+        }
+
+        // ================================================================
+        // AJOUT DE SOURCE — File System Access API (desktop/Android)
+        // ================================================================
         async function addSource() {
-            // Vérification support File System Access API
             if (typeof window.showDirectoryPicker === 'undefined') {
-                // Fallback iOS/Safari : sélection multiple de fichiers
                 addSourceFallbackIOS();
                 return;
             }
             try {
                 const h = await window.showDirectoryPicker({ mode: 'read' });
-                if(sources.find(s => s.name === h.name)) {
+                if (sources.find(s => s.name === h.name)) {
                     alert(currentLang === 'fr' ? "Ce dossier est déjà ajouté." : "This folder is already added.");
                     return;
                 }
@@ -537,67 +754,98 @@
                 sources.push(h);
                 await refreshFiles();
             } catch(e) {
-                if (e.name === 'AbortError') return; // Utilisateur a annulé
-                // Erreur inattendue → proposer le fallback
+                if (e.name === 'AbortError') return;
                 if (confirm(
                     currentLang === 'fr'
                         ? "Impossible d'accéder aux dossiers dans ce navigateur.\nVoulez-vous sélectionner vos fichiers manuellement ?"
                         : "Cannot access folders in this browser.\nDo you want to select your files manually?"
-                )) {
-                    addSourceFallbackIOS();
-                }
+                )) addSourceFallbackIOS();
             }
         }
 
-        // Fallback : input file multiple pour iOS Safari et navigateurs sans File System Access API
+        // ================================================================
+        // FALLBACK iOS — sélection de fichiers individuels
+        // ================================================================
         function addSourceFallbackIOS() {
             const input = document.createElement('input');
-            input.type = 'file';
+            input.type     = 'file';
             input.multiple = true;
-            input.accept = '.pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf';
+            input.accept   = '.pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf';
             input.style.display = 'none';
             document.body.appendChild(input);
-            input.onchange = async () => {
-                if (!input.files || input.files.length === 0) { input.remove(); return; }
-                const newFiles = [];
-                for (const file of input.files) {
-                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
-                        // Créer un objet compatible avec le reste du code
-                        newFiles.push({ entry: { name: file.name, _blob: file, getFile: () => Promise.resolve(file) } });
-                    }
-                }
-                // Source virtuelle pour le fallback
-                const virtualSourceName = currentLang === 'fr' ? 'Fichiers sélectionnés' : 'Selected Files';
-                // Ajouter une source fictive pour l'affichage
-                if (!sources.find(s => s.name === virtualSourceName)) {
-                    sources.push({ name: virtualSourceName, _virtual: true, _files: [] });
-                }
-                const vsrc = sources.find(s => s.name === virtualSourceName);
-                vsrc._files = (vsrc._files || []).concat(newFiles);
-                files.push(...newFiles);
-                renderLibrary();
-                renderSourcesUI();
-                input.remove();
-                if (newFiles.length > 0) {
-                    const msg = currentLang === 'fr'
-                        ? `${newFiles.length} fichier(s) ajouté(s) avec succès.`
-                        : `${newFiles.length} file(s) added successfully.`;
-                    // Feedback visuel subtil
-                    const banner = document.createElement('div');
-                    banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--neon-lime);color:#000;font-weight:bold;font-size:11px;padding:8px 20px;border-radius:6px;z-index:9999;letter-spacing:1px;';
-                    banner.innerText = msg;
-                    document.body.appendChild(banner);
-                    setTimeout(() => banner.remove(), 2500);
-                }
-            };
+            input.onchange = () => _processInputFiles(input.files, input);
             input.click();
         }
 
+        // ================================================================
+        // AJOUT D'UN ALBUM ENTIER — iOS uniquement
+        // Utilise l'attribut accept="image/*" sans `multiple` pour déclencher
+        // le sélecteur d'album natif iOS qui permet de choisir tous les
+        // éléments d'un album d'un coup (comportement natif iOS 14+).
+        // ================================================================
+        function addAlbumIOS() {
+            const input = document.createElement('input');
+            input.type     = 'file';
+            input.multiple = true;   // Permet la sélection multiple dans l'album
+            input.accept   = 'image/*';
+            // Sur iOS, ne PAS ajouter capture="environment" pour ouvrir la
+            // photothèque plutôt que l'appareil photo
+            input.style.display = 'none';
+            document.body.appendChild(input);
+
+            // Note : iOS 14+ propose "Sélectionner les photos" → on peut choisir
+            // un album entier. La sélection multiple native est activée par `multiple`.
+            input.onchange = () => _processInputFiles(input.files, input);
+            input.click();
+        }
+
+        // Traitement commun des fichiers sélectionnés (fallback iOS + album)
+        async function _processInputFiles(fileList, inputEl) {
+            if (!fileList || fileList.length === 0) { if (inputEl) inputEl.remove(); return; }
+
+            const newFiles = [];
+            for (const file of fileList) {
+                if (file.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)
+                    || file.type.startsWith('image/')
+                    || file.type === 'application/pdf') {
+                    newFiles.push({
+                        entry: {
+                            name:    file.name,
+                            _blob:   file,
+                            getFile: () => Promise.resolve(file)
+                        }
+                    });
+                }
+            }
+
+            const virtualSourceName = currentLang === 'fr' ? 'Fichiers sélectionnés' : 'Selected Files';
+            if (!sources.find(s => s.name === virtualSourceName)) {
+                sources.push({ name: virtualSourceName, _virtual: true, _files: [] });
+            }
+            const vsrc = sources.find(s => s.name === virtualSourceName);
+            vsrc._files = (vsrc._files || []).concat(newFiles);
+            files.push(...newFiles);
+
+            renderLibrary();
+            renderSourcesUI();
+            if (inputEl) inputEl.remove();
+
+            if (newFiles.length > 0) {
+                showFeedbackBanner(
+                    currentLang === 'fr'
+                        ? `${newFiles.length} fichier(s) ajouté(s) ✔`
+                        : `${newFiles.length} file(s) added ✔`
+                );
+            }
+        }
+
+        // ================================================================
+        // SUPPRESSION DE SOURCE
+        // ================================================================
         async function removeSource(name) {
-            if(!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier ?" : "Remove access to this folder?")) return;
+            if (!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier ?" : "Remove access to this folder?")) return;
             const src = sources.find(s => s.name === name);
             if (src && !src._virtual) {
-                // Source réelle File System Access API
                 const db = await openDB();
                 db.transaction("sources", "readwrite").objectStore("sources").delete(name);
             }
@@ -607,19 +855,14 @@
 
         async function refreshFiles() {
             files = [];
-            // Activer le pré-cache contenu sur mobile (handles FileSystem Access stables pendant le scan)
             mobilePrecacheEnabled = shouldPrecacheOnMobile();
-            if (mobilePrecacheEnabled) {
-                console.log('[Partoches] Mode pré-cache mobile activé — lecture anticipée des fichiers');
-            }
-            for(const h of sources) {
+            if (mobilePrecacheEnabled) console.log('[Partoches] Mode pré-cache mobile activé');
+            for (const h of sources) {
                 try {
                     if (h._virtual) {
-                        // Source iOS fallback : fichiers déjà en mémoire
                         if (h._files) files.push(...h._files);
                     } else {
-                        const results = await scanFolder(h);
-                        files.push(...results);
+                        files.push(...(await scanFolder(h)));
                     }
                 } catch(e) { console.warn("Dossier inaccessible", h.name, e); }
             }
@@ -627,15 +870,14 @@
             renderSourcesUI();
         }
 
-        async function scanFolder(handle) {
-            // Déléguer au scanner avec cache pour permettre le re-scan sur NotFoundError
-            return scanFolderWithCache(handle, null);
-        }
+        async function scanFolder(handle) { return scanFolderWithCache(handle, null); }
 
         function renderSourcesUI() {
-            const container = document.getElementById('source-list'); container.innerHTML = '';
+            const container = document.getElementById('source-list');
+            container.innerHTML = '';
             sources.forEach(s => {
-                const tag = document.createElement('div'); tag.className = 'source-tag';
+                const tag = document.createElement('div');
+                tag.className = 'source-tag';
                 tag.innerHTML = `${s.name} <span class="source-delete" onclick="removeSource('${s.name}')">✕</span>`;
                 container.appendChild(tag);
             });
@@ -643,7 +885,7 @@
 
         async function restoreAccess() {
             try {
-                for(const h of sources) { 
+                for (const h of sources) { 
                     if (!h._virtual) await h.requestPermission({ mode: 'read' }); 
                 }
                 document.getElementById('btn-restore').classList.add('hidden');
@@ -653,17 +895,29 @@
             }
         }
 
+        // ================================================================
+        // BIBLIOTHÈQUE — RENDU
+        // ================================================================
         function renderLibrary(filter = '') {
-            const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !filter || x.entry.name.toUpperCase().startsWith(filter))
-                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
-                 .forEach(file => {
+            const l = document.getElementById('library-list');
+            l.innerHTML = '';
+            files
+                .filter(x => !filter || x.entry.name.toUpperCase().startsWith(filter))
+                .sort((a, b) => a.entry.name.localeCompare(b.entry.name))
+                .forEach(file => {
                     const row = document.createElement('div');
                     row.className = "file-row flex justify-between items-center p-3 px-4";
-                    row.innerHTML = `<div class="flex-grow font-medium text-zinc-300 text-[12px] truncate pr-4" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
-                                     <button onclick="handleSelectLibraryItem(this, '${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 transition-all duration-200">${i18n[currentLang].btn_add}</button>`;
+                    row.innerHTML = `
+                        <div class="flex-grow font-medium text-zinc-300 text-[12px] truncate pr-4"
+                             onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">
+                            ${file.entry.name}
+                        </div>
+                        <button onclick="handleSelectLibraryItem(this, '${file.entry.name.replace(/'/g, "\\'")}');"
+                                class="btn-jazz !py-1 transition-all duration-200">
+                            ${i18n[currentLang].btn_add}
+                        </button>`;
                     l.appendChild(row);
-                 });
+                });
         }
 
         function handleSelectLibraryItem(buttonEl, filename) {
@@ -680,16 +934,21 @@
         function generateAlphaBar() {
             const bar = document.getElementById('alpha-bar');
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
-                const b = document.createElement('button'); b.innerText = l;
-                b.onclick = () => renderLibrary(l); bar.appendChild(b);
+                const b = document.createElement('button');
+                b.innerText = l;
+                b.onclick = () => renderLibrary(l);
+                bar.appendChild(b);
             });
         }
 
+        // ================================================================
+        // SETLIST
+        // ================================================================
         function addToSet(name) {
             const div = document.createElement('div');
             div.className = "flex justify-between items-center bg-[#141419] p-3 mb-2 rounded border border-white/5 cursor-move";
             div.dataset.name = name;
-            div.innerHTML = `<span class="text-[11px] text-zinc-300 font-bold truncate pr-3">${name}</span> 
+            div.innerHTML = `<span class="text-[11px] text-zinc-300 font-bold truncate pr-3">${name}</span>
                              <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
             document.getElementById('set-list-current').appendChild(div);
             new Sortable(document.getElementById('set-list-current'), { animation: 150 });
@@ -703,25 +962,37 @@
             renderSavedSets();
         }
 
-        function clearCurrentSet() { if(confirm("Vider la liste actuelle ?")) document.getElementById('set-list-current').innerHTML = ''; }
-
-        function renderSavedSets() {
-            const list = document.getElementById('saved-sets-list'); list.innerHTML = '';
-            Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
-                const name = key.replace('part_set_', '');
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-zinc-900/30 border border-white/5 p-3 rounded";
-                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px] truncate pr-4" onclick="loadSet('${key}')">${name}</div>
-                                 <button onclick="deleteSet('${key}')" class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
-                list.appendChild(div);
-            });
+        function clearCurrentSet() {
+            if (confirm("Vider la liste actuelle ?"))
+                document.getElementById('set-list-current').innerHTML = '';
         }
 
-        function deleteSet(key) { if(confirm("Supprimer ce set ?")) { localStorage.removeItem(key); renderSavedSets(); } }
+        function renderSavedSets() {
+            const list = document.getElementById('saved-sets-list');
+            list.innerHTML = '';
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('part_set_'))
+                .forEach(key => {
+                    const name = key.replace('part_set_', '');
+                    const div  = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-zinc-900/30 border border-white/5 p-3 rounded";
+                    div.innerHTML = `
+                        <div class="font-bold text-lime-400 cursor-pointer text-[11px] truncate pr-4"
+                             onclick="loadSet('${key}')">${name}</div>
+                        <button onclick="deleteSet('${key}')"
+                                class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
+                    list.appendChild(div);
+                });
+        }
+
+        function deleteSet(key) {
+            if (confirm("Supprimer ce set ?")) { localStorage.removeItem(key); renderSavedSets(); }
+        }
 
         function loadSet(key) {
             const names = JSON.parse(localStorage.getItem(key));
-            setFiles = []; document.getElementById('set-list-current').innerHTML = '';
+            setFiles = [];
+            document.getElementById('set-list-current').innerHTML = '';
             names.forEach(n => {
                 const f = files.find(file => file.entry.name === n);
                 if (f) { setFiles.push(f); addToSet(n); }
@@ -729,81 +1000,27 @@
             if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
         }
 
-        // --- CONSERVATION DU ZOOM ENTRE PARTITIONS DU MÊME SET ---
-        // On conserve le zoom courant lors de la navigation entre partitions
-        // --- DÉTECTION MOBILE ROBUSTE ---
-        function isMobilePlatform() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-                || (navigator.maxTouchPoints > 1 && /MacIntel/.test(navigator.platform)); // iPad iOS 13+
-        }
+        // ================================================================
+        // CACHE CONTENU FICHIER (mobile robustesse)
+        // ================================================================
+        const fileContentCache      = new Map();
+        const fileHandleParentCache = new Map();
+        let mobilePrecacheEnabled   = false;
 
-        // =====================================================================
-        // COUCHE D'ABSTRACTION LECTURE FICHIER — ROBUSTE MULTI-PLATEFORME
-        // =====================================================================
-        //
-        // Diagnostic de l'erreur "NotFoundError" sur mobile :
-        //
-        //  Sur Chrome Android et iOS Safari avec l'API File System Access,
-        //  un FileSystemFileHandle peut devenir "stale" (périmé) dès lors que :
-        //   • La page a été mise en arrière-plan quelques secondes
-        //   • L'application a été suspendue par l'OS mobile (économie batterie)
-        //   • La permission d'accès au dossier a expiré silencieusement
-        //   • Un autre onglet a verrouillé le fichier (rare, mais possible)
-        //
-        //  Dans ce cas, fileHandle.getFile() lève NotFoundError même si le fichier
-        //  existe bien sur le disque. C'est un bug/comportement documenté des
-        //  navigateurs mobiles avec l'Origin Private File System.
-        //
-        //  STRATÉGIE DE RÉSOLUTION EN 3 NIVEAUX :
-        //   1. Vérifier/redemander la permission sur le handle parent (dossier source)
-        //   2. Relancer getFile() après un délai court (le navigateur peut avoir besoin
-        //      d'un tick pour rafraîchir le handle)
-        //   3. Si toujours NotFoundError : re-scanner le dossier source pour obtenir
-        //      un handle frais sur le même fichier, par nom
-        //
-        // =====================================================================
-
-        // =====================================================================
-        // STRATÉGIE CACHE CONTENU FICHIER POUR MOBILE
-        // =====================================================================
-        //
-        //  Sur Android Chrome avec l'API File System Access, un FileSystemFileHandle
-        //  devient invalide ("stale") entre deux ouvertures de fichier dans la session,
-        //  notamment après que l'OS a suspendu le processus ou que la permission
-        //  a expiré silencieusement. Le résultat : NotFoundError dans FileReader.
-        //
-        //  SOLUTION DÉFINITIVE :
-        //  Sur mobile, on lit le contenu de chaque fichier IMMÉDIATEMENT lors du scan
-        //  initial (pendant que la permission est fraîche) et on le met en cache en RAM.
-        //  Lors de l'affichage, on utilise ce cache plutôt que de re-lire le handle.
-        //
-        //  Sur PC, on ne fait PAS ce pré-chargement (inutile et coûteux en mémoire
-        //  pour de grandes bibliothèques) : les handles y restent stables.
-        //
-        //  Cache structure : Map<fileName, { arrayBuffer?: ArrayBuffer, dataUrl?: string }>
-        // =====================================================================
-        const fileContentCache = new Map();
-        const fileHandleParentCache = new Map(); // Map<fileName, { dirHandle, sourceHandle }>
-        let mobilePrecacheEnabled = false; // activé uniquement sur mobile après détection
-
-        // Détecte si on est sur mobile et active le pré-cache si nécessaire
         function shouldPrecacheOnMobile() {
             return isMobilePlatform() && typeof window.showDirectoryPicker !== 'undefined';
         }
 
-        // Pré-lit le contenu d'un fichier et le met en cache (mobile uniquement)
         async function precacheFileContent(entry) {
             if (!mobilePrecacheEnabled) return;
-            if (fileContentCache.has(entry.name)) return; // déjà en cache
-
+            if (fileContentCache.has(entry.name)) return;
             try {
-                const file = await entry.getFile();
+                const file  = await entry.getFile();
                 const isPdf = entry.name.toLowerCase().endsWith('.pdf');
                 if (isPdf) {
                     const buf = await file.arrayBuffer();
                     fileContentCache.set(entry.name, { arrayBuffer: buf, type: 'pdf' });
                 } else {
-                    // Pour les images : dataURL via FileReader
                     const dataUrl = await new Promise((res, rej) => {
                         const fr = new FileReader();
                         fr.onload  = e => res(e.target.result);
@@ -812,25 +1029,18 @@
                     });
                     fileContentCache.set(entry.name, { dataUrl, type: 'image' });
                 }
-                console.log('[Partoches] Pré-cache OK:', entry.name);
             } catch (e) {
-                // Pré-cache échoue silencieusement : sera retentée à l'ouverture
                 console.warn('[Partoches] Pré-cache échoué pour', entry.name, e.name);
             }
         }
 
-        // Scanner récursif avec cache de dossier parent ET pré-cache contenu sur mobile
         async function scanFolderWithCache(handle, parentHandle) {
             const results = [];
             for await (const entry of handle.values()) {
                 if (entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp)$/i)) {
                     results.push({ entry });
-                    // Mémoriser le dossier contenant ce fichier (pour re-scan sur NotFoundError)
                     fileHandleParentCache.set(entry.name, { dirHandle: handle, sourceHandle: parentHandle || handle });
-                    // Sur mobile : pré-lire le contenu pendant que la permission est fraîche
-                    if (mobilePrecacheEnabled) {
-                        await precacheFileContent(entry);
-                    }
+                    if (mobilePrecacheEnabled) await precacheFileContent(entry);
                 } else if (entry.kind === 'directory') {
                     results.push(...(await scanFolderWithCache(entry, parentHandle || handle)));
                 }
@@ -838,111 +1048,69 @@
             return results;
         }
 
-        // Tenter de retrouver un handle frais par re-scan du dossier parent
         async function refreshFileHandle(fileName) {
             const cached = fileHandleParentCache.get(fileName);
             if (!cached) return null;
             try {
-                // Re-scanner uniquement le dossier direct contenant le fichier
                 for await (const entry of cached.dirHandle.values()) {
-                    if (entry.kind === 'file' && entry.name === fileName) {
-                        console.log('[Partoches] Handle rafraîchi via re-scan pour:', fileName);
-                        return entry;
-                    }
+                    if (entry.kind === 'file' && entry.name === fileName) return entry;
                 }
-            } catch (e) {
-                console.warn('[Partoches] Re-scan échoué:', e);
-            }
+            } catch (e) { console.warn('[Partoches] Re-scan échoué:', e); }
             return null;
         }
 
-        // Lecture robuste d'un File depuis un FileSystemFileHandle avec cache + retry + re-scan
-        // Ordre de priorité :
-        //   1. Cache contenu (mobile pré-cache) → pas besoin de handle du tout
-        //   2. getFile() direct → fonctionne si handle encore valide
-        //   3. Re-permission + retry → handle redevient valide après permission
-        //   4. Re-scan dossier parent → nouveau handle frais
         async function getFileRobust(fileEntry) {
-            // Priorité 0 : blob direct (fallback iOS sans File System Access API)
             if (fileEntry._blob) return fileEntry._blob;
 
-            // Priorité 1 : CACHE CONTENU MOBILE
-            // Si le contenu a été pré-lu lors du scan, on retourne un File synthétique
-            // construit depuis le cache — aucun handle nécessaire, aucun NotFoundError possible
             if (mobilePrecacheEnabled && fileContentCache.has(fileEntry.name)) {
                 const cached = fileContentCache.get(fileEntry.name);
-                console.log('[Partoches] Lecture depuis cache mobile:', fileEntry.name);
-                // Reconstruire un File depuis le cache pour que FileReader puisse le lire
                 if (cached.type === 'pdf' && cached.arrayBuffer) {
                     const blob = new Blob([cached.arrayBuffer], { type: 'application/pdf' });
                     return new File([blob], fileEntry.name, { type: 'application/pdf' });
                 }
                 if (cached.type === 'image' && cached.dataUrl) {
-                    // Décoder le dataURL → Blob → File
-                    const res    = await fetch(cached.dataUrl);
-                    const blob   = await res.blob();
+                    const res  = await fetch(cached.dataUrl);
+                    const blob = await res.blob();
                     return new File([blob], fileEntry.name, { type: blob.type });
                 }
             }
 
-            // Priorité 2 : lecture directe du handle (comportement normal, PC et mobile frais)
             try {
                 const file = await fileEntry.getFile();
                 if (file && file.size >= 0) return file;
             } catch (err1) {
-                console.warn('[Partoches] getFile() tentative 1 échouée:', err1.name, err1.message);
+                console.warn('[Partoches] getFile() tentative 1 échouée:', err1.name);
 
-                if (err1.name === 'NotFoundError' || err1.name === 'SecurityError' || err1.name === 'NotAllowedError') {
-
-                    // Priorité 3 : re-demander la permission sur les sources parentes
+                if (['NotFoundError','SecurityError','NotAllowedError'].includes(err1.name)) {
                     for (const src of sources) {
                         if (src._virtual) continue;
                         try {
                             const perm = await src.queryPermission({ mode: 'read' });
-                            if (perm !== 'granted') {
-                                console.log('[Partoches] Re-demande permission pour:', src.name);
-                                await src.requestPermission({ mode: 'read' });
-                            }
-                        } catch (permErr) {
-                            console.warn('[Partoches] requestPermission échoué:', permErr);
-                        }
+                            if (perm !== 'granted') await src.requestPermission({ mode: 'read' });
+                        } catch (permErr) { console.warn('[Partoches] requestPermission échoué:', permErr); }
                     }
-
-                    // Délai court : laisser le navigateur traiter la permission
                     await new Promise(r => setTimeout(r, 150));
-
-                    // Retry après permission
                     try {
                         const file = await fileEntry.getFile();
                         if (file && file.size >= 0) {
-                            console.log('[Partoches] getFile() OK après re-permission');
-                            // Mettre à jour le cache pour la prochaine fois
                             if (mobilePrecacheEnabled) precacheFileContent(fileEntry);
                             return file;
                         }
                     } catch (err2) {
-                        console.warn('[Partoches] getFile() tentative 2 échouée:', err2.name);
-
-                        // Priorité 4 : re-scan du dossier parent → handle neuf
                         const freshHandle = await refreshFileHandle(fileEntry.name);
                         if (freshHandle) {
                             try {
                                 const file = await freshHandle.getFile();
                                 if (file && file.size >= 0) {
-                                    console.log('[Partoches] getFile() OK via handle frais (re-scan)');
-                                    // Mettre à jour le handle dans setFiles
                                     const idx = setFiles.findIndex(f => f.entry.name === fileEntry.name);
                                     if (idx >= 0) setFiles[idx].entry = freshHandle;
-                                    // Pré-cacher le contenu pour éviter une 5ème tentative
                                     if (mobilePrecacheEnabled) await precacheFileContent(freshHandle);
                                     return file;
                                 }
                             } catch (err3) {
-                                console.error('[Partoches] Toutes tentatives épuisées:', err3);
                                 throw new Error(`NotFoundError: impossible d'accéder à "${fileEntry.name}" — ${err3.message}`);
                             }
                         }
-
                         throw new Error(`NotFoundError: "${fileEntry.name}" inaccessible — ${err2.message}`);
                     }
                 } else {
@@ -951,67 +1119,42 @@
             }
         }
 
-        // Lit un fichier et retourne un ArrayBuffer
-        // Optimisation mobile : utilise directement le cache ArrayBuffer si disponible
-        // (évite le round-trip File → FileReader → ArrayBuffer)
         async function readFileAsArrayBuffer(fileEntry) {
-            // Court-circuit pour les PDF en cache mobile : ArrayBuffer déjà disponible
             if (mobilePrecacheEnabled && fileContentCache.has(fileEntry.name)) {
                 const cached = fileContentCache.get(fileEntry.name);
-                if (cached.type === 'pdf' && cached.arrayBuffer) {
-                    console.log('[Partoches] PDF depuis cache ArrayBuffer direct:', fileEntry.name);
-                    // Copie obligatoire : pdfjsLib transfère le buffer (detach)
-                    return cached.arrayBuffer.slice(0);
-                }
+                if (cached.type === 'pdf' && cached.arrayBuffer) return cached.arrayBuffer.slice(0);
             }
             const file = await getFileRobust(fileEntry);
-            // Utiliser file.arrayBuffer() si disponible (plus rapide que FileReader)
             if (typeof file.arrayBuffer === 'function') {
-                try {
-                    return await file.arrayBuffer();
-                } catch (e) {
-                    // Fallback FileReader si arrayBuffer() échoue (Safari < 14)
-                }
+                try { return await file.arrayBuffer(); } catch (e) {}
             }
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload  = (e) => resolve(e.target.result);
-                reader.onerror = (e) => {
-                    const errName = e.target.error ? e.target.error.name : 'unknown';
-                    const errMsg  = e.target.error ? e.target.error.message : 'FileReader error';
-                    reject(new Error(`FileReader [${errName}]: ${errMsg}`));
-                };
-                reader.onabort = () => reject(new Error('FileReader: lecture annulée'));
+                reader.onerror = (e) => reject(new Error(`FileReader [${e.target.error?.name}]: ${e.target.error?.message}`));
+                reader.onabort = ()  => reject(new Error('FileReader: lecture annulée'));
                 reader.readAsArrayBuffer(file);
             });
         }
 
-        // Lit un fichier et retourne une base64 dataURL
-        // Optimisation mobile : utilise directement le cache dataUrl si disponible
         async function readFileAsDataURL(fileEntry) {
-            // Court-circuit pour les images en cache mobile : dataURL déjà disponible
             if (mobilePrecacheEnabled && fileContentCache.has(fileEntry.name)) {
                 const cached = fileContentCache.get(fileEntry.name);
-                if (cached.type === 'image' && cached.dataUrl) {
-                    console.log('[Partoches] Image depuis cache dataURL direct:', fileEntry.name);
-                    return cached.dataUrl;
-                }
+                if (cached.type === 'image' && cached.dataUrl) return cached.dataUrl;
             }
             const file = await getFileRobust(fileEntry);
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload  = (e) => resolve(e.target.result);
-                reader.onerror = (e) => {
-                    const errName = e.target.error ? e.target.error.name : 'unknown';
-                    const errMsg  = e.target.error ? e.target.error.message : 'FileReader error';
-                    reject(new Error(`FileReader [${errName}]: ${errMsg}`));
-                };
-                reader.onabort = () => reject(new Error('FileReader: lecture annulée'));
+                reader.onerror = (e) => reject(new Error(`FileReader [${e.target.error?.name}]: ${e.target.error?.message}`));
+                reader.onabort = ()  => reject(new Error('FileReader: lecture annulée'));
                 reader.readAsDataURL(file);
             });
         }
 
-        // --- AFFICHAGE DU SPINNER DE CHARGEMENT ---
+        // ================================================================
+        // SPINNER + ERREURS
+        // ================================================================
         function showLoadingSpinner(container, label) {
             const msg = label || (currentLang === 'fr' ? 'Chargement...' : 'Loading...');
             container.innerHTML = `
@@ -1023,41 +1166,37 @@
                 <style>@keyframes spin { to { transform: rotate(360deg); } }</style>`;
         }
 
-        // --- AFFICHAGE D'UNE ERREUR AVEC DIAGNOSTIC ET ACTIONS ---
         function showFileError(container, err, fileName) {
             console.error('[Partoches] Erreur lecture fichier:', fileName, err);
-
-            const isNotFound   = err.message && (err.message.includes('NotFoundError') || err.message.includes('NotFound'));
-            const isPermission = err.message && (err.message.includes('NotAllowedError') || err.message.includes('SecurityError') || err.message.includes('permission'));
-            const isMem        = err.message && (err.message.includes('out of memory') || err.message.includes('QuotaExceeded'));
+            const isNotFound   = err.message && err.message.includes('NotFound');
+            const isPermission = err.message && /NotAllowedError|SecurityError|permission/.test(err.message);
+            const isMem        = err.message && /out of memory|QuotaExceeded/.test(err.message);
 
             let title, detail, action = '';
             if (isNotFound) {
                 title  = currentLang === 'fr' ? 'Fichier introuvable' : 'File not found';
                 detail = currentLang === 'fr'
-                    ? `Le handle du fichier "<b>${fileName}</b>" est devenu invalide. Cela arrive sur mobile quand l'appli a été mise en veille. Retournez au Répertoire et réouvrez le fichier.`
-                    : `The file handle for "<b>${fileName}</b>" became invalid. This happens on mobile when the app was suspended. Go back to Library and reopen the file.`;
+                    ? `Le handle de "<b>${fileName}</b>" est devenu invalide (veille mobile). Retournez au Répertoire.`
+                    : `The handle for "<b>${fileName}</b>" became invalid (mobile sleep). Go back to Library.`;
                 action = `<button onclick="switchTab('lib')" class="btn-jazz" style="margin-top:10px;">
-                            ${currentLang === 'fr' ? '→ Répertoire' : '→ Library'}
-                          </button>`;
+                            ${currentLang === 'fr' ? '→ Répertoire' : '→ Library'}</button>`;
             } else if (isPermission) {
                 title  = currentLang === 'fr' ? 'Permission expirée' : 'Permission expired';
                 detail = currentLang === 'fr'
-                    ? 'L\'accès au dossier a expiré. Appuyez sur "Rétablir Accès" pour continuer.'
-                    : 'Folder access has expired. Press "Restore Access" to continue.';
-                action = `<button onclick="switchTab('lib'); document.getElementById('btn-restore').classList.remove('hidden')" class="btn-jazz" style="margin-top:10px;">
-                            ${currentLang === 'fr' ? '→ Rétablir Accès' : '→ Restore Access'}
-                          </button>`;
+                    ? 'L\'accès au dossier a expiré. Appuyez sur "Rétablir Accès".'
+                    : 'Folder access expired. Press "Restore Access".';
+                action = `<button onclick="switchTab('lib'); document.getElementById('btn-restore').classList.remove('hidden')"
+                                  class="btn-jazz" style="margin-top:10px;">
+                            ${currentLang === 'fr' ? '→ Rétablir Accès' : '→ Restore Access'}</button>`;
             } else if (isMem) {
                 title  = currentLang === 'fr' ? 'Mémoire insuffisante' : 'Out of memory';
                 detail = currentLang === 'fr'
-                    ? 'Ce fichier est trop volumineux pour être chargé. Fermez d\'autres onglets et réessayez.'
-                    : 'This file is too large to load. Close other tabs and try again.';
+                    ? 'Fichier trop volumineux. Fermez d\'autres onglets et réessayez.'
+                    : 'File too large. Close other tabs and try again.';
             } else {
                 title  = currentLang === 'fr' ? 'Erreur lecture' : 'Read error';
                 detail = `<small style="color:#888;font-family:monospace;font-size:10px;">${err.message || err}</small>`;
             }
-
             container.innerHTML = `
                 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
                             min-height:50vh;gap:16px;padding:30px;text-align:center;">
@@ -1068,22 +1207,76 @@
                 </div>`;
         }
 
-        // =====================================================================
-        // OUVERTURE ET RENDU D'UN FICHIER — TOUTES PLATEFORMES
-        // =====================================================================
+        // ================================================================
+        // FEEDBACK BANNER — remplace les alert() visuels
+        // ================================================================
+        function showFeedbackBanner(msg, durationMs = 2500) {
+            const existing = document.querySelector('.feedback-banner');
+            if (existing) existing.remove();
+            const banner = document.createElement('div');
+            banner.className = 'feedback-banner';
+            banner.innerText = msg;
+            document.body.appendChild(banner);
+            setTimeout(() => {
+                banner.classList.add('fade');
+                setTimeout(() => banner.remove(), 450);
+            }, durationMs);
+        }
+
+        // ================================================================
+        // ZOOM INITIAL — PLEIN ÉCRAN PAR DÉFAUT (PC + tablette)
+        // Calcule le zoom pour que la partition occupe la fenêtre en hauteur
+        // ou en largeur selon l'orientation, avec une marge de 5%.
+        // Sur mobile portrait : on utilise la même logique (1.0 reste le
+        // minimum pour ne pas réduire une partition déjà petite).
+        // ================================================================
+        function computeInitialZoom() {
+            // Dimensions disponibles dans le viewer (sans le header ~60px)
+            const availH = window.innerHeight - 70;
+            const availW = window.innerWidth;
+
+            // Largeur naturelle d'une page PDF standard : 612pt × pdfScale
+            // On récupère la première page-wrapper si elle existe déjà
+            const firstWrapper = document.querySelector('.page-wrapper');
+            if (!firstWrapper) return 1.0;
+
+            const naturalW = firstWrapper.offsetWidth;
+            const naturalH = firstWrapper.offsetHeight;
+
+            if (naturalW <= 0 || naturalH <= 0) return 1.0;
+
+            // Zoom qui ferait tenir la page en hauteur
+            const zoomForHeight = (availH * 0.95) / naturalH;
+            // Zoom qui ferait tenir la page en largeur
+            const zoomForWidth  = (availW * 0.95) / naturalW;
+
+            // On prend le plus petit des deux pour que tout soit visible
+            const computed = Math.min(zoomForHeight, zoomForWidth);
+
+            // Bornes : entre 0.4 et 3.5, arrondi à 2 décimales
+            return Math.max(0.4, Math.min(3.5, Math.round(computed * 100) / 100));
+        }
+
+        // ================================================================
+        // OUVERTURE ET RENDU D'UN FICHIER
+        // ================================================================
         async function openFile(obj) {
-            if(!obj) return;
+            if (!obj) return;
             switchTab('view');
 
             const container = document.getElementById('viewer-content');
+            const zoomToApply = (setFiles.length > 1) ? zoomMemory : null; // null = auto
 
-            // Conserver le zoom entre les fichiers d'un même set (> 1 fichier)
-            const zoomToApply = (setFiles.length > 1) ? zoomMemory : 1.0;
-
-            // Rotation toujours réinitialisée à 0 pour chaque nouvelle partition
+            // Réinitialiser rotation
             currentRotation = 0;
             const rotLabel = document.getElementById('rotate-label');
             if (rotLabel) rotLabel.innerText = '↺↻';
+
+            // Réinitialiser navigation PDF
+            currentPdfPageIndex  = 0;
+            currentPdfTotalPages = 0;
+            pdfPageOffsets       = [];
+            hidePdfPageNav();
 
             showLoadingSpinner(container);
 
@@ -1095,36 +1288,29 @@
                 if (fileExt.endsWith('.pdf')) {
                     // -------------------------------------------------------
                     // RENDU PDF
-                    // Passage par ArrayBuffer : évite toute object URL bloquée
-                    // sur iOS Safari et Chrome Android (politiques cross-origin)
                     // -------------------------------------------------------
-                    showLoadingSpinner(container, currentLang === 'fr' ? 'Lecture PDF...' : 'Reading PDF...');
-
+                    showLoadingSpinner(container, i18n[currentLang].loading_pdf);
                     const pdfRaw = await readFileAsArrayBuffer(obj.entry);
 
-                    showLoadingSpinner(container, currentLang === 'fr' ? 'Décodage PDF...' : 'Decoding PDF...');
-
-                    // Copie obligatoire : pdfjsLib.getDocument() transfère
-                    // la propriété du buffer (ArrayBuffer devient detached)
+                    showLoadingSpinner(container, i18n[currentLang].decoding_pdf);
                     const pdfBuffer = pdfRaw.slice(0);
                     const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
-
-                    // Vider le spinner seulement après décodage réussi
                     container.innerHTML = '';
 
-                    // Échelle de rendu adaptée à la densité écran et taille viewport
-                    // Sur iOS/Android : on limite à 1.5 max pour éviter les crashs mémoire
-                    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 3);
+                    currentPdfTotalPages = pdf.numPages;
+
+                    const dpr      = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 3);
                     const pdfScale = isMobile
-                        ? Math.min(1.5, (window.innerWidth / 612) * 0.95) // 612pt = largeur PDF A4 standard
+                        ? Math.min(1.5, (window.innerWidth / 612) * 0.95)
                         : (window.innerWidth < 1024 ? 1.9 : 2.2);
 
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page     = await pdf.getPage(i);
                         const viewport = page.getViewport({ scale: pdfScale });
 
-                        const wrapper = document.createElement('div');
+                        const wrapper  = document.createElement('div');
                         wrapper.className = "page-wrapper";
+                        wrapper.dataset.pdfPage = i; // index 1-based pour scrollToPdfPage
 
                         const canvas = document.createElement('canvas');
                         canvas.width  = viewport.width;
@@ -1147,26 +1333,24 @@
                         setupDrawing(anno, fileName, i);
                     }
 
+                    // Afficher la nav PDF si plusieurs pages
+                    if (pdf.numPages > 1) showPdfPageNav(1, pdf.numPages);
+
                 } else {
                     // -------------------------------------------------------
-                    // RENDU IMAGE (PNG / JPG / JPEG / WEBP)
-                    // Base64 dataURL : seul format garanti sans restriction
-                    // d'origine sur iOS Safari et Chrome Android
+                    // RENDU IMAGE
                     // -------------------------------------------------------
-                    showLoadingSpinner(container, currentLang === 'fr' ? 'Lecture image...' : 'Reading image...');
-
+                    showLoadingSpinner(container, i18n[currentLang].loading_img);
                     const dataUrl = await readFileAsDataURL(obj.entry);
-
-                    // Vider le spinner seulement après lecture réussie
                     container.innerHTML = '';
 
                     const wrapper = document.createElement('div');
                     wrapper.className = "page-wrapper";
 
-                    const img = document.createElement('img');
-                    img.alt = fileName;
-                    img.draggable = false;
-                    img.oncontextmenu = (e) => e.preventDefault(); // Empêche menu long-press mobile
+                    const img  = document.createElement('img');
+                    img.alt          = fileName;
+                    img.draggable    = false;
+                    img.oncontextmenu = (e) => e.preventDefault();
 
                     const anno = document.createElement('canvas');
                     anno.className = "anno-canvas";
@@ -1175,88 +1359,209 @@
                     wrapper.appendChild(anno);
                     container.appendChild(wrapper);
 
-                    // Assigner src APRÈS avoir inséré dans le DOM
                     img.onload = () => {
                         anno.width  = img.naturalWidth  || img.offsetWidth  || 800;
                         anno.height = img.naturalHeight || img.offsetHeight || 600;
                         setupDrawing(anno, fileName, 0);
+                        // Zoom initial plein écran après chargement image
+                        currentZoom = (zoomToApply !== null) ? zoomToApply : computeInitialZoom();
+                        applyPageScales();
+                        document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + "%";
                     };
 
-                    img.onerror = () => {
-                        showFileError(container, new Error('Image decode failed'), fileName);
-                    };
-
+                    img.onerror = () => showFileError(container, new Error('Image decode failed'), fileName);
                     img.src = dataUrl;
                 }
 
             } catch (err) {
                 showFileError(container, err, fileName);
+                return;
             }
 
-            // Appliquer le zoom mémorisé ou initial
-            currentZoom = zoomToApply;
+            // Appliquer le zoom : mémorisé si navigation dans un set, sinon auto plein écran
+            // On attend un tick pour que les wrappers soient mesurables dans le DOM
+            await new Promise(r => requestAnimationFrame(r));
+            if (zoomToApply !== null) {
+                currentZoom = zoomToApply;
+            } else {
+                currentZoom = computeInitialZoom();
+            }
             applyPageScales();
             applyDualPageLayout();
+            rebuildPdfPageOffsets();
 
-            document.getElementById('scroll-container').scrollTop = 0;
+            document.getElementById('scroll-container').scrollTop  = 0;
             document.getElementById('scroll-container').scrollLeft = 0;
             document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
             renderSidebar();
+            updateSidebarCollapseState();
         }
 
+        // ================================================================
+        // NAVIGATION PDF MULTI-PAGES
+        // ================================================================
+
+        // Met à jour les offsets de chaque page-wrapper après rendu ou zoom
+        function rebuildPdfPageOffsets() {
+            pdfPageOffsets = [];
+            const sc = document.getElementById('scroll-container');
+            const scRect = sc.getBoundingClientRect();
+            document.querySelectorAll('.page-wrapper[data-pdf-page]').forEach(w => {
+                const rect = w.getBoundingClientRect();
+                // Offset par rapport au haut du scroll-container
+                pdfPageOffsets.push(rect.top - scRect.top + sc.scrollTop);
+            });
+        }
+
+        // Faire défiler jusqu'à la page PDF suivante (+1) ou précédente (-1)
+        function scrollToPdfPage(delta) {
+            if (currentPdfTotalPages === 0) return;
+            const newIndex = Math.max(0, Math.min(currentPdfTotalPages - 1, currentPdfPageIndex + delta));
+            if (newIndex === currentPdfPageIndex) return;
+
+            currentPdfPageIndex = newIndex;
+
+            // Recalculer les offsets si nécessaire (zoom récent)
+            rebuildPdfPageOffsets();
+
+            const sc = document.getElementById('scroll-container');
+            const targetOffset = pdfPageOffsets[currentPdfPageIndex];
+            if (targetOffset !== undefined) {
+                // Décaler de 10px pour que la page soit bien visible sous le header
+                sc.scrollTo({ top: Math.max(0, targetOffset - 80), behavior: 'smooth' });
+            }
+            updatePdfPageCounter(currentPdfPageIndex + 1, currentPdfTotalPages);
+        }
+
+        // Espion de défilement : met à jour currentPdfPageIndex et le compteur
+        // en temps réel pendant que l'utilisateur scrolle manuellement
+        function setupPdfPageScrollSpy() {
+            const sc = document.getElementById('scroll-container');
+            let ticking = false;
+
+            sc.addEventListener('scroll', () => {
+                if (!ticking && currentPdfTotalPages > 1) {
+                    requestAnimationFrame(() => {
+                        ticking = false;
+                        const scrollTop = sc.scrollTop + 100; // offset header
+                        // Trouver la page la plus proche du haut visible
+                        let bestIdx = 0;
+                        for (let i = 0; i < pdfPageOffsets.length; i++) {
+                            if (pdfPageOffsets[i] <= scrollTop) bestIdx = i;
+                        }
+                        if (bestIdx !== currentPdfPageIndex) {
+                            currentPdfPageIndex = bestIdx;
+                            updatePdfPageCounter(currentPdfPageIndex + 1, currentPdfTotalPages);
+                        }
+                    });
+                    ticking = true;
+                }
+            }, { passive: true });
+        }
+
+        function showPdfPageNav(currentPage, totalPages) {
+            const nav = document.getElementById('pdf-page-nav');
+            nav.classList.add('visible');
+            updatePdfPageCounter(currentPage, totalPages);
+        }
+
+        function hidePdfPageNav() {
+            const nav = document.getElementById('pdf-page-nav');
+            nav.classList.remove('visible');
+        }
+
+        function updatePdfPageCounter(current, total) {
+            document.getElementById('pdf-page-counter').innerText = current + " / " + total;
+            document.getElementById('pdf-prev-btn').disabled = (current <= 1);
+            document.getElementById('pdf-next-btn').disabled = (current >= total);
+        }
+
+        // ================================================================
+        // FIX SIDEBAR — décale le bouton Précédent pour qu'il reste visible
+        // ================================================================
+        function updateSidebarCollapseState() {
+            const layout = document.getElementById('view-layout');
+            const sidebar = document.getElementById('viewer-sidebar');
+            if (sidebar.classList.contains('collapsed')) {
+                layout.classList.add('sidebar-collapsed');
+            } else {
+                layout.classList.remove('sidebar-collapsed');
+            }
+        }
+
+        // ================================================================
+        // NAVIGATION ENTRE FICHIERS
+        // ================================================================
         function viewSingle(name) {
             const f = files.find(x => x.entry.name === name);
-            if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
+            if (f) { setFiles = [f]; currentIndex = 0; openFile(f); }
         }
 
         function nextFile() { 
-            if(setFiles.length > 0) { 
-                zoomMemory = currentZoom; 
+            if (setFiles.length > 0) { 
+                zoomMemory   = currentZoom; 
                 currentIndex = (currentIndex + 1) % setFiles.length; 
                 openFile(setFiles[currentIndex]); 
             } 
         }
         function prevFile() { 
-            if(setFiles.length > 0) { 
-                zoomMemory = currentZoom; 
+            if (setFiles.length > 0) { 
+                zoomMemory   = currentZoom; 
                 currentIndex = (currentIndex - 1 + setFiles.length) % setFiles.length; 
                 openFile(setFiles[currentIndex]); 
             } 
         }
+
         function goToHome() { 
             zoomMemory = 1.0;
             isDualPage = false;
             const btn = document.getElementById('dual-page-btn');
             if (btn) btn.classList.remove('dual-active');
             document.getElementById('viewer-content').classList.remove('dual-page-mode');
+            hidePdfPageNav();
             switchTab('lib'); 
         }
 
+        // ================================================================
+        // CLAVIER
+        // ================================================================
         window.addEventListener('keydown', (e) => {
-            if(document.activeElement.tagName === 'INPUT') return;
+            if (document.activeElement.tagName === 'INPUT') return;
             const sc = document.getElementById('scroll-container');
-            if(e.code === "Space") { e.preventDefault(); nextFile(); }
-            if(e.key === "ArrowRight") nextFile();
-            if(e.key === "ArrowLeft") prevFile();
-            if(e.key === "ArrowDown") sc.scrollBy(0, 180);
-            if(e.key === "ArrowUp") sc.scrollBy(0, -180);
+            if (e.code  === "Space")      { e.preventDefault(); nextFile(); }
+            if (e.key   === "ArrowRight") nextFile();
+            if (e.key   === "ArrowLeft")  prevFile();
+            if (e.key   === "ArrowDown")  {
+                e.preventDefault();
+                // Si PDF multi-pages : page suivante, sinon scroll
+                if (currentPdfTotalPages > 1) scrollToPdfPage(+1);
+                else sc.scrollBy(0, 180);
+            }
+            if (e.key   === "ArrowUp")    {
+                e.preventDefault();
+                if (currentPdfTotalPages > 1) scrollToPdfPage(-1);
+                else sc.scrollBy(0, -180);
+            }
         });
 
-        // --- MOTEUR DE TRACÉ ROBUSTE ANTI-CONFLIT TACTILE ---
+        // ================================================================
+        // DESSIN (annotations)
+        // ================================================================
         function setupDrawing(canvas, fileName, pIdx) {
             const ctx = canvas.getContext('2d');
             const key = fileName + "_" + pIdx;
             
-            if(annotations[key]) {
-                const img = new Image(); img.src = annotations[key];
-                img.onload = () => ctx.drawImage(img,0,0);
+            if (annotations[key]) {
+                const img = new Image();
+                img.src = annotations[key];
+                img.onload = () => ctx.drawImage(img, 0, 0);
             }
+
             let isPainting = false;
             
             const getCanvasCoordinate = (e) => {
                 const rect = canvas.getBoundingClientRect();
                 let clientX, clientY;
-                
                 if (e.touches && e.touches.length > 0) {
                     clientX = e.touches[0].clientX;
                     clientY = e.touches[0].clientY;
@@ -1264,49 +1569,43 @@
                     clientX = e.clientX;
                     clientY = e.clientY;
                 }
-                
-                const x = (clientX - rect.left) * (canvas.width / rect.width);
-                const y = (clientY - rect.top) * (canvas.height / rect.height);
-                return { x, y };
+                return {
+                    x: (clientX - rect.left) * (canvas.width  / rect.width),
+                    y: (clientY - rect.top)  * (canvas.height / rect.height)
+                };
             };
             
             const start = (e) => {
-                if(!isDrawingMode) return; 
+                if (!isDrawingMode) return; 
                 isPainting = true;
-                
-                // Bloque le défilement de la page sur mobile pendant le dessin
-                if(e.cancelable) e.preventDefault(); 
-                
-                undoStack.push({key, data: canvas.toDataURL()});
-                if(undoStack.length > 40) undoStack.shift();
-                
+                if (e.cancelable) e.preventDefault(); 
+                undoStack.push({ key, data: canvas.toDataURL() });
+                if (undoStack.length > 40) undoStack.shift();
                 const pos = getCanvasCoordinate(e); 
                 ctx.beginPath(); 
                 ctx.moveTo(pos.x, pos.y);
             };
             
             const draw = (e) => {
-                if(!isPainting || !isDrawingMode) return;
-                if(e.cancelable) e.preventDefault();
-                
+                if (!isPainting || !isDrawingMode) return;
+                if (e.cancelable) e.preventDefault();
                 const pos = getCanvasCoordinate(e); 
                 ctx.lineCap = 'round'; 
                 ctx.lineJoin = 'round';
-                
-                if(annoColor === 'eraser') { 
+                if (annoColor === 'eraser') { 
                     ctx.globalCompositeOperation = 'destination-out'; 
                     ctx.lineWidth = annoSize * 4; 
                 } else { 
                     ctx.globalCompositeOperation = 'source-over'; 
                     ctx.strokeStyle = annoColor; 
-                    ctx.lineWidth = annoSize; 
+                    ctx.lineWidth   = annoSize; 
                 }
                 ctx.lineTo(pos.x, pos.y); 
                 ctx.stroke(); 
             };
             
-            const stop = (e) => { 
-                if(!isPainting) return; 
+            const stop = () => { 
+                if (!isPainting) return; 
                 isPainting = false; 
                 annotations[key] = canvas.toDataURL();
                 localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
@@ -1314,29 +1613,29 @@
             
             canvas.addEventListener('mousedown', start); 
             canvas.addEventListener('mousemove', draw);
-            window.addEventListener('mouseup', stop);
-            
-            canvas.addEventListener('touchstart', start, {passive:false}); 
-            canvas.addEventListener('touchmove', draw, {passive:false});
-            canvas.addEventListener('touchend', stop);
+            window.addEventListener('mouseup',   stop);
+            canvas.addEventListener('touchstart', start, { passive: false }); 
+            canvas.addEventListener('touchmove',  draw,  { passive: false });
+            canvas.addEventListener('touchend',   stop);
         }
 
         function undoLast() {
-            if(undoStack.length === 0) return;
+            if (undoStack.length === 0) return;
             const last = undoStack.pop();
-            const canvases = document.querySelectorAll('.anno-canvas');
-            canvases.forEach(c => {
+            document.querySelectorAll('.anno-canvas').forEach(c => {
                 const ctx = c.getContext('2d');
                 const img = new Image();
-                img.src = last.data;
-                img.onload = () => { ctx.clearRect(0,0,c.width,c.height); ctx.drawImage(img,0,0); };
+                img.src    = last.data;
+                img.onload = () => { ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0); };
             });
         }
 
         function clearCurrentPage() { 
-            if(confirm("Effacer définitivement vos annotations sur ce document ?")) { 
-                document.querySelectorAll('.anno-canvas').forEach(c => c.getContext('2d').clearRect(0,0,c.width,c.height)); 
-                if(setFiles[currentIndex]) {
+            if (confirm("Effacer définitivement vos annotations sur ce document ?")) { 
+                document.querySelectorAll('.anno-canvas').forEach(c => 
+                    c.getContext('2d').clearRect(0, 0, c.width, c.height)
+                ); 
+                if (setFiles[currentIndex]) {
                     for (let key in annotations) {
                         if (key.startsWith(setFiles[currentIndex].entry.name)) delete annotations[key];
                     }
@@ -1345,6 +1644,9 @@
             } 
         }
 
+        // ================================================================
+        // PINCH ZOOM
+        // ================================================================
         function setupPinchZoom() {
             const el = document.getElementById('scroll-container');
             let isPinching = false;
@@ -1352,22 +1654,27 @@
             el.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     isPinching = true;
-                    tpCache = [e.touches[0], e.touches[1]];
-                    startDist = Math.hypot(tpCache[0].clientX - tpCache[1].clientX, tpCache[0].clientY - tpCache[1].clientY);
+                    tpCache    = [e.touches[0], e.touches[1]];
+                    startDist  = Math.hypot(
+                        tpCache[0].clientX - tpCache[1].clientX,
+                        tpCache[0].clientY - tpCache[1].clientY
+                    );
                     startZoom = currentZoom;
-                    e.preventDefault(); // Empêcher le zoom natif du navigateur
+                    e.preventDefault();
                 }
             }, { passive: false });
 
             el.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && startDist > 0 && isPinching) {
                     e.preventDefault();
-                    const curDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                    const factor = curDist / startDist;
-                    currentZoom = Math.max(0.3, Math.min(3.5, startZoom * factor));
-                    if (currentRotation !== 0) { applyRotation(); } else { applyPageScales(); }
+                    const curDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    currentZoom = Math.max(0.3, Math.min(3.5, startZoom * (curDist / startDist)));
+                    if (currentRotation !== 0) applyRotation();
+                    else applyPageScales();
                 }
-                // 1 doigt = scroll natif, on ne bloque pas
             }, { passive: false });
 
             el.addEventListener('touchend', (e) => { 
@@ -1375,28 +1682,41 @@
             }, { passive: true });
         }
 
+        // ================================================================
+        // ONGLETS
+        // ================================================================
         function switchTab(id) { 
             ['lib','set','view'].forEach(t => { 
-                document.getElementById('sec-'+t).classList.add('hidden'); 
-                document.getElementById('tab-'+t).classList.remove('tab-active'); 
+                document.getElementById('sec-'  + t).classList.add('hidden'); 
+                document.getElementById('tab-'  + t).classList.remove('tab-active'); 
             });
-            document.getElementById('sec-'+id).classList.remove('hidden'); 
-            document.getElementById('tab-'+id).classList.add('tab-active');
-            if(id==='view') document.getElementById('tab-view').classList.remove('opacity-20');
+            document.getElementById('sec-' + id).classList.remove('hidden'); 
+            document.getElementById('tab-' + id).classList.add('tab-active');
+            if (id === 'view') document.getElementById('tab-view').classList.remove('opacity-20');
         }
 
-        function toggleSidebar() { document.getElementById('viewer-sidebar').classList.toggle('collapsed'); }
+        // ================================================================
+        // SIDEBAR
+        // ================================================================
+        function toggleSidebar() {
+            document.getElementById('viewer-sidebar').classList.toggle('collapsed');
+            updateSidebarCollapseState();
+        }
 
         function renderSidebar() {
-            const container = document.getElementById('sidebar-items'); container.innerHTML = '';
+            const container = document.getElementById('sidebar-items');
+            container.innerHTML = '';
             setFiles.forEach((f, i) => {
                 const div = document.createElement('div');
                 div.className = `sidebar-item ${i === currentIndex ? 'active' : ''}`;
-                div.innerHTML = `<div class="flex items-center truncate"><span class="opacity-40 mr-2.5 font-bold text-[10px]">${i+1}</span>
-                                 <span class="truncate pr-2">${f.entry.name}</span></div>
-                                 <span class="text-zinc-600 font-bold text-[10px] select-none">☰</span>`;
+                div.innerHTML = `
+                    <div class="flex items-center truncate">
+                        <span class="opacity-40 mr-2.5 font-bold text-[10px]">${i + 1}</span>
+                        <span class="truncate pr-2">${f.entry.name}</span>
+                    </div>
+                    <span class="text-zinc-600 font-bold text-[10px] select-none">☰</span>`;
                 div.onclick = (e) => { 
-                    if(e.target.innerText === '☰') return;
+                    if (e.target.innerText === '☰') return;
                     currentIndex = i; 
                     openFile(f); 
                 };
@@ -1404,63 +1724,50 @@
             });
         }
 
+        // ================================================================
+        // ZOOM ET ÉCHELLE DES PAGES
+        // ================================================================
         function applyPageScales() {
             const wrappers = document.querySelectorAll('.page-wrapper');
-
             wrappers.forEach(w => {
                 const isRotated90 = (currentRotation === 90 || currentRotation === 270);
-
-                // --- ZOOM via transform scale ---
-                // transform: scale() ne modifie pas le flux du document, la page garde
-                // sa taille "naturelle" dans le layout. Pour compenser et éviter le 
-                // chevauchement entre pages successives, on calcule le surplus de hauteur
-                // créé par le scale et on l'ajoute en margin-bottom.
-                w.style.transform = `scale(${currentZoom})`;
+                w.style.transform       = `scale(${currentZoom})`;
                 w.style.transformOrigin = 'top center';
 
-                const naturalH = w.offsetHeight;
-                const naturalW = w.offsetWidth;
+                const naturalH  = w.offsetHeight;
+                const naturalW  = w.offsetWidth;
+                const scaledH   = naturalH * currentZoom;
+                const scaledW   = naturalW * currentZoom;
+                const surplusH  = scaledH - naturalH;
 
-                // Surplus vertical créé par le scale
-                const scaledH    = naturalH * currentZoom;
-                const scaledW    = naturalW * currentZoom;
-                const surplusH   = scaledH - naturalH;
-
-                // Lorsque la page est tournée de 90°/270°, la hauteur perçue devient
-                // la largeur naturelle × zoom, ce qui crée un espace encore plus grand.
-                // On doit alors compenser différemment.
                 let marginBottom;
                 if (isRotated90) {
-                    // Page tournée : la dimension verticale visible = largeur × zoom
-                    // La hauteur dans le DOM reste naturalH (non-rotated)
-                    // On ajoute la différence entre la dimension horizontale scalée
-                    // (qui devient verticale après rotation) et la hauteur DOM.
-                    const visibleH = scaledW; // après rotation 90°, la largeur devient la hauteur
-                    marginBottom = Math.max(0, visibleH - naturalH) + 40;
+                    const visibleH = scaledW;
+                    marginBottom   = Math.max(0, visibleH - naturalH) + 40;
                 } else {
-                    marginBottom = Math.max(0, surplusH) + 40;
+                    marginBottom   = Math.max(0, surplusH) + 40;
                 }
                 w.style.marginBottom = marginBottom + 'px';
-                // Aussi compenser la largeur si nécessaire (scroll horizontal)
-                w.style.marginLeft  = '0px';
-                w.style.marginRight = '0px';
+                w.style.marginLeft   = '0px';
+                w.style.marginRight  = '0px';
             });
 
             if (currentZoom > 1.05) {
-                document.getElementById('viewer-header').style.opacity = "1";
+                document.getElementById('viewer-header').style.opacity       = "1";
                 document.getElementById('viewer-header').style.pointerEvents = "auto";
-                document.getElementById('viewer-nav').style.opacity = "1";
+                document.getElementById('viewer-nav').style.opacity          = "1";
                 uiVisible = true;
             }
-
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + "%";
+
+            // Recalculer les offsets PDF après changement de zoom
+            rebuildPdfPageOffsets();
         }
 
-        // --- ROTATION DES PARTITIONS ---
-        // La rotation est appliquée page par page via CSS transform.
-        // Elle n'est PAS conservée d'une partition à l'autre (reset à chaque openFile).
+        // ================================================================
+        // ROTATION
+        // ================================================================
         function rotatePage(direction) {
-            // direction : +1 = horaire, -1 = antihoraire
             currentRotation = (currentRotation + direction * 90 + 360) % 360;
             applyRotation();
         }
@@ -1468,90 +1775,88 @@
         function applyRotation() {
             const wrappers = document.querySelectorAll('.page-wrapper');
             wrappers.forEach(w => {
-                // On combine zoom et rotation dans un seul transform
-                // pour éviter les conflits CSS
-                w.style.transform = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+                w.style.transform       = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
                 w.style.transformOrigin = 'center center';
 
                 const naturalH   = w.offsetHeight;
                 const naturalW   = w.offsetWidth;
                 const isRotated90 = (currentRotation === 90 || currentRotation === 270);
 
-                // Après rotation 90°/270°, les dimensions width/height s'inversent.
-                // On calcule la marge de compensation en tenant compte de cet échange.
                 let marginBottom;
                 if (isRotated90) {
-                    const visibleH   = naturalW * currentZoom; // largeur × zoom = hauteur visible après rotation
-                    marginBottom = Math.max(0, visibleH - naturalH) + 60;
-                } else if (currentRotation === 180) {
-                    const surplusH = naturalH * currentZoom - naturalH;
-                    marginBottom = Math.max(0, surplusH) + 40;
+                    const visibleH = naturalW * currentZoom;
+                    marginBottom   = Math.max(0, visibleH - naturalH) + 60;
                 } else {
                     const surplusH = naturalH * currentZoom - naturalH;
-                    marginBottom = Math.max(0, surplusH) + 40;
+                    marginBottom   = Math.max(0, surplusH) + 40;
                 }
                 w.style.marginBottom = marginBottom + 'px';
             });
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + "%";
-            // Afficher l'angle dans le bouton de rotation
             const rotLabel = document.getElementById('rotate-label');
             if (rotLabel) rotLabel.innerText = currentRotation === 0 ? '↺↻' : currentRotation + '°';
         }
 
         function adjustZoom(d) { 
             currentZoom = Math.max(0.4, Math.min(3.5, currentZoom + d)); 
-            // Si une rotation est active, applyRotation recalcule tout (zoom + rotation)
-            if (currentRotation !== 0) {
-                applyRotation();
-            } else {
-                applyPageScales();
-            }
+            if (currentRotation !== 0) applyRotation();
+            else applyPageScales();
         }
 
-        function handleWheel(e) { if(e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); } }
+        function handleWheel(e) {
+            if (e.ctrlKey) { e.preventDefault(); adjustZoom(e.deltaY > 0 ? -0.05 : 0.05); }
+        }
 
+        // ================================================================
+        // MODE DESSIN
+        // ================================================================
         function toggleDrawingMode() {
             isDrawingMode = !isDrawingMode;
             document.getElementById('scroll-container').classList.toggle('anno-active', isDrawingMode);
             
             const btn = document.getElementById('draw-toggle');
-            btn.style.background = isDrawingMode ? 'var(--neon-pink)' : '';
+            btn.style.background  = isDrawingMode ? 'var(--neon-pink)' : '';
             btn.style.borderColor = isDrawingMode ? 'var(--neon-pink)' : '';
-            btn.style.color = isDrawingMode ? '#fff' : '';
+            btn.style.color       = isDrawingMode ? '#fff' : '';
             
             document.getElementById('anno-toolbar').style.display = isDrawingMode ? 'flex' : 'none';
             
             if (isDrawingMode) {
                 isFxMode = false;
-                document.getElementById('fx-toolbar').style.display = 'none';
+                document.getElementById('fx-toolbar').style.display     = 'none';
                 document.getElementById('fx-toggle-btn').style.background = '';
-                document.getElementById('fx-toggle-btn').style.color = '';
+                document.getElementById('fx-toggle-btn').style.color      = '';
             }
         }
 
+        // ================================================================
+        // MODE FILTRES
+        // ================================================================
         function toggleFX() { 
             isFxMode = !isFxMode;
             const fxBar = document.getElementById('fx-toolbar');
             fxBar.style.display = isFxMode ? 'flex' : 'none';
             
             const btn = document.getElementById('fx-toggle-btn');
-            btn.style.background = isFxMode ? 'var(--neon-blue)' : '';
+            btn.style.background  = isFxMode ? 'var(--neon-blue)' : '';
             btn.style.borderColor = isFxMode ? 'var(--neon-blue)' : '';
-            btn.style.color = '#000';
+            btn.style.color       = '#000';
 
             if (isFxMode) {
                 isDrawingMode = false;
                 document.getElementById('scroll-container').classList.remove('anno-active');
-                document.getElementById('anno-toolbar').style.display = 'none';
+                document.getElementById('anno-toolbar').style.display  = 'none';
                 document.getElementById('draw-toggle').style.background = '';
-                document.getElementById('draw-toggle').style.color = '';
+                document.getElementById('draw-toggle').style.color      = '';
             }
         }
 
+        // ================================================================
+        // MODE 2 PAGES CÔTE À CÔTE
+        // ================================================================
         function toggleDualPage() {
             isDualPage = !isDualPage;
-            const btn = document.getElementById('dual-page-btn');
-            btn.classList.toggle('dual-active', isDualPage);
+            document.getElementById('dual-page-btn').classList.toggle('dual-active', isDualPage);
             applyDualPageLayout();
         }
 
@@ -1559,7 +1864,6 @@
             const content = document.getElementById('viewer-content');
             if (isDualPage) {
                 content.classList.add('dual-page-mode');
-                // En mode 2 pages, réduire automatiquement le zoom pour que 2 pages tiennent
                 if (currentZoom > 0.7) {
                     currentZoom = 0.55;
                     applyPageScales();
@@ -1567,41 +1871,103 @@
             } else {
                 content.classList.remove('dual-page-mode');
                 if (currentZoom < 0.75) {
-                    currentZoom = 1.0;
+                    currentZoom = computeInitialZoom();
                     applyPageScales();
                 }
             }
         }
 
+        // ================================================================
+        // TOGGLE UI (masque/affiche header + nav au tap)
+        // ================================================================
         function toggleUI() {
-            if (isDrawingMode || isFxMode || currentZoom > 1.05) {
-                return; 
-            }
+            if (isDrawingMode || isFxMode || currentZoom > 1.05) return; 
             uiVisible = !uiVisible;
-            document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0";
+            document.getElementById('viewer-header').style.opacity       = uiVisible ? "1" : "0";
             document.getElementById('viewer-header').style.pointerEvents = uiVisible ? "auto" : "none";
-            document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0";
+            document.getElementById('viewer-nav').style.opacity          = uiVisible ? "1" : "0";
         }
 
+        // ================================================================
+        // FILTRES (luminosité / contraste)
+        // ================================================================
         function updateFX(t, v) {
             const r = document.documentElement;
-            if(t==='bright') { r.style.setProperty('--page-bright', v); document.getElementById('val-bright').innerText = Math.round(v*100)+'%'; }
-            if(t==='contrast') { r.style.setProperty('--page-contrast', v); document.getElementById('val-contrast').innerText = Math.round(v*100)+'%'; }
+            if (t === 'bright')   { r.style.setProperty('--page-bright',   v); document.getElementById('val-bright').innerText   = Math.round(v * 100) + '%'; }
+            if (t === 'contrast') { r.style.setProperty('--page-contrast',  v); document.getElementById('val-contrast').innerText = Math.round(v * 100) + '%'; }
         }
 
+        // ================================================================
+        // COULEUR ET TAILLE DU TRACÉ
+        // ================================================================
         function setAnnoColor(c, el) { 
             annoColor = c; 
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active')); 
-            if(el) el.classList.add('active'); 
+            if (el) el.classList.add('active'); 
         }
         
         function setAnnoSize(s, el) { 
             annoSize = s; 
             document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active')); 
-            if(el) el.classList.add('active'); 
+            if (el) el.classList.add('active'); 
         }
 
+        // ================================================================
+        // DÉMARRAGE
+        // ================================================================
         window.onload = init;
+
+        /*
+        ═══════════════════════════════════════════════════════════════════
+        SUGGESTIONS D'AMÉLIORATION ET D'ÉVOLUTION — PARTOCHES
+        ═══════════════════════════════════════════════════════════════════
+
+        1. MÉTRONOME INTÉGRÉ
+           Un métronome BPM cliquable directement dans la visionneuse,
+           synchronisé par setlist. Chaque partition pourrait mémoriser
+           son BPM (stocké en localStorage). Affichage discret en overlay.
+
+        2. ANNOTATIONS TEXTE
+           En plus du dessin libre, permettre l'insertion de zones de texte
+           (doigtés, dynamiques, accords) positionnées au tap sur la partition,
+           sauvegardées dans le même système d'annotations.
+
+        3. EXPORT PDF ANNOTÉ
+           Utiliser jsPDF + html2canvas pour exporter une partition avec
+           ses annotations dessinées intégrées dans le PDF final.
+
+        4. TRANSPORT BLUETOOTH / PÉDALE DE PAGE
+           Connexion à une pédale de page MIDI ou Bluetooth (Web MIDI API /
+           Web Bluetooth) pour tourner les pages les mains libres — très
+           utile en concert.
+
+        5. PARTAGE DE SETLIST
+           Génération d'un QR code ou lien de partage d'une setlist entre
+           musiciens d'un même groupe (via un petit backend ou Firebase).
+
+        6. MODE NUIT / SÉPIA
+           Filtre CSS supplémentaire "sépia" dans le toolbar FX pour réduire
+           la fatigue oculaire dans les fosses sombres.
+
+        7. RECHERCHE PLEIN TEXTE
+           Index des noms de fichiers avec recherche floue (fuse.js) pour
+           retrouver rapidement une partition dans une grande bibliothèque.
+
+        8. PAGINATION PAR ONGLETS DANS LA SETLIST
+           Afficher les partitions du set sous forme d'onglets horizontaux
+           swipables plutôt que boutons Précédent/Suivant pour une navigation
+           plus rapide en situation de concert.
+
+        9. SAUVEGARDE CLOUD (iCloud / Google Drive)
+           Utiliser l'API File System Access avec les dossiers iCloud Drive
+           sur macOS / iOS pour que les partitions soient synchronisées
+           automatiquement entre appareils.
+
+        10. LECTURE AUTOMATIQUE TEMPO-SYNCHRONISÉE
+            Mode "auto-scroll" qui fait défiler la page à vitesse constante
+            réglable, idéal pour les partitions de chant ou de lecture à vue.
+        ═══════════════════════════════════════════════════════════════════
+        */
     </script>
 </body>
 </html>
