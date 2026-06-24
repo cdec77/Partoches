@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Partoches - Mobile Pro</title>
     
-    <link class="rounded-md" rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -121,7 +121,7 @@
             position: relative; flex-shrink: 0; background: white; 
             box-shadow: 0 0 45px rgba(0,0,0,0.9);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast)) sepia(var(--page-sepia));
-            border-radius: 4px; transition: filter 0.2s ease;
+            border-radius: 4px; transition: filter 0.2s ease, transform 0.25s ease;
             transform-origin: top center;
             max-width: 96vw;
             display: flex;
@@ -131,6 +131,21 @@
         
         #viewer-content.dual-page-mode .page-wrapper {
             max-width: 48vw;
+        }
+
+        #viewer-content.fullscreen-forced-mode .page-wrapper {
+            max-width: 100vw !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0px !important;
+            box-shadow: none !important;
+        }
+
+        #viewer-content.fullscreen-forced-mode canvas,
+        #viewer-content.fullscreen-forced-mode img {
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: fill !important;
         }
 
         .rotation-wrapper {
@@ -143,6 +158,7 @@
         }
 
         canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; margin: 0 auto; }
+        img { height: 80vh !important; width: auto !important; object-fit: contain; display: block; max-width: 100%; margin: 0 auto; position: relative; z-index: 1; }
         
         .anno-canvas { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -192,6 +208,35 @@
             pointer-events: auto; display: none; padding: 14px; border-radius: 10px;
             background: rgba(6, 6, 10, 0.96); box-shadow: 0 0 35px rgba(0,0,0,0.85);
         }
+
+        #btn-scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 490;
+            background: rgba(10, 10, 14, 0.95);
+            border: 2px solid var(--neon-purple);
+            color: var(--neon-purple);
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.4);
+            font-weight: 900;
+            padding: 12px 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+        #btn-scroll-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        #btn-scroll-top:hover {
+            background: var(--neon-purple);
+            color: #000;
+            box-shadow: 0 0 25px var(--neon-purple);
+        }
         
         @media (min-width: 769px) or (orientation: landscape) {
             .right-control-dock {
@@ -219,7 +264,8 @@
             .toolbar-divider { height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
             .size-btn, .color-dot { width: 26px; height: 26px; }
             #anno-toolbar .btn-jazz { width: auto; padding: 4px 6px; font-size: 8px; }
-            canvas { height: 62vh !important; }
+            canvas, img { height: 62vh !important; }
+            #btn-scroll-top { bottom: 95px; right: 20px; padding: 10px 14px; }
         }
         
         .color-dot { border-radius: 6px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
@@ -268,6 +314,13 @@
             box-shadow: 0 0 12px rgba(0,240,255,0.4) !important;
         }
 
+        #fullscreen-btn.fs-active {
+            background: var(--neon-lime) !important;
+            color: #000 !important;
+            border-color: var(--neon-lime) !important;
+            box-shadow: 0 0 12px rgba(204,255,0,0.5) !important;
+        }
+
         #sun-mode-btn.sepia-active {
             background: #ffaa00 !important;
             color: #000 !important;
@@ -289,6 +342,8 @@
 
     <div class="copyright font-black uppercase">© Cdchtp</div>
 
+    <button id="btn-scroll-top" onclick="scrollToTopInstant(event)" title="Retourner tout en haut">⤓ Haut</button>
+
     <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
         <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
         <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
@@ -307,6 +362,7 @@
             </div>
             <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
+                <button onclick="triggerIndividualFilePicker()" class="btn-jazz flex-grow sm:flex-grow-0 !border-blue-400 !text-blue-400" data-i18n="btn_pick_files">Choisir Fichiers</button>
                 <button onclick="addSource()" class="btn-jazz flex-grow sm:flex-grow-0" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
@@ -356,8 +412,9 @@
             </div>
 
             <div class="flex items-center gap-1 md:gap-3">
-                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Auto-Scroll">
-                    <button onclick="event.stopPropagation(); toggleAutoScroll()" id="scroll-toggle-btn" class="btn-jazz !border-none !px-2">⭥</button>
+                <button onclick="event.stopPropagation(); toggleFullscreenForcedMode()" id="fullscreen-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2 font-bold" title="Plein Écran Forcé" data-i18n="btn_fs">📺 Full</button>
+                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5">
+                    <button onclick="event.stopPropagation(); toggleAutoScroll()" id="scroll-toggle-btn" class="btn-jazz !border-none !px-2" title="Auto-Scroll">⭥</button>
                     <button onclick="event.stopPropagation(); adjustScrollSpeed(-1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">-</button>
                     <span id="scroll-speed-label" class="text-[9px] w-6 text-center font-bold text-zinc-400">0.1px</span>
                     <button onclick="event.stopPropagation(); adjustScrollSpeed(1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">+</button>
@@ -383,7 +440,7 @@
                 <div id="sidebar-items" class="flex-grow overflow-y-auto"></div>
             </aside>
 
-            <div id="scroll-container" onwheel="handleWheel(event)" onclick="toggleUI()">
+            <div id="scroll-container" onwheel="handleWheel(event)" onclick="toggleUI()" onscroll="handleViewerScroll()">
                 <div id="viewer-content"></div>
             </div>
         </div>
@@ -439,21 +496,21 @@
         const i18n = {
             fr: {
                 nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
-                btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier",
+                btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier", btn_pick_files: "Choisir Fichiers",
                 set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
                 btn_close: "✕ Fermer", btn_settings: "Filtres", btn_draw: "Dessin",
                 fx_bright: "Lum", fx_contrast: "Cont", fx_alpha: "Opac", btn_del: "Gomme",
                 btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter", btn_home: "🏠 Accueil",
-                btn_sun: "☀️ Soleil", btn_text: "Texte"
+                btn_sun: "☀️ Soleil", btn_text: "Texte", btn_fs: "📺 Full"
             },
             en: {
                 nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
-                btn_restore: "Restore Access", btn_scan: "Scan Folder",
+                btn_restore: "Restore Access", btn_scan: "Scan Folder", btn_pick_files: "Pick Files",
                 set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
                 btn_close: "✕ Close", btn_settings: "Filters", btn_draw: "Draw",
                 fx_bright: "Bright", fx_contrast: "Cont", fx_alpha: "Opac", btn_del: "Eraser",
                 btn_prev: "Previous", btn_next: "Next", btn_add: "Add", btn_home: "🏠 Home",
-                btn_sun: "☀️ Sun", btn_text: "Text"
+                btn_sun: "☀️ Sun", btn_text: "Text", btn_fs: "📺 Full"
             }
         };
 
@@ -466,6 +523,7 @@
         let currentRotation = 0;  
         let zoomMemory = 1.0;     
         let isDualPage = false;   
+        let isFullscreenForced = false;
         
         let tpCache = [];
         let startDist = 0;
@@ -552,6 +610,40 @@
             
             window.addEventListener("orientationchange", () => { setTimeout(applyPageScales, 350); });
             window.addEventListener("resize", () => { setTimeout(applyPageScales, 100); });
+        }
+
+        function triggerIndividualFilePicker() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = '.pdf,.png,.jpg,.jpeg,.webp,.txt,image/*,application/pdf,text/plain';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+            input.onchange = async () => {
+                if (!input.files || input.files.length === 0) { input.remove(); return; }
+                const newFiles = [];
+                for (const file of input.files) {
+                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp|txt)$/i)) {
+                        newFiles.push({ entry: { name: file.name, _blob: file, getFile: () => Promise.resolve(file) } });
+                    }
+                }
+                const singleSourceLabel = currentLang === 'fr' ? 'Fichiers individuels' : 'Individual Files';
+                if (!sources.find(s => s.name === singleSourceLabel)) {
+                    sources.push({ name: singleSourceLabel, _virtual: true, _files: [] });
+                }
+                const vsrc = sources.find(s => s.name === singleSourceLabel);
+                vsrc._files = (vsrc._files || []).concat(newFiles);
+                
+                for(const nf of newFiles) {
+                    if(!files.find(f => f.entry.name === nf.entry.name)) {
+                        files.push(nf);
+                    }
+                }
+                renderLibrary();
+                renderSourcesUI();
+                input.remove();
+            };
+            input.click();
         }
 
         async function addSource() {
@@ -811,24 +903,19 @@
                     await renderPdfPage(currentPdfPageNum);
                 } else if (name.match(/\.(png|jpg|jpeg|webp)$/)) {
                     const url = URL.createObjectURL(blob);
-                    const img = new Image();
-                    img.onload = () => {
-                        createPageStructure(container, 1, (wrapper, canvas) => {
-                            const ctx = canvas.getContext('2d');
-                            canvas.width = img.naturalWidth;
-                            canvas.height = img.naturalHeight;
-                            ctx.drawImage(img, 0, 0);
-                            setTimeout(() => {
-                                initAnnotationCanvas(wrapper, 1);
-                                applyPageScales();
-                            }, 50);
-                        });
-                    };
-                    img.src = url;
+                    createPageStructure(container, 1, (wrapper) => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.onload = () => { 
+                            initAnnotationCanvas(wrapper, 1);
+                            applyPageScales(); 
+                        };
+                        wrapper.appendChild(img);
+                    });
                 } else if (name.endsWith('.txt')) {
                     document.getElementById('txt-save-btn').classList.remove('hidden');
                     const text = await blob.text();
-                    createPageStructure(container, 1, (wrapper, canvas) => {
+                    createPageStructure(container, 1, (wrapper) => {
                         wrapper.style.background = "#111";
                         wrapper.style.color = "#fff";
                         wrapper.style.padding = "40px";
@@ -991,6 +1078,41 @@
             }
         }
 
+        function toggleFullscreenForcedMode() {
+            isFullscreenForced = !isFullscreenForced;
+            const btn = document.getElementById('fullscreen-btn');
+            const container = document.getElementById('viewer-content');
+            
+            if (isFullscreenForced) {
+                btn.classList.add('fs-active');
+                container.classList.add('fullscreen-forced-mode');
+            } else {
+                btn.classList.remove('fs-active');
+                container.classList.remove('fullscreen-forced-mode');
+            }
+            applyPageScales();
+        }
+
+        function handleViewerScroll() {
+            const container = document.getElementById('scroll-container');
+            const btnTop = document.getElementById('btn-scroll-top');
+            if (container && btnTop) {
+                if (container.scrollTop > 150) {
+                    btnTop.classList.add('visible');
+                } else {
+                    btnTop.classList.remove('visible');
+                }
+            }
+        }
+
+        function scrollToTopInstant(e) {
+            if(e) e.stopPropagation();
+            const container = document.getElementById('scroll-container');
+            if (container) {
+                container.scrollTop = 0;
+            }
+        }
+
         function rotatePage(dir) {
             currentRotation = (currentRotation + dir * 90) % 360;
             if (currentRotation < 0) currentRotation += 360;
@@ -1004,11 +1126,28 @@
             wrappers.forEach(wrapper => {
                 const pageIdx = wrapper.dataset.pageIdx;
                 const rotWrapper = document.getElementById(`rot-wrapper-${pageIdx}`);
-                const elementToMeasure = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper;
+                const elementToMeasure = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img') || wrapper;
                 
+                if (isFullscreenForced) {
+                    wrapper.style.transform = `rotate(${currentRotation}deg) scale(1)`;
+                    if (rotWrapper) {
+                        rotWrapper.style.width = "100vw";
+                        rotWrapper.style.height = "100vh";
+                    }
+                    const annoCv = wrapper.querySelector('.anno-canvas');
+                    if (annoCv) {
+                        annoCv.style.width = "100vw";
+                        annoCv.style.height = "100vh";
+                        annoCv.style.left = "0px";
+                        annoCv.style.top = "0px";
+                    }
+                    return;
+                }
+
                 let origW = elementToMeasure.getBoundingClientRect().width / currentZoom;
                 let origH = elementToMeasure.getBoundingClientRect().height / currentZoom;
                 if (elementToMeasure.tagName === 'CANVAS') { origW = elementToMeasure.width/2; origH = elementToMeasure.height/2; }
+                if (elementToMeasure.tagName === 'IMG') { origW = elementToMeasure.naturalWidth || 600; origH = elementToMeasure.naturalHeight || 800; }
                 if (wrapper.style.whiteSpace === 'pre-wrap') { origW = window.innerWidth * 0.85; origH = elementToMeasure.offsetHeight; }
 
                 const swapDim = (currentRotation === 90 || currentRotation === 270);
@@ -1026,11 +1165,10 @@
                 const maxContainerH = window.innerHeight - headerSpace - (isPortrait && isMobilePlatform() ? 120 : 60);
 
                 let scale = Math.min(maxContainerW / w, maxContainerH / h);
+                if (scale > 1.2) scale = 1.2; 
                 if (isMobilePlatform()) scale *= 1.15; 
 
                 const finalScale = scale * currentZoom;
-                wrapper.dataset.finalScale = finalScale; // Stockage de l'échelle exacte pour le dessin précis
-
                 const scaledW = w * finalScale;
                 const scaledH = h * finalScale;
 
@@ -1041,6 +1179,14 @@
 
                 wrapper.style.transformOrigin = "center center";
                 wrapper.style.transform = `rotate(${currentRotation}deg) scale(${finalScale})`;
+                
+                const annoCv = wrapper.querySelector('.anno-canvas');
+                if (annoCv && elementToMeasure.tagName === 'IMG') {
+                    annoCv.style.width = elementToMeasure.clientWidth + "px";
+                    annoCv.style.height = elementToMeasure.clientHeight + "px";
+                    annoCv.style.left = elementToMeasure.offsetLeft + "px";
+                    annoCv.style.top = elementToMeasure.offsetTop + "px";
+                }
             });
         }
 
@@ -1189,6 +1335,45 @@
                 document.getElementById('anno-toolbar').style.display = "none";
                 container.classList.remove('anno-active');
             }
+            document.querySelectorAll('.page-wrapper').forEach(w => {
+                const cv = w.querySelector('.anno-canvas');
+                if(cv) {
+                    const ref = w.querySelector('canvas:not(.anno-canvas)') || w.querySelector('img');
+                    if (ref && ref.tagName === 'IMG') {
+                        cv.style.width = ref.clientWidth + "px";
+                        cv.style.height = ref.clientHeight + "px";
+                        cv.style.left = ref.offsetLeft + "px";
+                        cv.style.top = ref.offsetTop + "px";
+                    }
+                }
+            });
+        }
+
+        function toggleDrawingMode() {
+            isDrawingMode = !isDrawingMode;
+            const btn = document.getElementById('draw-toggle');
+            const container = document.getElementById('scroll-container');
+            if(isDrawingMode) {
+                btn.style.background = "var(--neon-lime)"; btn.style.color = "#000";
+                document.getElementById('anno-toolbar').style.display = "flex";
+                container.classList.add('anno-active');
+            } else {
+                btn.style.background = ""; btn.style.color = "";
+                document.getElementById('anno-toolbar').style.display = "none";
+                container.classList.remove('anno-active');
+            }
+            document.querySelectorAll('.page-wrapper').forEach(w => {
+                const cv = w.querySelector('.anno-canvas');
+                if(cv) {
+                    const ref = w.querySelector('canvas:not(.anno-canvas)') || w.querySelector('img');
+                    if (ref && ref.tagName === 'IMG') {
+                        cv.style.width = ref.clientWidth + "px";
+                        cv.style.height = ref.clientHeight + "px";
+                        cv.style.left = ref.offsetLeft + "px";
+                        cv.style.top = ref.offsetTop + "px";
+                    }
+                }
+            });
         }
 
         function toggleFX() {
@@ -1220,37 +1405,42 @@
             cv.className = "anno-canvas";
             wrapper.appendChild(cv);
 
-            const ref = wrapper.querySelector('canvas:not(.anno-canvas)');
+            const ref = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img');
             if(!ref) return;
 
-            cv.width = ref.width;
-            cv.height = ref.height;
-            redrawAnnotations(cv, pageIdx);
+            function syncSize() {
+                if (ref.tagName === 'IMG') {
+                    cv.width = ref.naturalWidth || ref.clientWidth;
+                    cv.height = ref.naturalHeight || ref.clientHeight;
+                    cv.style.width = ref.clientWidth + "px";
+                    cv.style.height = ref.clientHeight + "px";
+                    cv.style.left = ref.offsetLeft + "px";
+                    cv.style.top = ref.offsetTop + "px";
+                } else if (ref.tagName === 'CANVAS') {
+                    cv.width = ref.width;
+                    cv.height = ref.height;
+                } else {
+                    cv.width = ref.offsetWidth || 800;
+                    cv.height = ref.offsetHeight || 1100;
+                }
+                redrawAnnotations(cv, pageIdx);
+            }
+            
+            if(ref.tagName === 'IMG') {
+                if(ref.complete) syncSize(); else ref.onload = syncSize;
+            } else {
+                syncSize();
+            }
 
             let drawing = false;
             let lastX = 0, lastY = 0;
 
-            // Nouvelle méthode mathématique stable pour le calcul des positions (inclut Zoom et Rotation CSS)
             function getPos(e) {
-                const wrapperRect = wrapper.getBoundingClientRect();
+                const rect = cv.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                const cx = wrapperRect.left + wrapperRect.width / 2;
-                const cy = wrapperRect.top + wrapperRect.height / 2;
-                
-                const dx = clientX - cx;
-                const dy = clientY - cy;
-                
-                const rad = -currentRotation * Math.PI / 180;
-                const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
-                const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
-                
-                const fScale = parseFloat(wrapper.dataset.finalScale) || 1;
-                
-                let x = rx / fScale + cv.width / 2;
-                let y = ry / fScale + cv.height / 2;
-                
+                let x = (clientX - rect.left) / (rect.width / cv.width);
+                let y = (clientY - rect.top) / (rect.height / cv.height);
                 return { x, y };
             }
 
