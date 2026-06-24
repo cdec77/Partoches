@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Partoches - Mobile Pro</title>
     
-    <link rel="manifest" href="manifest.json">
+    <link class="rounded-md" rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ccff00">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -124,6 +124,9 @@
             border-radius: 4px; transition: filter 0.2s ease;
             transform-origin: top center;
             max-width: 96vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         #viewer-content.dual-page-mode .page-wrapper {
@@ -136,12 +139,10 @@
             align-items: flex-start;
             transition: width 0.25s ease, height 0.25s ease;
             flex-shrink: 0;
+            margin: 0 auto;
         }
 
-        canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; }
-        
-        /* Correction des dimensions d'images pour éviter les conflits d'annotation */
-        img { height: auto !important; width: 100% !important; max-width: 100%; display: block; }
+        canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; margin: 0 auto; }
         
         .anno-canvas { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -218,7 +219,7 @@
             .toolbar-divider { height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
             .size-btn, .color-dot { width: 26px; height: 26px; }
             #anno-toolbar .btn-jazz { width: auto; padding: 4px 6px; font-size: 8px; }
-            canvas, img { height: auto !important; }
+            canvas { height: 62vh !important; }
         }
         
         .color-dot { border-radius: 6px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
@@ -282,11 +283,6 @@
         }
 
         .fx-indicator { font-size: 9px; color: #626272; font-weight: bold; text-transform: uppercase; text-align: center; }
-
-        /* Correction globale pour éviter les superpositions d'éléments sur l'accueil */
-        .home-container-fix {
-            padding-top: 96px !important;
-        }
     </style>
 </head>
 <body>
@@ -303,23 +299,23 @@
         </div>
     </nav>
 
-    <section id="sec-lib" class="home-container-fix h-screen overflow-y-auto px-4 md:px-6">
-        <div class="flex justify-between items-end mb-6 mt-4">
+    <section id="sec-lib" class="pt-24 h-screen overflow-y-auto px-4 md:px-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 mt-6">
             <div>
-                <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
+                <h1 class="jazz-title text-3xl md:text-4xl mb-2">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
-                <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                <button onclick="addSource()" class="btn-jazz flex-grow sm:flex-grow-0" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
         <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl rounded-md"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
-    <section id="sec-set" class="hidden home-container-fix h-screen overflow-y-auto px-4 md:px-6">
-        <div class="max-w-xl mx-auto text-center mt-4">
+    <section id="sec-set" class="hidden pt-24 h-screen overflow-y-auto px-4 md:px-6">
+        <div class="max-w-xl mx-auto text-center mt-6">
             <h2 class="jazz-title text-2xl mb-6" data-i18n="set_title">Programmation</h2>
             <div id="set-list-current" class="bg-[#050508] border border-white/5 rounded-lg min-h-[220px] mb-6 p-4"></div>
             <div class="grid grid-cols-2 gap-4 mb-10">
@@ -360,8 +356,8 @@
             </div>
 
             <div class="flex items-center gap-1 md:gap-3">
-                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5">
-                    <button onclick="event.stopPropagation(); toggleAutoScroll()" id="scroll-toggle-btn" class="btn-jazz !border-none !px-2" title="Auto-Scroll">⭥</button>
+                <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Auto-Scroll">
+                    <button onclick="event.stopPropagation(); toggleAutoScroll()" id="scroll-toggle-btn" class="btn-jazz !border-none !px-2">⭥</button>
                     <button onclick="event.stopPropagation(); adjustScrollSpeed(-1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">-</button>
                     <span id="scroll-speed-label" class="text-[9px] w-6 text-center font-bold text-zinc-400">0.1px</span>
                     <button onclick="event.stopPropagation(); adjustScrollSpeed(1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">+</button>
@@ -511,7 +507,7 @@
             const btnScan = document.querySelector('[data-i18n="btn_scan"]');
             if (typeof window.showDirectoryPicker === 'undefined') {
                 btnScan.setAttribute('data-i18n-ios', '1');
-                const iosLabel = { fr: '+ Ajouter Fichiers', en: '+ Add Files' };
+                const iosLabel = { fr: '+ Scanner Dossier', en: '+ Scan Folder' };
                 btnScan.innerText = iosLabel[currentLang];
             }
 
@@ -583,6 +579,8 @@
             const input = document.createElement('input');
             input.type = 'file';
             input.multiple = true;
+            input.webkitdirectory = true;
+            input.directory = true;
             input.accept = '.pdf,.png,.jpg,.jpeg,.webp,.txt,image/*,application/pdf,text/plain';
             input.style.display = 'none';
             document.body.appendChild(input);
@@ -594,7 +592,7 @@
                         newFiles.push({ entry: { name: file.name, _blob: file, getFile: () => Promise.resolve(file) } });
                     }
                 }
-                const virtualSourceName = currentLang === 'fr' ? 'Fichiers sélectionnés' : 'Selected Files';
+                const virtualSourceName = input.files[0].webkitRelativePath ? input.files[0].webkitRelativePath.split('/')[0] : (currentLang === 'fr' ? 'Dossier importé Apple' : 'Imported Apple Folder');
                 if (!sources.find(s => s.name === virtualSourceName)) {
                     sources.push({ name: virtualSourceName, _virtual: true, _files: [] });
                 }
@@ -610,7 +608,7 @@
 
         async function removeSource(name) {
             if(!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier ?" : "Remove access to this folder?")) return;
-            const src = sources.find(s => s.name === name);
+            const src = sources.find(s => s.name !== name);
             if (src && !src._virtual) {
                 const db = await openDB();
                 db.transaction("sources", "readwrite").objectStore("sources").delete(name);
@@ -813,22 +811,24 @@
                     await renderPdfPage(currentPdfPageNum);
                 } else if (name.match(/\.(png|jpg|jpeg|webp)$/)) {
                     const url = URL.createObjectURL(blob);
-                    createPageStructure(container, 1, (wrapper) => {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.onload = () => { 
-                            // Initialisation sécurisée une fois l'image entièrement chargée dans le DOM
+                    const img = new Image();
+                    img.onload = () => {
+                        createPageStructure(container, 1, (wrapper, canvas) => {
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = img.naturalWidth;
+                            canvas.height = img.naturalHeight;
+                            ctx.drawImage(img, 0, 0);
                             setTimeout(() => {
                                 initAnnotationCanvas(wrapper, 1);
-                                applyPageScales(); 
+                                applyPageScales();
                             }, 50);
-                        };
-                        wrapper.appendChild(img);
-                    });
+                        });
+                    };
+                    img.src = url;
                 } else if (name.endsWith('.txt')) {
                     document.getElementById('txt-save-btn').classList.remove('hidden');
                     const text = await blob.text();
-                    createPageStructure(container, 1, (wrapper) => {
+                    createPageStructure(container, 1, (wrapper, canvas) => {
                         wrapper.style.background = "#111";
                         wrapper.style.color = "#fff";
                         wrapper.style.padding = "40px";
@@ -1004,12 +1004,11 @@
             wrappers.forEach(wrapper => {
                 const pageIdx = wrapper.dataset.pageIdx;
                 const rotWrapper = document.getElementById(`rot-wrapper-${pageIdx}`);
-                const elementToMeasure = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img') || wrapper;
+                const elementToMeasure = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper;
                 
                 let origW = elementToMeasure.getBoundingClientRect().width / currentZoom;
                 let origH = elementToMeasure.getBoundingClientRect().height / currentZoom;
                 if (elementToMeasure.tagName === 'CANVAS') { origW = elementToMeasure.width/2; origH = elementToMeasure.height/2; }
-                if (elementToMeasure.tagName === 'IMG') { origW = elementToMeasure.naturalWidth || 600; origH = elementToMeasure.naturalHeight || 800; }
                 if (wrapper.style.whiteSpace === 'pre-wrap') { origW = window.innerWidth * 0.85; origH = elementToMeasure.offsetHeight; }
 
                 const swapDim = (currentRotation === 90 || currentRotation === 270);
@@ -1027,10 +1026,11 @@
                 const maxContainerH = window.innerHeight - headerSpace - (isPortrait && isMobilePlatform() ? 120 : 60);
 
                 let scale = Math.min(maxContainerW / w, maxContainerH / h);
-                if (scale > 1.2) scale = 1.2; 
                 if (isMobilePlatform()) scale *= 1.15; 
 
                 const finalScale = scale * currentZoom;
+                wrapper.dataset.finalScale = finalScale; // Stockage de l'échelle exacte pour le dessin précis
+
                 const scaledW = w * finalScale;
                 const scaledH = h * finalScale;
 
@@ -1220,39 +1220,37 @@
             cv.className = "anno-canvas";
             wrapper.appendChild(cv);
 
-            const ref = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img');
+            const ref = wrapper.querySelector('canvas:not(.anno-canvas)');
             if(!ref) return;
 
-            function syncSize() {
-                if (ref.tagName === 'IMG') {
-                    // Force la zone interactive à correspondre exactement au rendu visuel réel de l'image
-                    cv.width = ref.naturalWidth || ref.clientWidth || 800;
-                    cv.height = ref.naturalHeight || ref.clientHeight || 1100;
-                } else if (ref.tagName === 'CANVAS') {
-                    cv.width = ref.width;
-                    cv.height = ref.height;
-                } else {
-                    cv.width = ref.offsetWidth || 800;
-                    cv.height = ref.offsetHeight || 1100;
-                }
-                redrawAnnotations(cv, pageIdx);
-            }
-            
-            if(ref.tagName === 'IMG') {
-                if(ref.complete) syncSize(); else ref.onload = syncSize;
-            } else {
-                syncSize();
-            }
+            cv.width = ref.width;
+            cv.height = ref.height;
+            redrawAnnotations(cv, pageIdx);
 
             let drawing = false;
             let lastX = 0, lastY = 0;
 
+            // Nouvelle méthode mathématique stable pour le calcul des positions (inclut Zoom et Rotation CSS)
             function getPos(e) {
-                const rect = cv.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                let x = (clientX - rect.left) / (rect.width / cv.width);
-                let y = (clientY - rect.top) / (rect.height / cv.height);
+                
+                const cx = wrapperRect.left + wrapperRect.width / 2;
+                const cy = wrapperRect.top + wrapperRect.height / 2;
+                
+                const dx = clientX - cx;
+                const dy = clientY - cy;
+                
+                const rad = -currentRotation * Math.PI / 180;
+                const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
+                const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
+                
+                const fScale = parseFloat(wrapper.dataset.finalScale) || 1;
+                
+                let x = rx / fScale + cv.width / 2;
+                let y = ry / fScale + cv.height / 2;
+                
                 return { x, y };
             }
 
