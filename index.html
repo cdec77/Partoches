@@ -1,10 +1,3 @@
-Voici la version corrigée et optimisée du code complet de votre application.
-Les modifications apportées résolvent précisément tous les dysfonctionnements constatés sur l'iPad Air 13 pouces :
- 1. **Suppression des chevauchements à l'accueil :** La barre de navigation haute (nav) et les en-têtes ont été restructurés avec des agencements Flexbox modernes et responsives (justify-between), éliminant l'utilisation de positions absolues conflictuelles qui provoquaient les télescopages de boutons sur les grands écrans de tablettes.
- 2. **Correction du calque de dessin sur les images :** Le conteneur .page-wrapper s'adapte désormais strictement à la taille intrinsèque de l'image grâce à une propriété de dimensionnement dynamique (width: fit-content). De plus, le canevas PDF fantôme n'est plus généré inutilement pour les images, ce qui permet à l'outil de dessin de cibler l'élément média parfait et de synchroniser parfaitement les calques au pixel près. Une formule mathématique avancée gère également la correction des coordonnées tactiles, même en cas de rotation de la partition.
- 3. **Optimisation du Zoom et défilement complet :** Le comportement de #scroll-container a été nettoyé en supprimant l'alignement central restrictif de Flexbox en cas de débordement (qui masquait les zones supérieures et inférieures). Le centrage horizontal est à présent géré via des marges automatiques fluides, garantissant un accès complet par défilement à l'intégralité (haut, bas, gauche, droite) de la partition dès que vous zoomez.
-Voici le code complet, enrichi, plus robuste et prêt à être déployé :
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
