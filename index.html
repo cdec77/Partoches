@@ -99,7 +99,9 @@
     	    background: #000;
     	    scroll-behavior: auto;
     	    position: relative;
-    	    display: block; /* Résolution du bug de zoom bloquant sur iPad Air */
+    	    display: flex;
+    	    justify-content: center;
+    	    align-items: center;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-x pan-y;
         }
@@ -109,29 +111,19 @@
         }
         
         #viewer-content { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+            display: flex; flex-direction: column; align-items: center; 
             padding: 120px 30px 450px 30px; 
-            width: max-content; 
-            min-width: 100%; 
-            height: fit-content; 
-            gap: 40px; 
-            margin: 0 auto;
+            width: max-content; min-width: 100%; height: fit-content; 
+            gap: 40px; margin: 0 auto;
         }
         
         .page-wrapper { 
-            position: relative; 
-            flex-shrink: 0; 
-            background: white; 
+            position: relative; flex-shrink: 0; background: white; 
             box-shadow: 0 0 45px rgba(0,0,0,0.9);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast)) sepia(var(--page-sepia));
-            border-radius: 4px; 
-            transition: filter 0.2s ease;
-            transform-origin: center center;
+            border-radius: 4px; transition: filter 0.2s ease;
+            transform-origin: top center;
             max-width: 96vw;
-            width: fit-content; /* Aligne parfaitement le calque de dessin sur les bords réels */
-            height: fit-content;
         }
         
         #viewer-content.dual-page-mode .page-wrapper {
@@ -198,16 +190,31 @@
             background: rgba(6, 6, 10, 0.96); box-shadow: 0 0 35px rgba(0,0,0,0.85);
         }
         
+        /* OPTIMISATIONS ET GRANDS BOUTONS POUR IPAD 13 POUCES (PORTRAIT & PAYSAGE) */
         @media (min-width: 769px) or (orientation: landscape) {
             .right-control-dock {
-                right: 20px; top: 90px; flex-direction: column; bottom: auto; left: auto; width: auto;
+                right: 20px; top: 110px; flex-direction: column; bottom: auto; left: auto; width: auto;
             }
-            #anno-toolbar { flex-direction: column; border: 1px solid rgba(204, 255, 0, 0.3); width: 84px; align-items: center; gap: 10px;}
-            #fx-toolbar { flex-direction: column; border: 1px solid rgba(0, 240, 255, 0.3); width: 84px; align-items: center; gap: 12px;}
-            .range-container { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; margin: 35px 0; }
-            .range-container input[type=range] { transform: rotate(-90deg); width: 80px; height: 4px; cursor: pointer; }
-            #fx-toolbar input[type=range] { transform: rotate(-90deg); width: 90px; height: 4px; margin: 45px 0; cursor: pointer; }
-            .toolbar-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
+            #anno-toolbar { flex-direction: column; border: 1px solid rgba(204, 255, 0, 0.3); width: 105px; align-items: center; gap: 14px; padding: 18px; }
+            #fx-toolbar { flex-direction: column; border: 1px solid rgba(0, 240, 255, 0.3); width: 105px; align-items: center; gap: 16px; padding: 18px; }
+            .range-container { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; margin: 45px 0; }
+            .range-container input[type=range] { transform: rotate(-90deg); width: 90px; height: 6px; cursor: pointer; }
+            #fx-toolbar input[type=range] { transform: rotate(-90deg); width: 100px; height: 6px; margin: 55px 0; cursor: pointer; }
+            .toolbar-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin: 6px 0; }
+            
+            /* Ajustements tailles tactiles de confort iPad Pro 13" */
+            .tab-btn { font-size: 15px !important; letter-spacing: 2px; }
+            .btn-jazz { font-size: 13px !important; padding: 10px 20px !important; }
+            .file-row { padding: 16px 20px !important; margin-bottom: 8px; }
+            .file-row div { font-size: 15px !important; }
+            #viewer-header { padding: 16px 20px !important; }
+            #zoom-level { font-size: 14px !important; }
+            .sidebar-item { font-size: 14px !important; padding: 18px 22px !important; }
+            .nav-rect { font-size: 14px !important; padding: 16px 28px !important; min-width: 150px !important; }
+            .color-dot { width: 38px !important; height: 38px !important; border-radius: 8px !important; }
+            .size-btn { width: 42px !important; height: 42px !important; border-radius: 8px !important; }
+            #anno-toolbar .btn-jazz { font-size: 11px !important; padding: 7px 12px !important; }
+            #pdf-page-label, #scroll-speed-label { font-size: 12px !important; }
         }
 
         @media (max-width: 768px) and (orientation: portrait) {
@@ -294,25 +301,23 @@
 
     <div class="copyright font-black uppercase">© Cdchtp</div>
 
-    <nav class="glass fixed top-0 w-full flex justify-between items-center p-4 px-6 z-[200]">
-        <div class="flex items-center gap-6">
-            <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
-            <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
-            <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20" data-i18n="nav_view">Visionneuse</button>
-        </div>
-        <div class="flex gap-2">
+    <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
+        <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
+        <button onclick="switchTab('set')" id="tab-set" class="tab-btn" data-i18n="nav_set">Setlists</button>
+        <button onclick="switchTab('view')" id="tab-view" class="tab-btn opacity-20" data-i18n="nav_view">Visionneuse</button>
+        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
             <span onclick="setLang('fr')" id="lang-fr" class="lang-switch">FR</span>
             <span onclick="setLang('en')" id="lang-en" class="lang-switch">EN</span>
         </div>
     </nav>
 
     <section id="sec-lib" class="pt-22 h-screen overflow-y-auto px-4 md:px-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 mt-4 pb-2">
+        <div class="flex justify-between items-end mb-6 mt-4">
             <div>
                 <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex gap-2 shrink-0">
+            <div class="flex gap-2">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
                 <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
@@ -496,14 +501,18 @@
             document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
             document.getElementById('lang-' + lang).classList.add('active');
             renderLibrary();
-            renderSavedSets();
+            renderSourcesUI();
         }
 
         const DB_NAME = "PartochesDB_Ultimate";
         async function openDB() { 
             return new Promise((r) => { 
-                const req = indexedDB.open(DB_NAME, 1); 
-                req.onupgradeneeded = (e) => e.target.result.createObjectStore("sources"); 
+                const req = indexedDB.open(DB_NAME, 2); // Version passe à 2 pour intégrer la table ios_files
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("sources")) db.createObjectStore("sources");
+                    if (!db.objectStoreNames.contains("ios_files")) db.createObjectStore("ios_files", { keyPath: "name" });
+                }; 
                 req.onsuccess = (e) => r(req.result); 
             }); 
         }
@@ -514,14 +523,16 @@
             const btnScan = document.querySelector('[data-i18n="btn_scan"]');
             if (typeof window.showDirectoryPicker === 'undefined') {
                 btnScan.setAttribute('data-i18n-ios', '1');
-                const iosLabel = { fr: '+ Ajouter Fichiers', en: '+ Add Files' };
+                const iosLabel = { fr: '+ Ajouter Partoches', en: '+ Add Partitions' };
                 btnScan.innerText = iosLabel[currentLang];
             }
 
             const db = await openDB();
-            const req = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            req.onsuccess = async () => { 
-                sources = req.result; 
+            
+            // Chargement des dossiers réels (Desktop)
+            const reqSources = db.transaction("sources", "readonly").objectStore("sources").getAll();
+            reqSources.onsuccess = async () => { 
+                sources = reqSources.result || []; 
                 if(sources.length > 0) {
                     try {
                         let needsReauth = false;
@@ -532,10 +543,36 @@
                             }
                         }
                         if (needsReauth) document.getElementById('btn-restore').classList.remove('hidden');
-                        await refreshFiles();
                     } catch(e) { console.error("Restauration échouée:", e); }
                 }
+
+                // Chargement persistant des fichiers stockés en local (iPad/iOS Fallback)
+                const reqFiles = db.transaction("ios_files", "readonly").objectStore("ios_files").getAll();
+                reqFiles.onsuccess = async () => {
+                    const savedFiles = reqFiles.result || [];
+                    if (savedFiles.length > 0) {
+                        const virtualSourceName = currentLang === 'fr' ? 'Fichiers iPad/iCloud' : 'iPad/iCloud Files';
+                        let vsrc = sources.find(s => s._virtual);
+                        if (!vsrc) {
+                            vsrc = { name: virtualSourceName, _virtual: true, _files: [] };
+                            sources.push(vsrc);
+                        }
+                        savedFiles.forEach(f => {
+                            if (!vsrc._files.some(existing => existing.entry.name === f.name)) {
+                                vsrc._files.push({
+                                    entry: {
+                                        name: f.name,
+                                        _blob: f.blob,
+                                        getFile: () => Promise.resolve(f.blob)
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    await refreshFiles();
+                };
             };
+
             renderSavedSets();
             generateAlphaBar();
             setupPinchZoom();
@@ -589,34 +626,51 @@
             input.accept = '.pdf,.png,.jpg,.jpeg,.webp,.txt,image/*,application/pdf,text/plain';
             input.style.display = 'none';
             document.body.appendChild(input);
+            
             input.onchange = async () => {
                 if (!input.files || input.files.length === 0) { input.remove(); return; }
-                const newFiles = [];
-                for (const file of input.files) {
-                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp|txt)$/i)) {
-                        newFiles.push({ entry: { name: file.name, _blob: file, getFile: () => Promise.resolve(file) } });
-                    }
-                }
-                const virtualSourceName = currentLang === 'fr' ? 'Fichiers sélectionnés' : 'Selected Files';
+                const db = await openDB();
+                const virtualSourceName = currentLang === 'fr' ? 'Fichiers iPad/iCloud' : 'iPad/iCloud Files';
+                
                 if (!sources.find(s => s.name === virtualSourceName)) {
                     sources.push({ name: virtualSourceName, _virtual: true, _files: [] });
                 }
                 const vsrc = sources.find(s => s.name === virtualSourceName);
-                vsrc._files = (vsrc._files || []).concat(newFiles);
-                files.push(...newFiles);
-                renderLibrary();
-                renderSourcesUI();
+                
+                for (const file of input.files) {
+                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp|txt)$/i)) {
+                        // Sauvegarde physique définitive dans l'IndexedDB de l'iPad
+                        const tx = db.transaction("ios_files", "readwrite");
+                        tx.objectStore("ios_files").put({ name: file.name, blob: file });
+                        
+                        if (!vsrc._files.some(f => f.entry.name === file.name)) {
+                            vsrc._files.push({ 
+                                entry: { 
+                                    name: file.name, 
+                                    _blob: file, 
+                                    getFile: () => Promise.resolve(file) 
+                                } 
+                            });
+                        }
+                    }
+                }
+                await refreshFiles();
                 input.remove();
             };
             input.click();
         }
 
         async function removeSource(name) {
-            if(!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier ?" : "Remove access to this folder?")) return;
-            const src = sources.find(s => s.name !== name);
-            if (src && !src._virtual) {
-                const db = await openDB();
-                db.transaction("sources", "readwrite").objectStore("sources").delete(name);
+            if(!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier / groupe de fichiers ?" : "Remove access to this folder / files?")) return;
+            const src = sources.find(s => s.name === name);
+            const db = await openDB();
+            if (src) {
+                if (!src._virtual) {
+                    db.transaction("sources", "readwrite").objectStore("sources").delete(name);
+                } else {
+                    // Nettoyer la base locale sur iPad si on supprime le tag virtuel
+                    db.transaction("ios_files", "readwrite").objectStore("ios_files").clear();
+                }
             }
             sources = sources.filter(s => s.name !== name);
             await refreshFiles();
@@ -676,7 +730,7 @@
                  .forEach(file => {
                     const row = document.createElement('div');
                     row.className = "file-row flex justify-between items-center p-3 px-4";
-                    row.innerHTML = `<div class="flex-grow font-medium text-zinc-300 text-[12px] truncate pr-4" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
+                    row.innerHTML = `<div class="flex-grow font-medium text-zinc-300 text-[12px] md:text-[14px] truncate pr-4" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
                                      <button onclick="handleSelectLibraryItem(this, '${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 transition-all duration-200">${i18n[currentLang].btn_add}</button>`;
                     l.appendChild(row);
                  });
@@ -695,6 +749,7 @@
 
         function generateAlphaBar() {
             const bar = document.getElementById('alpha-bar');
+            bar.innerHTML = '';
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
                 const b = document.createElement('button');
                 b.innerText = l;
@@ -707,7 +762,7 @@
             const div = document.createElement('div');
             div.className = "flex justify-between items-center bg-[#141419] p-3 mb-2 rounded border border-white/5 cursor-move";
             div.dataset.name = name;
-            div.innerHTML = `<span class="text-[11px] text-zinc-300 font-bold truncate pr-3">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
+            div.innerHTML = `<span class="text-[11px] md:text-[13px] text-zinc-300 font-bold truncate pr-3">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
             document.getElementById('set-list-current').appendChild(div);
             new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         }
@@ -731,7 +786,7 @@
                 const name = key.replace('part_set_', '');
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-zinc-900/30 border border-white/5 p-3 rounded";
-                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px] truncate pr-4" onclick="loadSet('${key}')">${name}</div> <button onclick="deleteSet('${key}')" class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
+                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px] md:text-[13px] truncate pr-4" onclick="loadSet('${key}')">${name}</div> <button onclick="deleteSet('${key}')" class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
                 list.appendChild(div);
             });
         }
@@ -815,10 +870,10 @@
                     currentPdfDoc = pdf;
                     await renderPdfPage(currentPdfPageNum);
                 } else if (name.match(/\.(png|jpg|jpeg|webp)$/)) {
-                    // Correction: buildContentFn injecte directement l'image sans canvas PDF résiduel encombrant
+                    const url = URL.createObjectURL(blob);
                     createPageStructure(container, 1, (wrapper) => {
                         const img = document.createElement('img');
-                        img.src = URL.createObjectURL(blob);
+                        img.src = url;
                         img.onload = () => { 
                             initAnnotationCanvas(wrapper, 1);
                             applyPageScales(); 
@@ -857,6 +912,7 @@
             container.innerHTML = '';
             
             document.getElementById('pdf-page-label').innerText = `${pageNum} / ${currentPdfDoc.numPages}`;
+
             const pagesToRender = (isDualPage && pageNum < currentPdfDoc.numPages) ? [pageNum, pageNum + 1] : [pageNum];
             
             if(isDualPage && pageNum < currentPdfDoc.numPages) {
@@ -867,11 +923,7 @@
 
             for (const p of pagesToRender) {
                 const page = await currentPdfDoc.getPage(p);
-                createPageStructure(container, p, (wrapper) => {
-                    const canvas = document.createElement('canvas');
-                    canvas.id = `pdf-canvas-${p}`;
-                    wrapper.appendChild(canvas);
-
+                createPageStructure(container, p, (wrapper, canvas) => {
                     const ctx = canvas.getContext('2d');
                     const viewport = page.getViewport({ scale: 2.0 }); 
                     canvas.width = viewport.width;
@@ -899,7 +951,6 @@
             renderPdfPage(currentPdfPageNum);
         }
 
-        // Nettoyage structurel : Ne force plus la création d'un canvas par défaut
         function createPageStructure(container, pageIdx, buildContentFn) {
             const rotWrapper = document.createElement('div');
             rotWrapper.className = "rotation-wrapper";
@@ -910,7 +961,11 @@
             wrapper.id = `page-wrapper-${pageIdx}`;
             wrapper.dataset.pageIdx = pageIdx;
 
-            buildContentFn(wrapper);
+            const canvas = document.createElement('canvas');
+            canvas.id = `pdf-canvas-${pageIdx}`;
+            wrapper.appendChild(canvas);
+
+            buildContentFn(wrapper, canvas);
             rotWrapper.appendChild(wrapper);
             container.appendChild(rotWrapper);
         }
@@ -1005,23 +1060,12 @@
                 const pageIdx = wrapper.dataset.pageIdx;
                 const rotWrapper = document.getElementById(`rot-wrapper-${pageIdx}`);
                 const elementToMeasure = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img') || wrapper;
-                if (!elementToMeasure) return;
                 
-                let origW = 600, origH = 800;
-                if (elementToMeasure.tagName === 'CANVAS') { 
-                    origW = elementToMeasure.width / 2; 
-                    origH = elementToMeasure.height / 2; 
-                } else if (elementToMeasure.tagName === 'IMG') { 
-                    origW = elementToMeasure.naturalWidth || elementToMeasure.clientWidth || 600; 
-                    origH = elementToMeasure.naturalHeight || elementToMeasure.clientHeight || 800;
-                    if(elementToMeasure.clientWidth && elementToMeasure.clientHeight) {
-                        origW = elementToMeasure.clientWidth;
-                        origH = elementToMeasure.clientHeight;
-                    }
-                } else if (wrapper.style.whiteSpace === 'pre-wrap') { 
-                    origW = window.innerWidth * 0.85; 
-                    origH = elementToMeasure.offsetHeight || 800; 
-                }
+                let origW = elementToMeasure.getBoundingClientRect().width / currentZoom;
+                let origH = elementToMeasure.getBoundingClientRect().height / currentZoom;
+                if (elementToMeasure.tagName === 'CANVAS') { origW = elementToMeasure.width/2; origH = elementToMeasure.height/2; }
+                if (elementToMeasure.tagName === 'IMG') { origW = elementToMeasure.naturalWidth || 600; origH = elementToMeasure.naturalHeight || 800; }
+                if (wrapper.style.whiteSpace === 'pre-wrap') { origW = window.innerWidth * 0.85; origH = elementToMeasure.offsetHeight; }
 
                 const swapDim = (currentRotation === 90 || currentRotation === 270);
                 const w = swapDim ? origH : origW;
@@ -1052,10 +1096,6 @@
 
                 wrapper.style.transformOrigin = "center center";
                 wrapper.style.transform = `rotate(${currentRotation}deg) scale(${finalScale})`;
-                
-                // Fixation des dimensions physiques de base pour assurer l'alignement parfait du calque absolu
-                wrapper.style.width = `${origW}px`;
-                wrapper.style.height = `${origH}px`;
             });
         }
 
@@ -1240,8 +1280,8 @@
 
             function syncSize() {
                 if (ref.tagName === 'IMG') {
-                    cv.width = ref.naturalWidth || ref.clientWidth || 800;
-                    cv.height = ref.naturalHeight || ref.clientHeight || 1100;
+                    cv.width = ref.naturalWidth || ref.clientWidth;
+                    cv.height = ref.naturalHeight || ref.clientHeight;
                 } else if (ref.tagName === 'CANVAS') {
                     cv.width = ref.width;
                     cv.height = ref.height;
@@ -1261,28 +1301,12 @@
             let drawing = false;
             let lastX = 0, lastY = 0;
 
-            // Correction: Algorithme de calcul matriciel inverse pour corriger les offsets de tracé selon la rotation CSS de l'iPad
             function getPos(e) {
                 const rect = cv.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                
-                let dx = clientX - centerX;
-                let dy = clientY - centerY;
-                
-                const rad = (-currentRotation * Math.PI) / 180;
-                const rotatedDx = dx * Math.cos(rad) - dy * Math.sin(rad);
-                const rotatedDy = dx * Math.sin(rad) + dy * Math.cos(rad);
-                
-                const swapDim = (currentRotation === 90 || currentRotation === 270);
-                const displayW = swapDim ? rect.height : rect.width;
-                const displayH = swapDim ? rect.width : rect.height;
-                
-                let x = (rotatedDx + displayW / 2) * (cv.width / displayW);
-                let y = (rotatedDy + displayH / 2) * (cv.height / displayH);
+                let x = (clientX - rect.left) / (rect.width / cv.width);
+                let y = (clientY - rect.top) / (rect.height / cv.height);
                 return { x, y };
             }
 
@@ -1420,5 +1444,3 @@
     </script>
 </body>
 </html>
-
-```
