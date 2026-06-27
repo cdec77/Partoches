@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <title>Partoches - Mobile Pro</title>
     
     <link rel="manifest" href="manifest.json">
@@ -29,6 +29,9 @@
             --page-bright: 1; 
             --page-contrast: 1; 
             --page-sepia: 0;
+            /* iPad Air 13" optimised touch targets */
+            --touch-min: 52px;
+            --touch-gap: 10px;
         }
         
         body { 
@@ -83,6 +86,52 @@
             border-color: var(--neon-lime) !important;
         }
 
+        /* ── HOME PAGE: no overlapping buttons ── */
+        .home-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+            margin-top: 8px;
+        }
+        .home-header-row1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .home-header-row2 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        /* Folder indentation in library */
+        .file-row.folder-child {
+            margin-left: 18px;
+            border-left: 2px solid rgba(204,255,0,0.25);
+        }
+        .folder-header {
+            background: rgba(204,255,0,0.04);
+            border: 1px solid rgba(204,255,0,0.18);
+            border-radius: 8px;
+            margin-bottom: 4px;
+            padding: 10px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--neon-lime);
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .folder-header:hover { background: rgba(204,255,0,0.09); }
+        .folder-header .folder-toggle { transition: transform 0.2s; display: inline-block; }
+        .folder-header.open .folder-toggle { transform: rotate(90deg); }
+
         #view-layout { display: flex; height: 100vh; width: 100vw; overflow: hidden; position: relative; }
         
         #viewer-sidebar {
@@ -117,17 +166,63 @@
             gap: 40px; margin: 0 auto;
         }
         
+        /* ── Page wrapper: exact-fit, no white bleed ── */
         .page-wrapper { 
             position: relative; flex-shrink: 0; background: white; 
             box-shadow: 0 0 45px rgba(0,0,0,0.9);
             filter: brightness(var(--page-bright)) contrast(var(--page-contrast)) sepia(var(--page-sepia));
             border-radius: 4px; transition: filter 0.2s ease;
             transform-origin: top center;
-            max-width: 96vw;
+            /* DO NOT set max-width here – handled per media query & JS */
+            overflow: hidden; /* prevent annotation canvas overflow */
+            display: inline-block; /* shrink-wrap to content */
+        }
+
+        /* Annotation canvas: absolutely sized to match its sibling element precisely */
+        .anno-canvas { 
+            position: absolute;
+            top: 0; left: 0;
+            /* width/height set via JS to match natural media size */
+            pointer-events: none;
+            z-index: 10;
+            /* CSS sizing mirrors display size of content */
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .anno-active .anno-canvas { pointer-events: auto; }
+
+        /* Image display: natural size, contained within wrapper */
+        .page-wrapper img {
+            display: block;
+            /* Respect the scale computed by applyPageScales via parent transform */
+            width: auto !important;
+            height: auto !important;
+            max-width: none;
+            max-height: none;
+        }
+
+        /* GIF: same treatment as images */
+        .page-wrapper img.gif-media {
+            image-rendering: auto;
+        }
+
+        /* PDF canvas: natural render size, scaled by parent */
+        .page-wrapper canvas:not(.anno-canvas) {
+            display: block;
+            width: auto !important;
+            height: auto !important;
         }
         
+        #viewer-content.dual-page-mode {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        #viewer-content.dual-page-mode .rotation-wrapper,
         #viewer-content.dual-page-mode .page-wrapper {
-            max-width: 48vw;
+            flex: 0 0 auto;
         }
 
         .rotation-wrapper {
@@ -136,18 +231,6 @@
             align-items: flex-start;
             transition: width 0.25s ease, height 0.25s ease;
             flex-shrink: 0;
-        }
-
-        canvas { display: block; max-width: 100%; height: auto !important; width: auto !important; }
-        img { height: 80vh !important; width: auto !important; object-fit: contain; display: block; max-width: 100%; }
-        
-        .anno-canvas { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            pointer-events: none; z-index: 10; 
-        }
-        
-        .anno-active .anno-canvas { 
-            pointer-events: auto; 
         }
 
         .tab-btn { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #555562; transition: 0.3s; text-transform: uppercase; }
@@ -163,6 +246,12 @@
             border-radius: 5px; 
             text-transform: uppercase;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            /* minimum touch target */
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-jazz:hover { background: var(--neon-lime); color: black; box-shadow: 0 0 15px rgba(204, 255, 0, 0.3); }
         
@@ -189,32 +278,52 @@
             pointer-events: auto; display: none; padding: 14px; border-radius: 10px;
             background: rgba(6, 6, 10, 0.96); box-shadow: 0 0 35px rgba(0,0,0,0.85);
         }
-        
-        /* OPTIMISATIONS ET GRANDS BOUTONS POUR IPAD 13 POUCES (PORTRAIT & PAYSAGE) */
-        @media (min-width: 769px) or (orientation: landscape) {
+
+        /* ═══════════════════════════════════════════════════════
+           TABLET / IPAD AIR 13" OPTIMISATIONS (769px+)
+           Cible aussi les téléphones en paysage
+        ═══════════════════════════════════════════════════════ */
+        @media (min-width: 769px), (orientation: landscape) {
+            :root {
+                --touch-min: 56px;
+            }
             .right-control-dock {
                 right: 20px; top: 110px; flex-direction: column; bottom: auto; left: auto; width: auto;
             }
-            #anno-toolbar { flex-direction: column; border: 1px solid rgba(204, 255, 0, 0.3); width: 105px; align-items: center; gap: 14px; padding: 18px; }
-            #fx-toolbar { flex-direction: column; border: 1px solid rgba(0, 240, 255, 0.3); width: 105px; align-items: center; gap: 16px; padding: 18px; }
+            #anno-toolbar {
+                flex-direction: column; border: 1px solid rgba(204, 255, 0, 0.3);
+                width: 115px; align-items: center; gap: 14px; padding: 18px;
+            }
+            #fx-toolbar {
+                flex-direction: column; border: 1px solid rgba(0, 240, 255, 0.3);
+                width: 115px; align-items: center; gap: 16px; padding: 18px;
+            }
             .range-container { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; margin: 45px 0; }
             .range-container input[type=range] { transform: rotate(-90deg); width: 90px; height: 6px; cursor: pointer; }
             #fx-toolbar input[type=range] { transform: rotate(-90deg); width: 100px; height: 6px; margin: 55px 0; cursor: pointer; }
             .toolbar-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin: 6px 0; }
             
-            /* Ajustements tailles tactiles de confort iPad Pro 13" */
-            .tab-btn { font-size: 15px !important; letter-spacing: 2px; }
-            .btn-jazz { font-size: 13px !important; padding: 10px 20px !important; }
-            .file-row { padding: 16px 20px !important; margin-bottom: 8px; }
+            /* Larger touch targets for iPad */
+            .tab-btn { font-size: 15px !important; letter-spacing: 2px; min-height: 44px !important; padding: 0 12px; }
+            .btn-jazz { font-size: 13px !important; padding: 12px 20px !important; min-height: 48px !important; }
+            .file-row { padding: 18px 20px !important; margin-bottom: 10px; }
             .file-row div { font-size: 15px !important; }
             #viewer-header { padding: 16px 20px !important; }
+            #viewer-header .btn-jazz { min-height: 48px !important; padding: 12px 16px !important; }
             #zoom-level { font-size: 14px !important; }
-            .sidebar-item { font-size: 14px !important; padding: 18px 22px !important; }
-            .nav-rect { font-size: 14px !important; padding: 16px 28px !important; min-width: 150px !important; }
-            .color-dot { width: 38px !important; height: 38px !important; border-radius: 8px !important; }
-            .size-btn { width: 42px !important; height: 42px !important; border-radius: 8px !important; }
-            #anno-toolbar .btn-jazz { font-size: 11px !important; padding: 7px 12px !important; }
-            #pdf-page-label, #scroll-speed-label { font-size: 12px !important; }
+            .sidebar-item { font-size: 14px !important; padding: 20px 22px !important; min-height: 56px !important; }
+            .nav-rect { font-size: 14px !important; padding: 18px 30px !important; min-width: 160px !important; min-height: 56px !important; }
+            .color-dot { width: 42px !important; height: 42px !important; border-radius: 8px !important; }
+            .size-btn { width: 46px !important; height: 46px !important; border-radius: 8px !important; }
+            #anno-toolbar .btn-jazz { font-size: 12px !important; padding: 10px 12px !important; width: 100%; }
+            #pdf-page-label, #scroll-speed-label { font-size: 13px !important; }
+            #alpha-bar button { font-size: 15px !important; padding: 8px 12px !important; min-height: 44px !important; }
+        }
+
+        /* iPad Air 13" portrait spécifique (1024px wide) */
+        @media (min-width: 1024px) {
+            .btn-jazz { font-size: 14px !important; padding: 14px 22px !important; min-height: 52px !important; }
+            .tab-btn { font-size: 16px !important; }
         }
 
         @media (max-width: 768px) and (orientation: portrait) {
@@ -229,9 +338,8 @@
             .range-container { display: flex; flex-direction: row; align-items: center; gap: 5px; }
             input[type=range] { transform: none !important; width: 80px !important; height: 6px; margin: 0 5px !important; }
             .toolbar-divider { height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
-            .size-btn, .color-dot { width: 26px; height: 26px; }
-            #anno-toolbar .btn-jazz { width: auto; padding: 4px 6px; font-size: 8px; }
-            canvas, img { height: 62vh !important; }
+            .size-btn, .color-dot { width: 30px; height: 30px; }
+            #anno-toolbar .btn-jazz { width: auto; padding: 5px 8px; font-size: 9px; }
         }
         
         .color-dot { border-radius: 6px; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
@@ -258,21 +366,9 @@
         .source-delete { color: var(--neon-pink); cursor: pointer; font-size: 13px; }
 
         .copyright { position: fixed; bottom: 15px; left: 25px; font-size: 9px; color: #2d2d37; z-index: 50; letter-spacing: 0.5px; }
-        #alpha-bar button { padding: 6px 9px; font-size: 12px; font-weight: 800; color: #4b4b58; transition: 0.2s; }
+        #alpha-bar button { padding: 6px 9px; font-size: 12px; font-weight: 800; color: #4b4b58; transition: 0.2s; cursor: pointer; }
         #alpha-bar button:hover { color: var(--neon-lime); transform: scale(1.2); }
         
-        #viewer-content.dual-page-mode {
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-        }
-        #viewer-content.dual-page-mode .rotation-wrapper,
-        #viewer-content.dual-page-mode .page-wrapper {
-            flex: 0 0 auto;
-        }
-
         #dual-page-btn.dual-active {
             background: var(--neon-blue) !important;
             color: #000 !important;
@@ -295,6 +391,32 @@
         }
 
         .fx-indicator { font-size: 9px; color: #626272; font-weight: bold; text-transform: uppercase; text-align: center; }
+
+        /* Scroll speed fine-step indicator */
+        #scroll-speed-label { min-width: 32px; text-align: center; }
+
+        /* ── Viewer header: prevent button overlap on small screens ── */
+        #viewer-header {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        #viewer-header::-webkit-scrollbar { display: none; }
+        #viewer-header > div { flex-shrink: 0; }
+
+        /* Full-score scroll: allow the scroll-container to show ALL content at any zoom */
+        #scroll-container {
+            align-items: flex-start !important;
+        }
+        #viewer-content {
+            /* let content overflow freely so zoomed score is fully readable */
+            min-width: max-content;
+        }
     </style>
 </head>
 <body>
@@ -311,21 +433,27 @@
         </div>
     </nav>
 
+    <!-- ═══ LIBRARY TAB ═══ -->
     <section id="sec-lib" class="pt-22 h-screen overflow-y-auto px-4 md:px-6">
-        <div class="flex justify-between items-end mb-6 mt-4">
-            <div>
-                <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
-                <div id="source-list" class="flex flex-wrap gap-2"></div>
-            </div>
-            <div class="flex gap-2">
-                <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
-                <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+        <!-- Header: two rows to avoid button overlap -->
+        <div class="home-header">
+            <div class="home-header-row1">
+                <div>
+                    <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
+                    <div id="source-list" class="flex flex-wrap gap-2 mt-1"></div>
+                </div>
+                <div class="flex gap-2 items-center flex-wrap">
+                    <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
+                    <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                    <button onclick="addSourceRecursive()" class="btn-jazz !border-purple-500 !text-purple-400" data-i18n="btn_scan_deep">📂 Récursif</button>
+                </div>
             </div>
         </div>
         <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl rounded-md"></div>
         <div id="library-list" class="pb-40 mt-4"></div>
     </section>
 
+    <!-- ═══ SETLIST TAB ═══ -->
     <section id="sec-set" class="hidden pt-22 h-screen overflow-y-auto px-4 md:px-6">
         <div class="max-w-xl mx-auto text-center mt-4">
             <h2 class="jazz-title text-2xl mb-6" data-i18n="set_title">Programmation</h2>
@@ -341,17 +469,20 @@
         </div>
     </section>
 
+    <!-- ═══ VIEWER TAB ═══ -->
     <section id="sec-view" class="fixed inset-0 bg-black hidden z-[310] overflow-hidden">
         
-        <div id="viewer-header" class="glass absolute top-0 w-full p-2 md:p-3 flex justify-between items-center z-[500] transition-opacity duration-300">
-            <div class="flex items-center gap-1 md:gap-2">
-                <button onclick="goToHome()" class="btn-jazz !border-none !text-lime-400 !px-2 font-bold" data-i18n="btn_home">🏠 Accueil</button>
+        <div id="viewer-header" class="glass absolute top-0 w-full p-2 md:p-3 z-[500] transition-opacity duration-300">
+            <!-- Left group -->
+            <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                <button onclick="goToHome()" class="btn-jazz !border-none !text-lime-400 !px-2 font-bold" data-i18n="btn_home">🏠</button>
                 <button onclick="switchTab('lib')" class="btn-jazz !border-none !text-zinc-500 !px-1 md:px-2" data-i18n="btn_close">✕</button>
-                <button onclick="toggleSidebar()" class="btn-jazz !border-zinc-800 !px-2">☰ Menu</button>
-                <button onclick="saveTxtFile()" id="txt-save-btn" class="btn-jazz !border-blue-700 !text-blue-400 !px-2 hidden" title="Enregistrer TXT">💾 TXT</button>
+                <button onclick="toggleSidebar()" class="btn-jazz !border-zinc-800 !px-2">☰</button>
+                <button onclick="saveTxtFile()" id="txt-save-btn" class="btn-jazz !border-blue-700 !text-blue-400 !px-2 hidden" title="Enregistrer TXT">💾</button>
             </div>
             
-            <div class="flex items-center gap-2 md:gap-3">
+            <!-- Centre: navigation + zoom -->
+            <div class="flex items-center gap-2 md:gap-3 flex-shrink-0">
                 <button onclick="prevFile()" class="btn-jazz !border-zinc-700 !text-zinc-300 !px-2">◀</button>
                 <div class="flex items-center bg-zinc-900 rounded-lg px-1 border border-white/5">
                     <button onclick="adjustZoom(-0.15)" class="px-2 md:px-3 py-1 text-zinc-400 hover:text-white font-bold text-sm">-</button>
@@ -362,20 +493,22 @@
                 
                 <div id="pdf-page-nav" class="flex items-center bg-zinc-900 rounded-lg border border-white/5 hidden">
                     <button onclick="event.stopPropagation(); changePdfPage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-xs">P-</button>
-                    <span id="pdf-page-label" class="text-[10px] w-12 text-center font-bold text-zinc-400">1 / 1</span>
+                    <span id="pdf-page-label" class="text-[10px] w-14 text-center font-bold text-zinc-400">1 / 1</span>
                     <button onclick="event.stopPropagation(); changePdfPage(1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-xs">P+</button>
                 </div>
             </div>
 
-            <div class="flex items-center gap-1 md:gap-3">
+            <!-- Right group -->
+            <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                <!-- Auto-scroll with 0.1 step -->
                 <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5">
                     <button onclick="event.stopPropagation(); toggleAutoScroll()" id="scroll-toggle-btn" class="btn-jazz !border-none !px-2" title="Auto-Scroll">⭥</button>
-                    <button onclick="event.stopPropagation(); adjustScrollSpeed(-1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">-</button>
-                    <span id="scroll-speed-label" class="text-[9px] w-6 text-center font-bold text-zinc-400">0.1px</span>
-                    <button onclick="event.stopPropagation(); adjustScrollSpeed(1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs">+</button>
+                    <button onclick="event.stopPropagation(); adjustScrollSpeed(-1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs" title="Ralentir">-</button>
+                    <span id="scroll-speed-label" class="text-[9px] w-8 text-center font-bold text-zinc-400">0.1</span>
+                    <button onclick="event.stopPropagation(); adjustScrollSpeed(1)" class="px-1 text-zinc-500 hover:text-white font-bold text-xs" title="Accélérer">+</button>
                 </div>
 
-                <button onclick="event.stopPropagation(); toggleSunMode()" id="sun-mode-btn" class="btn-jazz !border-zinc-700 !text-amber-500 !px-2" data-i18n="btn_sun" title="Mode Soleil (Sepia)">☀️ Soleil</button>
+                <button onclick="event.stopPropagation(); toggleSunMode()" id="sun-mode-btn" class="btn-jazz !border-zinc-700 !text-amber-500 !px-2" data-i18n="btn_sun" title="Mode Soleil">☀️</button>
                 <button onclick="toggleFX()" id="fx-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_settings">Filtres</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !px-2" data-i18n="btn_draw">Dessin</button>
                 
@@ -405,13 +538,14 @@
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
         </div>
 
+        <!-- ── Annotation toolbar ── -->
         <div class="right-control-dock">
             <div id="anno-toolbar">
-                <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active style-lime" style="width:30px; height:30px; background:#ccff00; color:#ccff00;"></div>
-                <div onclick="setAnnoColor('#00f0ff', this)" class="color-dot style-blue" style="width:30px; height:30px; background:#00f0ff; color:#00f0ff;"></div>
-                <div onclick="setAnnoColor('#ff00ff', this)" class="color-dot style-pink" style="width:30px; height:30px; background:#ff00ff; color:#ff00ff;"></div>
-                <div onclick="setAnnoColor('#ff6600', this)" class="color-dot style-orange" style="width:30px; height:30px; background:#ff6600; color:#ff6600;"></div>
-                <div onclick="setAnnoColor('red', this)" class="color-dot style-red" style="width:30px; height:30px; background:red; color:red;"></div>
+                <div onclick="setAnnoColor('#ccff00', this)" class="color-dot active" style="width:30px; height:30px; background:#ccff00;"></div>
+                <div onclick="setAnnoColor('#00f0ff', this)" class="color-dot" style="width:30px; height:30px; background:#00f0ff;"></div>
+                <div onclick="setAnnoColor('#ff00ff', this)" class="color-dot" style="width:30px; height:30px; background:#ff00ff;"></div>
+                <div onclick="setAnnoColor('#ff6600', this)" class="color-dot" style="width:30px; height:30px; background:#ff6600;"></div>
+                <div onclick="setAnnoColor('red', this)" class="color-dot" style="width:30px; height:30px; background:red;"></div>
                 
                 <div class="toolbar-divider"></div>
                 
@@ -435,6 +569,7 @@
                 <button onclick="clearCurrentPage()" class="btn-jazz !px-2 !py-1 !text-[9px] !border-pink-950 !text-pink-500">Effacer</button>
             </div>
 
+            <!-- ── FX toolbar ── -->
             <div id="fx-toolbar">
                 <div class="fx-indicator"><span data-i18n="fx_bright">Lum</span> <span id="val-bright" class="text-lime-400">100%</span></div>
                 <input type="range" min="0.4" max="2" step="0.05" value="1" oninput="updateFX('bright', this.value)">
@@ -448,55 +583,67 @@
     </section>
 
     <script>
+        /* ═══════════════════════════════════════════════════════
+           i18n
+        ═══════════════════════════════════════════════════════ */
         const i18n = {
             fr: {
                 nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
                 btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier",
+                btn_scan_deep: "📂 Récursif",
                 set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
-                btn_close: "✕ Fermer", btn_settings: "Filtres", btn_draw: "Dessin",
+                btn_close: "✕", btn_settings: "Filtres", btn_draw: "Dessin",
                 fx_bright: "Lum", fx_contrast: "Cont", fx_alpha: "Opac", btn_del: "Gomme",
-                btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter", btn_home: "🏠 Accueil",
-                btn_sun: "☀️ Soleil", btn_text: "Texte"
+                btn_prev: "Précédent", btn_next: "Suivant", btn_add: "Ajouter", btn_home: "🏠",
+                btn_sun: "☀️", btn_text: "Texte"
             },
             en: {
                 nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
                 btn_restore: "Restore Access", btn_scan: "Scan Folder",
+                btn_scan_deep: "📂 Recursive",
                 set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
-                btn_close: "✕ Close", btn_settings: "Filters", btn_draw: "Draw",
+                btn_close: "✕", btn_settings: "Filters", btn_draw: "Draw",
                 fx_bright: "Bright", fx_contrast: "Cont", fx_alpha: "Opac", btn_del: "Eraser",
-                btn_prev: "Previous", btn_next: "Next", btn_add: "Add", btn_home: "🏠 Home",
-                btn_sun: "☀️ Sun", btn_text: "Text"
+                btn_prev: "Previous", btn_next: "Next", btn_add: "Add", btn_home: "🏠",
+                btn_sun: "☀️", btn_text: "Text"
             }
         };
 
-        let currentLang = localStorage.getItem('part_lang') || 'fr';
-        let files = [], setFiles = [], currentIndex = 0, sources = [];
-        let uiVisible = true, currentZoom = 1.0, isDrawingMode = false, isFxMode = false;
-        let annoColor = '#ccff00', annoSize = 8, annoOpacity = 1.0;
-        let annotations = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
-        let undoStack = [];
-        let currentRotation = 0;  
-        let zoomMemory = 1.0;     
-        let isDualPage = false;   
-        
-        let tpCache = [];
-        let startDist = 0;
-        let startZoom = 1.0;
-
-        let isSepiaMode = false;
-        let isScrolling = false;
-        let scrollInterval = null;
-        let scrollSpeed = 0.1; 
+        /* ═══════════════════════════════════════════════════════
+           State
+        ═══════════════════════════════════════════════════════ */
+        let currentLang   = localStorage.getItem('part_lang') || 'fr';
+        let files         = [], setFiles = [], currentIndex = 0, sources = [];
+        let uiVisible     = true, currentZoom = 1.0, isDrawingMode = false, isFxMode = false;
+        let annoColor     = '#ccff00', annoSize = 8, annoOpacity = 1.0;
+        let annotations   = JSON.parse(localStorage.getItem('part_annos_v3') || '{}');
+        let undoStack     = [];
+        let currentRotation = 0;
+        let zoomMemory    = 1.0;
+        let isDualPage    = false;
+        let tpCache       = [], startDist = 0, startZoom = 1.0;
+        let isSepiaMode   = false;
+        let isScrolling   = false;
+        let scrollInterval= null;
+        let scrollSpeed   = 0.1; /* default fine step */
         let currentPdfDoc = null;
         let currentPdfPageNum = 1;
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        /* Tree structure for recursive folder display */
+        let fileTree = []; /* {name, isFolder, children, file} */
 
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        /* ═══════════════════════════════════════════════════════
+           Language
+        ═══════════════════════════════════════════════════════ */
         function setLang(lang) {
-            currentLang = lang; localStorage.setItem('part_lang', lang);
+            currentLang = lang;
+            localStorage.setItem('part_lang', lang);
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                el.innerText = i18n[lang][key] || key;
+                if (i18n[lang][key]) el.innerText = i18n[lang][key];
             });
             document.querySelectorAll('.lang-switch').forEach(el => el.classList.remove('active'));
             document.getElementById('lang-' + lang).classList.add('active');
@@ -504,49 +651,53 @@
             renderSourcesUI();
         }
 
+        /* ═══════════════════════════════════════════════════════
+           IndexedDB
+        ═══════════════════════════════════════════════════════ */
         const DB_NAME = "PartochesDB_Ultimate";
-        async function openDB() { 
-            return new Promise((r) => { 
-                const req = indexedDB.open(DB_NAME, 2); // Version passe à 2 pour intégrer la table ios_files
+        async function openDB() {
+            return new Promise((resolve) => {
+                const req = indexedDB.open(DB_NAME, 3);
                 req.onupgradeneeded = (e) => {
                     const db = e.target.result;
-                    if (!db.objectStoreNames.contains("sources")) db.createObjectStore("sources");
+                    if (!db.objectStoreNames.contains("sources"))  db.createObjectStore("sources");
                     if (!db.objectStoreNames.contains("ios_files")) db.createObjectStore("ios_files", { keyPath: "name" });
-                }; 
-                req.onsuccess = (e) => r(req.result); 
-            }); 
+                };
+                req.onsuccess = () => resolve(req.result);
+            });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Init
+        ═══════════════════════════════════════════════════════ */
         async function init() {
             setLang(currentLang);
 
             const btnScan = document.querySelector('[data-i18n="btn_scan"]');
             if (typeof window.showDirectoryPicker === 'undefined') {
-                btnScan.setAttribute('data-i18n-ios', '1');
-                const iosLabel = { fr: '+ Ajouter Partoches', en: '+ Add Partitions' };
+                const iosLabel = { fr: '+ Ajouter Partoches', en: '+ Add Scores' };
                 btnScan.innerText = iosLabel[currentLang];
             }
 
             const db = await openDB();
-            
-            // Chargement des dossiers réels (Desktop)
+
             const reqSources = db.transaction("sources", "readonly").objectStore("sources").getAll();
-            reqSources.onsuccess = async () => { 
-                sources = reqSources.result || []; 
-                if(sources.length > 0) {
+            reqSources.onsuccess = async () => {
+                sources = reqSources.result || [];
+                if (sources.length > 0) {
                     try {
                         let needsReauth = false;
-                        for(const h of sources) { 
+                        for (const h of sources) {
                             if (!h._virtual) {
                                 const perm = await h.queryPermission({ mode: 'read' });
-                                if(perm !== 'granted') needsReauth = true;
+                                if (perm !== 'granted') needsReauth = true;
                             }
                         }
                         if (needsReauth) document.getElementById('btn-restore').classList.remove('hidden');
                     } catch(e) { console.error("Restauration échouée:", e); }
                 }
 
-                // Chargement persistant des fichiers stockés en local (iPad/iOS Fallback)
+                /* Load persisted iOS files */
                 const reqFiles = db.transaction("ios_files", "readonly").objectStore("ios_files").getAll();
                 reqFiles.onsuccess = async () => {
                     const savedFiles = reqFiles.result || [];
@@ -576,28 +727,27 @@
             renderSavedSets();
             generateAlphaBar();
             setupPinchZoom();
-            
+
             new Sortable(document.getElementById('sidebar-items'), {
                 animation: 180,
-                onEnd: function (evt) {
+                onEnd: (evt) => {
                     const movedItem = setFiles.splice(evt.oldIndex, 1)[0];
                     setFiles.splice(evt.newIndex, 0, movedItem);
-                    if (currentIndex === evt.oldIndex) {
-                        currentIndex = evt.newIndex;
-                    } else if (currentIndex > evt.oldIndex && currentIndex <= evt.newIndex) {
-                        currentIndex--;
-                    } else if (currentIndex < evt.oldIndex && currentIndex >= evt.newIndex) {
-                        currentIndex++;
-                    }
+                    if (currentIndex === evt.oldIndex)          currentIndex = evt.newIndex;
+                    else if (currentIndex > evt.oldIndex && currentIndex <= evt.newIndex) currentIndex--;
+                    else if (currentIndex < evt.oldIndex && currentIndex >= evt.newIndex) currentIndex++;
                     document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
                     renderSidebar();
                 }
             });
-            
+
             window.addEventListener("orientationchange", () => { setTimeout(applyPageScales, 350); });
-            window.addEventListener("resize", () => { setTimeout(applyPageScales, 100); });
+            window.addEventListener("resize",            () => { setTimeout(applyPageScales, 100); });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Add source: flat (original)
+        ═══════════════════════════════════════════════════════ */
         async function addSource() {
             if (typeof window.showDirectoryPicker === 'undefined') {
                 addSourceFallbackIOS();
@@ -605,7 +755,7 @@
             }
             try {
                 const h = await window.showDirectoryPicker({ mode: 'read' });
-                if(sources.find(s => s.name === h.name)) {
+                if (sources.find(s => s.name === h.name)) {
                     alert(currentLang === 'fr' ? "Ce dossier est déjà ajouté." : "This folder is already added.");
                     return;
                 }
@@ -619,37 +769,64 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Add source: RECURSIVE (new – scans sub-folders & iPhoto albums)
+        ═══════════════════════════════════════════════════════ */
+        async function addSourceRecursive() {
+            if (typeof window.showDirectoryPicker === 'undefined') {
+                addSourceFallbackIOS();
+                return;
+            }
+            try {
+                const h = await window.showDirectoryPicker({ mode: 'read' });
+                if (sources.find(s => s.name === h.name)) {
+                    alert(currentLang === 'fr' ? "Ce dossier est déjà ajouté." : "This folder is already added.");
+                    return;
+                }
+                /* Tag as recursive so scanFolderFresh goes deep */
+                h._recursive = true;
+                const db = await openDB();
+                db.transaction("sources", "readwrite").objectStore("sources").put(h, h.name);
+                sources.push(h);
+                await refreshFiles();
+            } catch(e) {
+                if (e.name === 'AbortError') return;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           iOS fallback picker (supports gif now)
+        ═══════════════════════════════════════════════════════ */
         function addSourceFallbackIOS() {
             const input = document.createElement('input');
-            input.type = 'file';
+            input.type     = 'file';
             input.multiple = true;
-            input.accept = '.pdf,.png,.jpg,.jpeg,.webp,.txt,image/*,application/pdf,text/plain';
+            /* Added gif to accepted types */
+            input.accept   = '.pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,image/*,application/pdf,text/plain';
             input.style.display = 'none';
             document.body.appendChild(input);
-            
+
             input.onchange = async () => {
-                if (!input.files || input.files.length === 0) { input.remove(); return; }
+                if (!input.files || !input.files.length) { input.remove(); return; }
                 const db = await openDB();
                 const virtualSourceName = currentLang === 'fr' ? 'Fichiers iPad/iCloud' : 'iPad/iCloud Files';
-                
+
                 if (!sources.find(s => s.name === virtualSourceName)) {
                     sources.push({ name: virtualSourceName, _virtual: true, _files: [] });
                 }
                 const vsrc = sources.find(s => s.name === virtualSourceName);
-                
+
                 for (const file of input.files) {
-                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp|txt)$/i)) {
-                        // Sauvegarde physique définitive dans l'IndexedDB de l'iPad
+                    if (file.name.match(/\.(pdf|png|jpg|jpeg|webp|gif|txt)$/i)) {
                         const tx = db.transaction("ios_files", "readwrite");
                         tx.objectStore("ios_files").put({ name: file.name, blob: file });
-                        
                         if (!vsrc._files.some(f => f.entry.name === file.name)) {
-                            vsrc._files.push({ 
-                                entry: { 
-                                    name: file.name, 
-                                    _blob: file, 
-                                    getFile: () => Promise.resolve(file) 
-                                } 
+                            vsrc._files.push({
+                                entry: {
+                                    name: file.name,
+                                    _blob: file,
+                                    getFile: () => Promise.resolve(file)
+                                }
                             });
                         }
                     }
@@ -660,15 +837,19 @@
             input.click();
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Remove source
+        ═══════════════════════════════════════════════════════ */
         async function removeSource(name) {
-            if(!confirm(currentLang === 'fr' ? "Supprimer l'accès à ce dossier / groupe de fichiers ?" : "Remove access to this folder / files?")) return;
+            if (!confirm(currentLang === 'fr'
+                ? "Supprimer l'accès à ce dossier / groupe de fichiers ?"
+                : "Remove access to this folder / files?")) return;
             const src = sources.find(s => s.name === name);
-            const db = await openDB();
+            const db  = await openDB();
             if (src) {
                 if (!src._virtual) {
                     db.transaction("sources", "readwrite").objectStore("sources").delete(name);
                 } else {
-                    // Nettoyer la base locale sur iPad si on supprime le tag virtuel
                     db.transaction("ios_files", "readwrite").objectStore("ios_files").clear();
                 }
             }
@@ -676,14 +857,19 @@
             await refreshFiles();
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Refresh files
+        ═══════════════════════════════════════════════════════ */
         async function refreshFiles() {
-            files = [];
-            for(const h of sources) {
+            files    = [];
+            fileTree = [];
+
+            for (const h of sources) {
                 try {
                     if (h._virtual) {
                         if (h._files) files.push(...h._files);
                     } else {
-                        const results = await scanFolderFresh(h);
+                        const results = await scanFolderFresh(h, h._recursive);
                         files.push(...results);
                     }
                 } catch(e) { console.warn("Dossier inaccessible", h.name, e); }
@@ -692,77 +878,121 @@
             renderSourcesUI();
         }
 
-        async function scanFolderFresh(handle) {
+        /* ═══════════════════════════════════════════════════════
+           Scan folder – flat or RECURSIVE (new)
+           Handles sub-folders and iPhoto Album structures
+        ═══════════════════════════════════════════════════════ */
+        const SUPPORTED_EXT = /\.(pdf|png|jpg|jpeg|webp|gif|txt)$/i;
+
+        async function scanFolderFresh(handle, recursive = false, depth = 0) {
             const list = [];
             for await (const entry of handle.values()) {
-                if(entry.kind === 'file' && entry.name.match(/\.(pdf|png|jpg|jpeg|webp|txt)$/i)) {
+                if (entry.kind === 'file' && SUPPORTED_EXT.test(entry.name)) {
                     list.push({ entry, parentHandle: handle });
+                } else if (entry.kind === 'directory' && recursive && depth < 8) {
+                    /* Recurse into sub-directory (incl. iPhoto album folders) */
+                    try {
+                        const subResults = await scanFolderFresh(entry, true, depth + 1);
+                        list.push(...subResults);
+                    } catch(e) { console.warn("Sous-dossier inaccessible:", entry.name); }
                 }
             }
             return list;
         }
 
+        /* ═══════════════════════════════════════════════════════
+           UI: sources
+        ═══════════════════════════════════════════════════════ */
         function renderSourcesUI() {
-            const container = document.getElementById('source-list'); container.innerHTML = '';
+            const container = document.getElementById('source-list');
+            container.innerHTML = '';
             sources.forEach(s => {
-                const tag = document.createElement('div'); tag.className = 'source-tag';
-                tag.innerHTML = `${s.name} <span class="source-delete" onclick="removeSource('${s.name}')">✕</span>`;
+                const tag = document.createElement('div');
+                tag.className = 'source-tag';
+                const badge = s._recursive ? ' 🔁' : '';
+                tag.innerHTML = `${s.name}${badge} <span class="source-delete" onclick="removeSource('${s.name.replace(/'/g,"\\'")}')">✕</span>`;
                 container.appendChild(tag);
             });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Restore access
+        ═══════════════════════════════════════════════════════ */
         async function restoreAccess() {
             try {
-                for(const h of sources) { 
-                    if (!h._virtual) await h.requestPermission({ mode: 'read' }); 
+                for (const h of sources) {
+                    if (!h._virtual) await h.requestPermission({ mode: 'read' });
                 }
                 document.getElementById('btn-restore').classList.add('hidden');
                 refreshFiles();
-            } catch(e) { 
-                alert(currentLang === 'fr' ? "Permission refusée." : "Permission denied."); 
+            } catch(e) {
+                alert(currentLang === 'fr' ? "Permission refusée." : "Permission denied.");
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Library render
+        ═══════════════════════════════════════════════════════ */
         function renderLibrary(filter = '') {
-            const l = document.getElementById('library-list'); l.innerHTML = '';
-            files.filter(x => !filter || x.entry.name.toUpperCase().startsWith(filter))
-                 .sort((a,b) => a.entry.name.localeCompare(b.entry.name))
-                 .forEach(file => {
+            const l = document.getElementById('library-list');
+            l.innerHTML = '';
+            files
+                .filter(x => !filter || x.entry.name.toUpperCase().startsWith(filter))
+                .sort((a, b) => a.entry.name.localeCompare(b.entry.name))
+                .forEach(file => {
                     const row = document.createElement('div');
                     row.className = "file-row flex justify-between items-center p-3 px-4";
-                    row.innerHTML = `<div class="flex-grow font-medium text-zinc-300 text-[12px] md:text-[14px] truncate pr-4" onclick="viewSingle('${file.entry.name.replace(/'/g, "\\'")}')">${file.entry.name}</div>
-                                     <button onclick="handleSelectLibraryItem(this, '${file.entry.name.replace(/'/g, "\\'")}')" class="btn-jazz !py-1 transition-all duration-200">${i18n[currentLang].btn_add}</button>`;
+                    const safeName = file.entry.name.replace(/'/g, "\\'");
+                    row.innerHTML =
+                        `<div class="flex-grow font-medium text-zinc-300 text-[12px] md:text-[14px] truncate pr-4"
+                              onclick="viewSingle('${safeName}')">${file.entry.name}</div>
+                         <button onclick="handleSelectLibraryItem(this, '${safeName}')"
+                                 class="btn-jazz !py-1 transition-all duration-200">${i18n[currentLang].btn_add}</button>`;
                     l.appendChild(row);
-                 });
+                });
         }
 
         function handleSelectLibraryItem(buttonEl, filename) {
             addToSet(filename);
             buttonEl.classList.add('btn-add-success');
-            const originalText = buttonEl.innerText;
+            const original = buttonEl.innerText;
             buttonEl.innerText = currentLang === 'fr' ? "Ajouté ✔" : "Added ✔";
             setTimeout(() => {
                 buttonEl.classList.remove('btn-add-success');
-                buttonEl.innerText = originalText;
+                buttonEl.innerText = original;
             }, 800);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Alpha bar
+        ═══════════════════════════════════════════════════════ */
         function generateAlphaBar() {
             const bar = document.getElementById('alpha-bar');
             bar.innerHTML = '';
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
-                const b = document.createElement('button');
-                b.innerText = l;
-                b.onclick = () => renderLibrary(l);
+            /* All letters + reset */
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+            const allBtn  = document.createElement('button');
+            allBtn.innerText = '✱';
+            allBtn.title = 'Tout';
+            allBtn.onclick = () => renderLibrary();
+            bar.appendChild(allBtn);
+            letters.forEach(letter => {
+                const b   = document.createElement('button');
+                b.innerText = letter;
+                b.onclick   = () => renderLibrary(letter);
                 bar.appendChild(b);
             });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Setlist
+        ═══════════════════════════════════════════════════════ */
         function addToSet(name) {
             const div = document.createElement('div');
             div.className = "flex justify-between items-center bg-[#141419] p-3 mb-2 rounded border border-white/5 cursor-move";
             div.dataset.name = name;
-            div.innerHTML = `<span class="text-[11px] md:text-[13px] text-zinc-300 font-bold truncate pr-3">${name}</span> <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
+            div.innerHTML = `<span class="text-[11px] md:text-[13px] text-zinc-300 font-bold truncate pr-3">${name}</span>
+                             <button onclick="this.parentElement.remove()" class="text-pink-500 font-bold px-2">✕</button>`;
             document.getElementById('set-list-current').appendChild(div);
             new Sortable(document.getElementById('set-list-current'), { animation: 150 });
         }
@@ -776,7 +1006,7 @@
         }
 
         function clearCurrentSet() {
-            if(confirm("Vider la liste actuelle ?")) document.getElementById('set-list-current').innerHTML = '';
+            if (confirm("Vider la liste actuelle ?")) document.getElementById('set-list-current').innerHTML = '';
         }
 
         function renderSavedSets() {
@@ -784,120 +1014,129 @@
             list.innerHTML = '';
             Object.keys(localStorage).filter(k => k.startsWith('part_set_')).forEach(key => {
                 const name = key.replace('part_set_', '');
-                const div = document.createElement('div');
+                const div  = document.createElement('div');
                 div.className = "flex justify-between items-center bg-zinc-900/30 border border-white/5 p-3 rounded";
-                div.innerHTML = `<div class="font-bold text-lime-400 cursor-pointer text-[11px] md:text-[13px] truncate pr-4" onclick="loadSet('${key}')">${name}</div> <button onclick="deleteSet('${key}')" class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
+                div.innerHTML =
+                    `<div class="font-bold text-lime-400 cursor-pointer text-[11px] md:text-[13px] truncate pr-4"
+                          onclick="loadSet('${key}')">${name}</div>
+                     <button onclick="deleteSet('${key}')"
+                             class="text-zinc-600 hover:text-white transition uppercase text-[9px] font-bold">Supprimer</button>`;
                 list.appendChild(div);
             });
         }
 
         function deleteSet(key) {
-            if(confirm("Supprimer ce set ?")) {
-                localStorage.removeItem(key);
-                renderSavedSets();
-            }
+            if (confirm("Supprimer ce set ?")) { localStorage.removeItem(key); renderSavedSets(); }
         }
 
         function loadSet(key) {
             const names = JSON.parse(localStorage.getItem(key));
-            setFiles = [];
+            setFiles    = [];
             document.getElementById('set-list-current').innerHTML = '';
             names.forEach(n => {
                 const f = files.find(file => file.entry.name === n);
-                if (f) {
-                    setFiles.push(f);
-                    addToSet(n);
-                }
+                if (f) { setFiles.push(f); addToSet(n); }
             });
-            if (setFiles.length > 0) {
-                currentIndex = 0;
-                openFile(setFiles[0]);
-            }
+            if (setFiles.length > 0) { currentIndex = 0; openFile(setFiles[0]); }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Open single file
+        ═══════════════════════════════════════════════════════ */
         function viewSingle(name) {
             const f = files.find(x => x.entry.name === name);
-            if(f) { setFiles = [f]; currentIndex = 0; openFile(f); }
+            if (f) { setFiles = [f]; currentIndex = 0; openFile(f); }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Get blob
+        ═══════════════════════════════════════════════════════ */
         async function getFreshFileBlob(fileObj) {
             if (fileObj.entry._blob) return fileObj.entry._blob;
             try {
                 return await fileObj.entry.getFile();
-            } catch (err) {
+            } catch(err) {
                 if (err.name === 'NotFoundError' && fileObj.parentHandle) {
-                    const freshList = await scanFolderFresh(fileObj.parentHandle);
-                    const freshMatch = freshList.find(x => x.entry.name === fileObj.entry.name);
-                    if (freshMatch) {
-                        fileObj.entry = freshMatch.entry;
-                        return await freshMatch.entry.getFile();
-                    }
+                    const freshList = await scanFolderFresh(fileObj.parentHandle, fileObj.parentHandle._recursive);
+                    const match     = freshList.find(x => x.entry.name === fileObj.entry.name);
+                    if (match) { fileObj.entry = match.entry; return await match.entry.getFile(); }
                 }
                 throw err;
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Open file (PDF, image, gif, txt)
+        ═══════════════════════════════════════════════════════ */
         async function openFile(fileObj) {
             stopAutoScroll();
             document.getElementById('sec-view').classList.remove('hidden');
             switchTab('view');
-            
+
             currentRotation = 0;
             document.getElementById('rotate-label').innerText = "↺↻";
             document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
-            
+
             currentZoom = zoomMemory;
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
 
             document.getElementById('pdf-page-nav').classList.add('hidden');
             document.getElementById('txt-save-btn').classList.add('hidden');
-            currentPdfDoc = null;
+            currentPdfDoc    = null;
             currentPdfPageNum = 1;
 
             const container = document.getElementById('viewer-content');
-            container.innerHTML = `<div class="text-zinc-500 font-bold text-xs animate-pulse p-10">Chargement de ${fileObj.entry.name}...</div>`;
+            container.innerHTML = `<div class="text-zinc-500 font-bold text-xs animate-pulse p-10">
+                Chargement de ${fileObj.entry.name}…</div>`;
             renderSidebar();
 
             try {
                 const blob = await getFreshFileBlob(fileObj);
                 const name = fileObj.entry.name.toLowerCase();
                 container.innerHTML = '';
+                container.classList.remove('dual-page-mode');
 
                 if (name.endsWith('.pdf')) {
+                    /* ── PDF ── */
                     document.getElementById('pdf-page-nav').classList.remove('hidden');
                     const arrayBuffer = await blob.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     currentPdfDoc = pdf;
                     await renderPdfPage(currentPdfPageNum);
-                } else if (name.match(/\.(png|jpg|jpeg|webp)$/)) {
+
+                } else if (name.match(/\.(png|jpg|jpeg|webp|gif)$/i)) {
+                    /* ── Image & GIF ── */
                     const url = URL.createObjectURL(blob);
                     createPageStructure(container, 1, (wrapper) => {
                         const img = document.createElement('img');
                         img.src = url;
-                        img.onload = () => { 
+                        if (name.endsWith('.gif')) img.classList.add('gif-media');
+                        img.onload = () => {
                             initAnnotationCanvas(wrapper, 1);
-                            applyPageScales(); 
+                            applyPageScales();
+                        };
+                        img.onerror = () => {
+                            wrapper.innerHTML = `<div style="color:#f55;padding:20px;">Erreur de lecture GIF/image</div>`;
                         };
                         wrapper.appendChild(img);
                     });
+
                 } else if (name.endsWith('.txt')) {
+                    /* ── Plain text ── */
                     document.getElementById('txt-save-btn').classList.remove('hidden');
                     const text = await blob.text();
                     createPageStructure(container, 1, (wrapper) => {
-                        wrapper.style.background = "#111";
-                        wrapper.style.color = "#fff";
-                        wrapper.style.padding = "40px";
-                        wrapper.style.width = "85vw";
-                        wrapper.style.whiteSpace = "pre-wrap";
-                        wrapper.style.fontFamily = "monospace";
-                        wrapper.style.fontSize = "15px";
-                        wrapper.style.userSelect = "text";
+                        wrapper.style.background     = "#111";
+                        wrapper.style.color          = "#fff";
+                        wrapper.style.padding        = "40px";
+                        wrapper.style.width          = "85vw";
+                        wrapper.style.whiteSpace     = "pre-wrap";
+                        wrapper.style.fontFamily     = "monospace";
+                        wrapper.style.fontSize       = "15px";
+                        wrapper.style.userSelect     = "text";
                         wrapper.style.webkitUserSelect = "text";
                         wrapper.innerText = text;
-                        setTimeout(() => {
-                            initAnnotationCanvas(wrapper, 1);
-                            applyPageScales();
-                        }, 60);
+                        setTimeout(() => { initAnnotationCanvas(wrapper, 1); applyPageScales(); }, 60);
                     });
                 }
             } catch(e) {
@@ -906,31 +1145,35 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Render PDF page
+        ═══════════════════════════════════════════════════════ */
         async function renderPdfPage(pageNum) {
             if (!currentPdfDoc) return;
             const container = document.getElementById('viewer-content');
             container.innerHTML = '';
-            
+
             document.getElementById('pdf-page-label').innerText = `${pageNum} / ${currentPdfDoc.numPages}`;
 
-            const pagesToRender = (isDualPage && pageNum < currentPdfDoc.numPages) ? [pageNum, pageNum + 1] : [pageNum];
-            
-            if(isDualPage && pageNum < currentPdfDoc.numPages) {
+            const pagesToRender = (isDualPage && pageNum < currentPdfDoc.numPages)
+                ? [pageNum, pageNum + 1]
+                : [pageNum];
+
+            if (isDualPage && pageNum < currentPdfDoc.numPages) {
                 container.classList.add('dual-page-mode');
             } else {
                 container.classList.remove('dual-page-mode');
             }
 
             for (const p of pagesToRender) {
-                const page = await currentPdfDoc.getPage(p);
+                const page     = await currentPdfDoc.getPage(p);
                 createPageStructure(container, p, (wrapper, canvas) => {
-                    const ctx = canvas.getContext('2d');
-                    const viewport = page.getViewport({ scale: 2.0 }); 
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    
-                    const renderCtx = { canvasContext: ctx, viewport: viewport };
-                    page.render(renderCtx).promise.then(() => {
+                    const ctx      = canvas.getContext('2d');
+                    /* Render at 2× for crisp high-DPI display */
+                    const viewport = page.getViewport({ scale: 2.0 });
+                    canvas.width   = viewport.width;
+                    canvas.height  = viewport.height;
+                    page.render({ canvasContext: ctx, viewport }).promise.then(() => {
                         initAnnotationCanvas(wrapper, p);
                         applyPageScales();
                     });
@@ -938,19 +1181,27 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Change PDF page
+        ═══════════════════════════════════════════════════════ */
         function changePdfPage(dir) {
             if (!currentPdfDoc) return;
-            let nextSpec = currentPdfPageNum + dir;
-            if (isDualPage && dir > 0) nextSpec = currentPdfPageNum + 2;
-            if (isDualPage && dir < 0) nextSpec = currentPdfPageNum - 2;
-
-            if (nextSpec < 1) nextSpec = 1;
-            if (nextSpec > currentPdfDoc.numPages) return;
-            
-            currentPdfPageNum = nextSpec;
+            let next = currentPdfPageNum + dir;
+            if (isDualPage && dir > 0) next = currentPdfPageNum + 2;
+            if (isDualPage && dir < 0) next = currentPdfPageNum - 2;
+            if (next < 1) next = 1;
+            if (next > currentPdfDoc.numPages) return;
+            currentPdfPageNum = next;
             renderPdfPage(currentPdfPageNum);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Create page structure
+           NOTE: wrapper is inline-block so it shrink-wraps its child.
+           The annotation canvas is overlaid at 100%/100% CSS size
+           but its internal resolution (cv.width/height) matches the
+           natural pixel size of the media element.
+        ═══════════════════════════════════════════════════════ */
         function createPageStructure(container, pageIdx, buildContentFn) {
             const rotWrapper = document.createElement('div');
             rotWrapper.className = "rotation-wrapper";
@@ -970,9 +1221,12 @@
             container.appendChild(rotWrapper);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Sun / sepia mode
+        ═══════════════════════════════════════════════════════ */
         function toggleSunMode() {
             isSepiaMode = !isSepiaMode;
-            const btn = document.getElementById('sun-mode-btn');
+            const btn  = document.getElementById('sun-mode-btn');
             const root = document.documentElement;
             if (isSepiaMode) {
                 root.style.setProperty('--page-sepia', '0.85');
@@ -983,21 +1237,20 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Auto-scroll — 0.1 step granularity
+        ═══════════════════════════════════════════════════════ */
         function toggleAutoScroll() {
-            const btn = document.getElementById('scroll-toggle-btn');
-            if (isScrolling) {
-                stopAutoScroll();
-            } else {
-                isScrolling = true;
-                btn.classList.add('scroll-active');
-                const scrollBox = document.getElementById('scroll-container');
-                scrollInterval = setInterval(() => {
-                    scrollBox.scrollTop += scrollSpeed;
-                    if (scrollBox.scrollTop + scrollBox.clientHeight >= scrollBox.scrollHeight - 5) {
-                        stopAutoScroll();
-                    }
-                }, 40);
-            }
+            if (isScrolling) { stopAutoScroll(); return; }
+            isScrolling = true;
+            document.getElementById('scroll-toggle-btn').classList.add('scroll-active');
+            const scrollBox = document.getElementById('scroll-container');
+            scrollInterval = setInterval(() => {
+                scrollBox.scrollTop += scrollSpeed;
+                if (scrollBox.scrollTop + scrollBox.clientHeight >= scrollBox.scrollHeight - 5) {
+                    stopAutoScroll();
+                }
+            }, 40);
         }
 
         function stopAutoScroll() {
@@ -1007,95 +1260,147 @@
             if (btn) btn.classList.remove('scroll-active');
         }
 
-        function adjustScrollSpeed(val) {
-            scrollSpeed += val * 0.1;
-            if (scrollSpeed < 0.05) scrollSpeed = 0.05;
-            if (scrollSpeed > 8) scrollSpeed = 8;
-            document.getElementById('scroll-speed-label').innerText = scrollSpeed.toFixed(1) + "px";
+        /* Fine-grain 0.1 step adjustScrollSpeed */
+        function adjustScrollSpeed(dir) {
+            scrollSpeed = parseFloat((scrollSpeed + dir * 0.1).toFixed(1));
+            if (scrollSpeed < 0.1) scrollSpeed = 0.1;
+            if (scrollSpeed > 10)  scrollSpeed = 10;
+            document.getElementById('scroll-speed-label').innerText = scrollSpeed.toFixed(1);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Save TXT
+        ═══════════════════════════════════════════════════════ */
         async function saveTxtFile() {
             if (currentIndex >= setFiles.length) return;
             const fileObj = setFiles[currentIndex];
             try {
-                const blob = await getFreshFileBlob(fileObj);
-                const text = await blob.text();
-                const blobUrl = URL.createObjectURL(new Blob([text], {type: "text/plain"}));
+                const blob    = await getFreshFileBlob(fileObj);
+                const text    = await blob.text();
+                const blobUrl = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
                 const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = fileObj.entry.name;
-                document.body.appendChild(a);
-                a.click();
+                a.href = blobUrl; a.download = fileObj.entry.name;
+                document.body.appendChild(a); a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(blobUrl);
-            } catch (err) {
-                alert("Erreur : " + err.message);
-            }
+            } catch(err) { alert("Erreur : " + err.message); }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Dual page
+        ═══════════════════════════════════════════════════════ */
         function toggleDualPage() {
             isDualPage = !isDualPage;
-            const btn = document.getElementById('dual-page-btn');
+            const btn  = document.getElementById('dual-page-btn');
             if (isDualPage) btn.classList.add('dual-active');
-            else btn.classList.remove('dual-active');
-            
-            if (currentPdfDoc) {
-                renderPdfPage(currentPdfPageNum);
-            } else {
-                applyPageScales();
-            }
+            else            btn.classList.remove('dual-active');
+            if (currentPdfDoc) renderPdfPage(currentPdfPageNum);
+            else applyPageScales();
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Rotation
+        ═══════════════════════════════════════════════════════ */
         function rotatePage(dir) {
-            currentRotation = (currentRotation + dir * 90) % 360;
-            if (currentRotation < 0) currentRotation += 360;
+            currentRotation = (currentRotation + dir * 90 + 360) % 360;
+            document.getElementById('rotate-label').innerText =
+                currentRotation === 0 ? "↺↻" : `${currentRotation}°`;
             applyPageScales();
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Apply page scales
+           – Ensures the full score is visible at ANY zoom level
+             (no clipping; scroll-container handles overflow).
+           – Annotation canvas has no extra white layer.
+        ═══════════════════════════════════════════════════════ */
         function applyPageScales() {
-            const wrappers = document.querySelectorAll('.page-wrapper');
+            const wrappers   = document.querySelectorAll('.page-wrapper');
             const isPortrait = window.innerHeight > window.innerWidth;
-            
-            wrappers.forEach(wrapper => {
-                const pageIdx = wrapper.dataset.pageIdx;
-                const rotWrapper = document.getElementById(`rot-wrapper-${pageIdx}`);
-                const elementToMeasure = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img') || wrapper;
-                
-                let origW = elementToMeasure.getBoundingClientRect().width / currentZoom;
-                let origH = elementToMeasure.getBoundingClientRect().height / currentZoom;
-                if (elementToMeasure.tagName === 'CANVAS') { origW = elementToMeasure.width/2; origH = elementToMeasure.height/2; }
-                if (elementToMeasure.tagName === 'IMG') { origW = elementToMeasure.naturalWidth || 600; origH = elementToMeasure.naturalHeight || 800; }
-                if (wrapper.style.whiteSpace === 'pre-wrap') { origW = window.innerWidth * 0.85; origH = elementToMeasure.offsetHeight; }
 
+            wrappers.forEach(wrapper => {
+                const pageIdx   = wrapper.dataset.pageIdx;
+                const rotWrapper= document.getElementById(`rot-wrapper-${pageIdx}`);
+
+                /* Determine natural content size */
+                const pdfCanvas = wrapper.querySelector('canvas:not(.anno-canvas)');
+                const imgEl     = wrapper.querySelector('img');
+                const isTxt     = wrapper.style.whiteSpace === 'pre-wrap';
+
+                let origW, origH;
+                if (pdfCanvas && pdfCanvas.width) {
+                    /* PDF: rendered at 2× — divide by 2 for CSS pixels */
+                    origW = pdfCanvas.width  / 2;
+                    origH = pdfCanvas.height / 2;
+                } else if (imgEl) {
+                    origW = imgEl.naturalWidth  || 600;
+                    origH = imgEl.naturalHeight || 800;
+                } else if (isTxt) {
+                    origW = window.innerWidth * 0.85;
+                    origH = wrapper.offsetHeight || 800;
+                } else {
+                    origW = wrapper.offsetWidth  || 600;
+                    origH = wrapper.offsetHeight || 800;
+                }
+
+                /* Account for rotation */
                 const swapDim = (currentRotation === 90 || currentRotation === 270);
                 const w = swapDim ? origH : origW;
                 const h = swapDim ? origW : origH;
 
-                let maxContainerW = window.innerWidth - 60;
+                /* Available viewport */
+                let maxW = window.innerWidth - 60;
                 if (!document.getElementById('viewer-sidebar').classList.contains('collapsed') && window.innerWidth > 768) {
-                    maxContainerW -= 280;
+                    maxW -= 280;
                 }
-                if (isDualPage) { maxContainerW = (maxContainerW / 2) - 20; }
+                if (isDualPage) maxW = (maxW / 2) - 20;
 
-                let headerSpace = 100;
-                if(isPortrait && isMobilePlatform()) headerSpace = 80;
-                const maxContainerH = window.innerHeight - headerSpace - (isPortrait && isMobilePlatform() ? 120 : 60);
+                const headerH  = isMobilePlatform() && isPortrait ? 80 : 100;
+                const footerH  = isMobilePlatform() && isPortrait ? 120 : 60;
+                const maxH     = window.innerHeight - headerH - footerH;
 
-                let scale = Math.min(maxContainerW / w, maxContainerH / h);
-                if (scale > 1.2) scale = 1.2; 
-                if (isMobilePlatform()) scale *= 1.15; 
+                /* Base scale to fit within viewport */
+                let scale = Math.min(maxW / w, maxH / h);
+                if (scale > 1.2)  scale = 1.2;
+                if (isMobilePlatform()) scale *= 1.15;
 
+                /* Final scale includes user zoom */
                 const finalScale = scale * currentZoom;
-                const scaledW = w * finalScale;
-                const scaledH = h * finalScale;
+                const scaledW    = w * finalScale;
+                const scaledH    = h * finalScale;
 
+                /* Size the rotation wrapper so the layout flow is correct */
                 if (rotWrapper) {
-                    rotWrapper.style.width = `${scaledW}px`;
+                    rotWrapper.style.width  = `${scaledW}px`;
                     rotWrapper.style.height = `${scaledH}px`;
                 }
 
-                wrapper.style.transformOrigin = "center center";
-                wrapper.style.transform = `rotate(${currentRotation}deg) scale(${finalScale})`;
+                /* Apply scale transform to the page-wrapper */
+                wrapper.style.transformOrigin = "top left";
+                wrapper.style.transform       = `rotate(${currentRotation}deg) scale(${finalScale})`;
+
+                /* Set the wrapper's own size to natural size so the transform
+                   scales from the correct anchor and overflow is allowed */
+                if (pdfCanvas && pdfCanvas.width) {
+                    wrapper.style.width  = `${origW}px`;
+                    wrapper.style.height = `${origH}px`;
+                } else if (imgEl) {
+                    wrapper.style.width  = `${origW}px`;
+                    wrapper.style.height = `${origH}px`;
+                }
+
+                /* Re-sync annotation canvas size to natural media dimensions */
+                const annoCanvas = wrapper.querySelector('.anno-canvas');
+                if (annoCanvas) {
+                    if (pdfCanvas && pdfCanvas.width) {
+                        annoCanvas.width  = pdfCanvas.width;
+                        annoCanvas.height = pdfCanvas.height;
+                    } else if (imgEl && imgEl.naturalWidth) {
+                        annoCanvas.width  = imgEl.naturalWidth;
+                        annoCanvas.height = imgEl.naturalHeight;
+                    }
+                    redrawAnnotations(annoCanvas, pageIdx);
+                }
             });
         }
 
@@ -1103,26 +1408,32 @@
             return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Zoom
+        ═══════════════════════════════════════════════════════ */
         function adjustZoom(amount) {
-            currentZoom += amount;
-            if (currentZoom < 0.3) currentZoom = 0.3;
-            if (currentZoom > 4.0) currentZoom = 4.0;
-            zoomMemory = currentZoom;
+            currentZoom = Math.min(Math.max(currentZoom + amount, 0.3), 5.0);
+            zoomMemory  = currentZoom;
             document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
             applyPageScales();
         }
 
         function handleWheel(e) {
             e.preventDefault();
-            const amount = e.deltaY < 0 ? 0.08 : -0.08;
-            adjustZoom(amount);
+            adjustZoom(e.deltaY < 0 ? 0.08 : -0.08);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Pinch zoom (touch)
+        ═══════════════════════════════════════════════════════ */
         function setupPinchZoom() {
             const el = document.getElementById('scroll-container');
             el.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
-                    startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    startDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
                     startZoom = currentZoom;
                 }
             }, { passive: true });
@@ -1130,10 +1441,12 @@
             el.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && startDist > 0) {
                     e.preventDefault();
-                    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                    let ratio = dist / startDist;
-                    currentZoom = Math.min(Math.max(startZoom * ratio, 0.4), 3.5);
-                    zoomMemory = currentZoom;
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    currentZoom = Math.min(Math.max(startZoom * (dist / startDist), 0.4), 5.0);
+                    zoomMemory  = currentZoom;
                     document.getElementById('zoom-level').innerText = Math.round(currentZoom * 100) + '%';
                     applyPageScales();
                 }
@@ -1142,53 +1455,62 @@
             el.addEventListener('touchend', (e) => {
                 if (e.touches.length < 2) {
                     startDist = 0;
-                    if (currentZoom < 1.05) {
-                        currentZoom = 1.0;
-                        applyPageScales();
-                    }
+                    if (currentZoom < 1.05) { currentZoom = 1.0; applyPageScales(); }
                 }
             }, { passive: true });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Toggle UI visibility
+        ═══════════════════════════════════════════════════════ */
         function toggleUI() {
-            if (isDrawingMode || isFxMode || currentZoom > 1.05) return; 
+            if (isDrawingMode || isFxMode || currentZoom > 1.05) return;
             uiVisible = !uiVisible;
-            document.getElementById('viewer-header').style.opacity = uiVisible ? "1" : "0";
-            document.getElementById('viewer-header').style.pointerEvents = uiVisible ? "auto" : "none";
-            document.getElementById('viewer-nav').style.opacity = uiVisible ? "1" : "0";
+            const header = document.getElementById('viewer-header');
+            const nav    = document.getElementById('viewer-nav');
+            header.style.opacity       = uiVisible ? "1" : "0";
+            header.style.pointerEvents = uiVisible ? "auto" : "none";
+            nav.style.opacity          = uiVisible ? "1" : "0";
         }
 
+        /* ═══════════════════════════════════════════════════════
+           FX
+        ═══════════════════════════════════════════════════════ */
         function updateFX(t, v) {
             const r = document.documentElement;
-            if(t==='bright') { r.style.setProperty('--page-bright', v); document.getElementById('val-bright').innerText = Math.round(v*100)+'%'; }
-            if(t==='contrast') { r.style.setProperty('--page-contrast', v); document.getElementById('val-contrast').innerText = Math.round(v*100)+'%'; }
+            if (t === 'bright')   { r.style.setProperty('--page-bright',   v); document.getElementById('val-bright').innerText   = Math.round(v * 100) + '%'; }
+            if (t === 'contrast') { r.style.setProperty('--page-contrast',  v); document.getElementById('val-contrast').innerText = Math.round(v * 100) + '%'; }
         }
 
-        function setAnnoColor(c, el) { 
-            annoColor = c; 
-            document.querySelectorAll('.color-dot, #btn-tool-text').forEach(d => d.classList.remove('active', '!border-white', 'bg-lime-500/30')); 
-            if(el) {
-                if(el.id === 'btn-tool-text') el.classList.add('bg-lime-500/30');
+        /* ═══════════════════════════════════════════════════════
+           Annotation tools
+        ═══════════════════════════════════════════════════════ */
+        function setAnnoColor(c, el) {
+            annoColor = c;
+            document.querySelectorAll('.color-dot, #btn-tool-text').forEach(d => d.classList.remove('active', '!border-white', 'bg-lime-500/30'));
+            if (el) {
+                if (el.id === 'btn-tool-text') el.classList.add('bg-lime-500/30');
                 else el.classList.add('active');
             }
         }
-        
-        function setAnnoSize(s, el) { 
-            annoSize = s; 
-            document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active')); 
-            if(el) el.classList.add('active');
+
+        function setAnnoSize(s, el) {
+            annoSize = s;
+            document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active'));
+            if (el) el.classList.add('active');
         }
 
-        function updateAnnoOpacity(v) {
-            annoOpacity = parseFloat(v);
-        }
+        function updateAnnoOpacity(v) { annoOpacity = parseFloat(v); }
 
+        /* ═══════════════════════════════════════════════════════
+           Tab switching
+        ═══════════════════════════════════════════════════════ */
         function switchTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
             document.getElementById('tab-view').classList.add('opacity-20');
 
-            if(tab === 'lib') {
+            if (tab === 'lib') {
                 document.getElementById('sec-lib').classList.remove('hidden');
                 document.getElementById('tab-lib').classList.add('tab-active');
                 stopAutoScroll();
@@ -1208,17 +1530,24 @@
             setTimeout(applyPageScales, 250);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Sidebar
+        ═══════════════════════════════════════════════════════ */
         function renderSidebar() {
-            const box = document.getElementById('sidebar-items'); box.innerHTML = '';
+            const box = document.getElementById('sidebar-items');
+            box.innerHTML = '';
             setFiles.forEach((f, idx) => {
                 const d = document.createElement('div');
                 d.className = `sidebar-item ${idx === currentIndex ? 'active' : ''}`;
                 d.innerHTML = `<span class="truncate pr-2 font-bold">${f.entry.name}</span>`;
-                d.onclick = () => { currentIndex = idx; openFile(f); };
+                d.onclick   = () => { currentIndex = idx; openFile(f); };
                 box.appendChild(d);
             });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           File navigation
+        ═══════════════════════════════════════════════════════ */
         function nextFile() {
             if (currentIndex < setFiles.length - 1) { currentIndex++; openFile(setFiles[currentIndex]); }
         }
@@ -1231,11 +1560,14 @@
             switchTab('lib');
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Drawing mode toggle
+        ═══════════════════════════════════════════════════════ */
         function toggleDrawingMode() {
             isDrawingMode = !isDrawingMode;
-            const btn = document.getElementById('draw-toggle');
+            const btn       = document.getElementById('draw-toggle');
             const container = document.getElementById('scroll-container');
-            if(isDrawingMode) {
+            if (isDrawingMode) {
                 btn.style.background = "var(--neon-lime)"; btn.style.color = "#000";
                 document.getElementById('anno-toolbar').style.display = "flex";
                 container.classList.add('anno-active');
@@ -1249,7 +1581,7 @@
         function toggleFX() {
             isFxMode = !isFxMode;
             const btn = document.getElementById('fx-toggle-btn');
-            if(isFxMode) {
+            if (isFxMode) {
                 btn.style.background = "var(--neon-blue)"; btn.style.color = "#000";
                 document.getElementById('fx-toolbar').style.display = "flex";
             } else {
@@ -1258,65 +1590,81 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Annotation canvas
+           – Exact fit: canvas internal resolution = natural media size
+           – CSS overlay: width/height 100% to fill the wrapper
+           – No extra white layer between media and canvas
+        ═══════════════════════════════════════════════════════ */
         function getFileKey() {
-            if (currentIndex >= setFiles.length) return 'default';
-            return setFiles[currentIndex].entry.name;
+            return currentIndex < setFiles.length ? setFiles[currentIndex].entry.name : 'default';
         }
 
         function initAnnotationCanvas(wrapper, pageIdx) {
             const key = getFileKey();
-            if(!annotations[key]) annotations[key] = {};
-            if(!annotations[key][pageIdx]) annotations[key][pageIdx] = [];
+            if (!annotations[key]) annotations[key] = {};
+            if (!annotations[key][pageIdx]) annotations[key][pageIdx] = [];
 
+            /* Remove any stale canvas */
             const old = wrapper.querySelector('.anno-canvas');
-            if(old) old.remove();
+            if (old) old.remove();
 
             const cv = document.createElement('canvas');
             cv.className = "anno-canvas";
+            /* Position: absolute, fills wrapper via CSS (width/height 100%) */
             wrapper.appendChild(cv);
 
+            /* Reference media element */
             const ref = wrapper.querySelector('canvas:not(.anno-canvas)') || wrapper.querySelector('img');
-            if(!ref) return;
 
             function syncSize() {
-                if (ref.tagName === 'IMG') {
-                    cv.width = ref.naturalWidth || ref.clientWidth;
-                    cv.height = ref.naturalHeight || ref.clientHeight;
+                if (!ref) {
+                    cv.width  = wrapper.offsetWidth  || 800;
+                    cv.height = wrapper.offsetHeight || 1100;
                 } else if (ref.tagName === 'CANVAS') {
-                    cv.width = ref.width;
+                    /* PDF: internal canvas already at 2× res */
+                    cv.width  = ref.width;
                     cv.height = ref.height;
+                } else if (ref.tagName === 'IMG') {
+                    /* Image / GIF: use natural pixel dimensions */
+                    cv.width  = ref.naturalWidth  || ref.clientWidth  || 800;
+                    cv.height = ref.naturalHeight || ref.clientHeight || 1000;
                 } else {
-                    cv.width = ref.offsetWidth || 800;
+                    cv.width  = ref.offsetWidth  || 800;
                     cv.height = ref.offsetHeight || 1100;
                 }
                 redrawAnnotations(cv, pageIdx);
             }
-            
-            if(ref.tagName === 'IMG') {
-                if(ref.complete) syncSize(); else ref.onload = syncSize;
+
+            if (ref) {
+                if (ref.tagName === 'IMG') {
+                    if (ref.complete && ref.naturalWidth) syncSize();
+                    else ref.onload = syncSize;
+                } else {
+                    syncSize();
+                }
             } else {
                 syncSize();
             }
 
-            let drawing = false;
-            let lastX = 0, lastY = 0;
+            let drawing = false, lastX = 0, lastY = 0;
 
             function getPos(e) {
-                const rect = cv.getBoundingClientRect();
+                const rect    = cv.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                let x = (clientX - rect.left) / (rect.width / cv.width);
-                let y = (clientY - rect.top) / (rect.height / cv.height);
-                return { x, y };
+                return {
+                    x: (clientX - rect.left)  * (cv.width  / rect.width),
+                    y: (clientY - rect.top)   * (cv.height / rect.height)
+                };
             }
 
             function startDraw(e) {
-                if(!isDrawingMode) return;
+                if (!isDrawingMode) return;
                 const p = getPos(e);
-
                 if (annoColor === 'text') {
-                    const txt = prompt(currentLang === 'fr' ? "Texte à ajouter :" : "Text to add :");
-                    if (txt && txt.trim() !== "") {
+                    const txt = prompt(currentLang === 'fr' ? "Texte à ajouter :" : "Text to add:");
+                    if (txt && txt.trim()) {
                         undoStack.push(JSON.parse(JSON.stringify(annotations[key])));
                         annotations[key][pageIdx].push({
                             type: 'text', x: p.x, y: p.y, text: txt,
@@ -1327,83 +1675,76 @@
                     }
                     return;
                 }
-
-                drawing = true;
-                lastX = p.x; lastY = p.y;
+                drawing = true; lastX = p.x; lastY = p.y;
                 undoStack.push(JSON.parse(JSON.stringify(annotations[key])));
             }
 
             function draw(e) {
-                if(!drawing || !isDrawingMode || annoColor === 'text') return;
-                const p = getPos(e);
+                if (!drawing || !isDrawingMode || annoColor === 'text') return;
+                const p   = getPos(e);
                 const ctx = cv.getContext('2d');
-
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(p.x, p.y);
-                
+                ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y);
                 if (annoColor === 'eraser') {
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.lineWidth = annoSize * 2;
-                    ctx.stroke();
                 } else {
                     ctx.globalCompositeOperation = 'source-over';
-                    ctx.strokeStyle = annoColor;
-                    ctx.globalAlpha = annoOpacity;
-                    ctx.lineWidth = annoSize;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.stroke();
+                    ctx.strokeStyle  = annoColor;
+                    ctx.globalAlpha  = annoOpacity;
+                    ctx.lineWidth    = annoSize;
+                    ctx.lineCap      = 'round';
+                    ctx.lineJoin     = 'round';
                 }
-
+                ctx.stroke();
                 annotations[key][pageIdx].push({
                     type: 'line', x1: lastX, y1: lastY, x2: p.x, y2: p.y,
                     c: annoColor, s: annoSize, o: annoOpacity
                 });
-
                 lastX = p.x; lastY = p.y;
             }
 
             function stopDraw() {
-                if(drawing) {
+                if (drawing) {
                     drawing = false;
                     localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
                 }
             }
 
-            cv.addEventListener('mousedown', startDraw);
-            cv.addEventListener('mousemove', draw);
-            cv.addEventListener('mouseup', stopDraw);
+            cv.addEventListener('mousedown',  startDraw);
+            cv.addEventListener('mousemove',  draw);
+            cv.addEventListener('mouseup',    stopDraw);
             cv.addEventListener('mouseleave', stopDraw);
-
-            cv.addEventListener('touchstart', (e) => { startDraw(e); }, { passive: true });
-            cv.addEventListener('touchmove', (e) => { if(isDrawingMode && annoColor !== 'text') { e.preventDefault(); draw(e); } }, { passive: false });
+            cv.addEventListener('touchstart', (e) => startDraw(e), { passive: true });
+            cv.addEventListener('touchmove',  (e) => {
+                if (isDrawingMode && annoColor !== 'text') { e.preventDefault(); draw(e); }
+            }, { passive: false });
             cv.addEventListener('touchend', stopDraw);
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Redraw annotations
+        ═══════════════════════════════════════════════════════ */
         function redrawAnnotations(cv, pageIdx) {
             const ctx = cv.getContext('2d');
-            ctx.clearRect(0,0, cv.width, cv.height);
+            ctx.clearRect(0, 0, cv.width, cv.height);
             const key = getFileKey();
-            if(!annotations[key] || !annotations[key][pageIdx]) return;
-
+            if (!annotations[key] || !annotations[key][pageIdx]) return;
             annotations[key][pageIdx].forEach(item => {
                 ctx.save();
                 if (!item.type || item.type === 'line') {
                     ctx.beginPath();
                     ctx.moveTo(item.x1, item.y1);
                     ctx.lineTo(item.x2, item.y2);
-                    if(item.c === 'eraser') {
+                    if (item.c === 'eraser') {
                         ctx.globalCompositeOperation = 'destination-out';
                         ctx.lineWidth = item.s * 2;
                     } else {
                         ctx.globalCompositeOperation = 'source-over';
                         ctx.strokeStyle = item.c;
                         ctx.globalAlpha = item.o !== undefined ? item.o : 1.0;
-                        ctx.lineWidth = item.s;
+                        ctx.lineWidth   = item.s;
                     }
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                     ctx.stroke();
                 } else if (item.type === 'text') {
                     ctx.globalCompositeOperation = 'source-over';
@@ -1416,30 +1757,34 @@
             });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Undo / clear
+        ═══════════════════════════════════════════════════════ */
         function undoLast() {
-            if(undoStack.length > 0) {
-                const key = getFileKey();
-                annotations[key] = undoStack.pop();
-                localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
-                document.querySelectorAll('.page-wrapper').forEach(w => {
-                    const cv = w.querySelector('.anno-canvas');
-                    if(cv) redrawAnnotations(cv, w.dataset.pageIdx);
-                });
-            }
+            if (!undoStack.length) return;
+            const key = getFileKey();
+            annotations[key] = undoStack.pop();
+            localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+            document.querySelectorAll('.page-wrapper').forEach(w => {
+                const cv = w.querySelector('.anno-canvas');
+                if (cv) redrawAnnotations(cv, w.dataset.pageIdx);
+            });
         }
 
         function clearCurrentPage() {
-            if(confirm(currentLang === 'fr' ? "Effacer les dessins ?" : "Clear drawings?")) {
-                const key = getFileKey();
-                annotations[key] = {};
-                localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
-                document.querySelectorAll('.page-wrapper').forEach(w => {
-                    const cv = w.querySelector('.anno-canvas');
-                    if(cv) redrawAnnotations(cv, w.dataset.pageIdx);
-                });
-            }
+            if (!confirm(currentLang === 'fr' ? "Effacer les dessins ?" : "Clear drawings?")) return;
+            const key = getFileKey();
+            annotations[key] = {};
+            localStorage.setItem('part_annos_v3', JSON.stringify(annotations));
+            document.querySelectorAll('.page-wrapper').forEach(w => {
+                const cv = w.querySelector('.anno-canvas');
+                if (cv) redrawAnnotations(cv, w.dataset.pageIdx);
+            });
         }
 
+        /* ═══════════════════════════════════════════════════════
+           Bootstrap
+        ═══════════════════════════════════════════════════════ */
         window.onload = init;
     </script>
 </body>
