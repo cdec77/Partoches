@@ -63,6 +63,7 @@
             border-bottom: 1px solid rgba(204, 255, 0, 0.15);
         }
 
+        /* FILE ROW WITH SETLIST SELECTION STATE */
         .file-row {
             background: var(--surface);
             border-radius: 8px;
@@ -82,6 +83,18 @@
             background: rgba(204, 255, 0, 0.04);
         }
 
+        /* SETLIST SELECTION HIGHLIGHT */
+        .file-row.in-setlist {
+            background: rgba(204, 255, 0, 0.08) !important;
+            border-color: var(--neon-lime) !important;
+            box-shadow: 0 0 8px rgba(204, 255, 0, 0.15) !important;
+        }
+
+        .file-row.in-setlist:hover {
+            background: rgba(204, 255, 0, 0.12) !important;
+            transform: translateX(4px) !important;
+        }
+
         .btn-add-success {
             background: var(--neon-lime) !important;
             color: #000 !important;
@@ -89,7 +102,6 @@
             border-color: var(--neon-lime) !important;
         }
 
-        /* HOME PAGE HEADER - SIMPLIFIED */
         .home-header {
             display: flex;
             flex-direction: column;
@@ -106,7 +118,7 @@
             gap: 10px;
         }
 
-        /* SCAN BUTTONS CONTAINER - NOW UNDER ALPHA BAR */
+        /* SCAN BUTTONS CONTAINER - UNDER ALPHA BAR */
         .scan-buttons-container {
             display: flex;
             gap: 10px;
@@ -137,7 +149,6 @@
             color: var(--neon-lime);
             letter-spacing: 0.5px;
             transition: background 0.2s;
-            touch-action: manipulation;
         }
         .folder-header:hover { background: rgba(204,255,0,0.09); }
         .folder-header .folder-toggle {
@@ -528,7 +539,44 @@
             text-align: center;
             animation: fadeIn 0.3s ease-out;
         }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px auto;
+            font-size: 12px;
+            max-width: 80%;
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* SETLIST INDICATOR IN LIBRARY */
+        .setlist-indicator {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(204, 255, 0, 0.9);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .setlist-indicator.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+            pointer-events: none;
+        }
 
         /* TABLET OPTIMIZATIONS */
         @media (min-width: 769px), (orientation: landscape) {
@@ -556,6 +604,7 @@
             #alpha-bar button { font-size: 15px !important; padding: 8px 14px !important; min-height: 48px !important; }
             .jazz-title { font-size: 2.5rem !important; }
             .scan-buttons-container { padding: 14px 8px; margin-bottom: 16px; }
+            .setlist-indicator { bottom: 90px; font-size: 12px; padding: 10px 20px; }
         }
 
         @media (min-width: 1024px) {
@@ -567,6 +616,7 @@
             .color-dot { width: 48px !important; height: 48px !important; }
             .size-btn { width: 52px !important; height: 52px !important; }
             .jazz-title { font-size: 2.8rem !important; }
+            .setlist-indicator { bottom: 95px; font-size: 13px; padding: 12px 24px; }
         }
 
         @media (max-width: 768px) and (orientation: portrait) {
@@ -583,11 +633,13 @@
             .nav-rect { min-height: 48px; padding: 12px 16px; }
             .scan-buttons-container { padding: 10px 4px; margin-bottom: 10px; }
             .btn-jazz { min-height: 48px; padding: 10px 14px; }
+            .setlist-indicator { bottom: 75px; font-size: 10px; padding: 8px 12px; }
         }
 
         @media (max-width: 480px) {
             .scan-buttons-container { flex-direction: column; align-items: stretch; }
             .btn-jazz { width: 100%; justify-content: center; }
+            .setlist-indicator { bottom: 70px; font-size: 9px; padding: 6px 10px; }
         }
 
         /* Global transitions */
@@ -603,6 +655,11 @@
 <body>
     <div class="copyright font-black uppercase">© Cdchtp</div>
     <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
+
+    <!-- SETLIST INDICATOR -->
+    <div id="setlist-indicator" class="setlist-indicator hidden">
+        <span id="setlist-count">0</span> <span id="setlist-label">fichiers dans la setlist</span>
+    </div>
 
     <nav class="glass fixed top-0 w-full flex justify-around p-4 z-[200]">
         <button onclick="switchTab('lib')" id="tab-lib" class="tab-btn tab-active" data-i18n="nav_lib">Répertoire</button>
@@ -628,7 +685,7 @@
         <!-- ALPHA BAR -->
         <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl rounded-md"></div>
 
-        <!-- SCAN BUTTONS - NOW UNDER ALPHA BAR -->
+        <!-- SCAN BUTTONS - UNDER ALPHA BAR -->
         <div class="scan-buttons-container">
             <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">
                 Rétablir Accès
@@ -638,6 +695,9 @@
             </button>
             <button onclick="addSourceRecursive()" class="btn-jazz !border-purple-500 !text-purple-400" data-i18n="btn_scan_deep">
                 📂 Récursif
+            </button>
+            <button onclick="openCurrentSetlist()" class="btn-jazz !border-green-500 !text-green-400" data-i18n="btn_open_setlist">
+                🎵 Ouvrir Setlist
             </button>
         </div>
 
@@ -773,7 +833,7 @@
                 fx_bright: "Lum", fx_contrast: "Cont", fx_alpha: "Opac", fx_sepia: "Sépia",
                 btn_del: "Gomme", btn_prev: "Précédent", btn_next: "Suivant",
                 btn_add: "Ajouter", btn_home: "🏠", btn_sun: "☀️",
-                btn_text: "Texte", btn_pen: "Stylo",
+                btn_text: "Texte", btn_pen: "Stylo", btn_open_setlist: "🎵 Ouvrir Setlist",
                 live_tracklist: "Live Tracklist", saved_sets: "Sets Sauvegardés",
                 tools_title: "Outils", btn_save_txt: "Enregistrer TXT",
                 msg_no_files: "Aucun fichier trouvé. Ajoutez un dossier.",
@@ -788,7 +848,11 @@
                 msg_error_display: "Erreur d'affichage",
                 msg_file_saved: "Fichier enregistré",
                 msg_image_error: "Erreur de chargement de l'image",
-                msg_initialization_error: "Erreur d'initialisation"
+                msg_initialization_error: "Erreur d'initialisation",
+                msg_added_to_setlist: "Ajouté à la setlist",
+                msg_removed_from_setlist: "Retiré de la setlist",
+                msg_setlist_empty: "La setlist est vide",
+                files_in_setlist: "fichiers dans la setlist"
             },
             en: {
                 nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
@@ -799,7 +863,7 @@
                 fx_bright: "Bright", fx_contrast: "Cont", fx_alpha: "Opac", fx_sepia: "Sepia",
                 btn_del: "Eraser", btn_prev: "Previous", btn_next: "Next",
                 btn_add: "Add", btn_home: "🏠", btn_sun: "☀️",
-                btn_text: "Text", btn_pen: "Pen",
+                btn_text: "Text", btn_pen: "Pen", btn_open_setlist: "🎵 Open Setlist",
                 live_tracklist: "Live Tracklist", saved_sets: "Saved Sets",
                 tools_title: "Tools", btn_save_txt: "Save TXT",
                 msg_no_files: "No files found. Add a folder.",
@@ -814,7 +878,11 @@
                 msg_error_display: "Display error",
                 msg_file_saved: "File saved",
                 msg_image_error: "Image loading error",
-                msg_initialization_error: "Initialization error"
+                msg_initialization_error: "Initialization error",
+                msg_added_to_setlist: "Added to setlist",
+                msg_removed_from_setlist: "Removed from setlist",
+                msg_setlist_empty: "Setlist is empty",
+                files_in_setlist: "files in setlist"
             }
         };
 
@@ -835,6 +903,7 @@
 
         function showLoading() { document.getElementById('loading-spinner').style.display = 'block'; }
         function hideLoading() { document.getElementById('loading-spinner').style.display = 'none'; }
+
         function showError(message) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
@@ -842,6 +911,15 @@
             document.body.appendChild(errorDiv);
             setTimeout(() => { if (errorDiv.parentNode) errorDiv.parentNode.removeChild(errorDiv); }, 5000);
         }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => { if (successDiv.parentNode) successDiv.parentNode.removeChild(successDiv); }, 3000);
+        }
+
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
             else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
@@ -859,6 +937,24 @@
             document.getElementById('lang-' + lang).classList.add('active');
             renderLibrary();
             renderSourcesUI();
+            updateSetlistIndicator();
+        }
+
+        function updateSetlistIndicator() {
+            const indicator = document.getElementById('setlist-indicator');
+            const count = document.getElementById('setlist-count');
+            const label = document.getElementById('setlist-label');
+
+            count.textContent = setFiles.length;
+            label.textContent = setFiles.length <= 1 ?
+                (currentLang === 'fr' ? 'fichier dans la setlist' : 'file in setlist') :
+                (currentLang === 'fr' ? 'fichiers dans la setlist' : 'files in setlist');
+
+            if (setFiles.length > 0) {
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
         }
 
         const DB_NAME = "PartochesDB_Ultimate";
@@ -942,6 +1038,7 @@
                         else if (currentIndex < evt.oldIndex && currentIndex >= evt.newIndex) currentIndex++;
                         document.getElementById('page-info').innerText = (currentIndex + 1) + " / " + setFiles.length;
                         renderSidebar();
+                        updateSetlistIndicator();
                     }
                 });
 
@@ -1095,19 +1192,48 @@
             files.forEach(file => {
                 const fileDiv = document.createElement('div');
                 fileDiv.className = 'file-row';
+                const fileKey = getFileKey(file);
+
+                // Check if file is in current setlist
+                if (setFiles.some(f => getFileKey(f) === fileKey)) {
+                    fileDiv.classList.add('in-setlist');
+                }
+
                 const nameDiv = document.createElement('div');
                 nameDiv.textContent = file.entry.name;
                 nameDiv.style.cssText = 'font-size:11px;color:#e2e2e9';
+
                 const infoDiv = document.createElement('div');
                 infoDiv.style.cssText = 'font-size:10px;color:#727282';
                 if (file.entry._blob) infoDiv.textContent = formatFileSize(file.entry._blob.size);
+
                 fileDiv.appendChild(nameDiv);
                 fileDiv.appendChild(infoDiv);
+
+                // Toggle file in setlist on click
                 fileDiv.onclick = () => {
-                    if (!setFiles.some(f => getFileKey(f) === getFileKey(file))) setFiles.push(file);
-                    currentIndex = setFiles.findIndex(f => getFileKey(f) === getFileKey(file));
-                    switchTab('view'); renderViewer(); renderSidebar();
+                    const existingIndex = setFiles.findIndex(f => getFileKey(f) === fileKey);
+
+                    if (existingIndex >= 0) {
+                        // Remove from setlist
+                        setFiles.splice(existingIndex, 1);
+                        fileDiv.classList.remove('in-setlist');
+                        showSuccess(i18n[currentLang].msg_removed_from_setlist);
+                    } else {
+                        // Add to setlist
+                        setFiles.push(file);
+                        fileDiv.classList.add('in-setlist');
+                        showSuccess(i18n[currentLang].msg_added_to_setlist);
+                    }
+
+                    updateSetlistIndicator();
+
+                    // If in view mode, update sidebar
+                    if (!document.getElementById('sec-view').classList.contains('hidden')) {
+                        renderSidebar();
+                    }
                 };
+
                 container.appendChild(fileDiv);
             });
         }
@@ -1155,6 +1281,21 @@
             }
         }
 
+        function getFileKey(file) {
+            return file.parentHandle ? `${file.parentHandle.name}/${file.entry.name}` : file.entry.name;
+        }
+
+        // NEW FUNCTION: Open current setlist in viewer
+        function openCurrentSetlist() {
+            if (setFiles.length === 0) {
+                showError(i18n[currentLang].msg_setlist_empty);
+                return;
+            }
+            switchTab('view');
+            renderViewer();
+            renderSidebar();
+        }
+
         async function renderSavedSets() {
             const container = document.getElementById('saved-sets-list');
             container.innerHTML = '';
@@ -1187,35 +1328,66 @@
         }
 
         async function saveCurrentSet() {
-            if (setFiles.length === 0) { showError(currentLang === 'fr' ? 'Aucun fichier dans la setlist' : 'No files in setlist'); return; }
+            if (setFiles.length === 0) {
+                showError(i18n[currentLang].msg_setlist_empty);
+                return;
+            }
+
             const name = prompt(currentLang === 'fr' ? 'Nom de la setlist:' : 'Setlist name:');
             if (!name) return;
+
             const setData = {
                 id: Date.now().toString(),
                 name: name,
-                files: setFiles.map(f => ({ name: f.entry.name, path: f.parentHandle ? f.parentHandle.name : '', source: f.parentHandle ? f.parentHandle.name : '' }))
+                files: setFiles.map(f => ({
+                    name: f.entry.name,
+                    path: f.parentHandle ? f.parentHandle.name : '',
+                    source: f.parentHandle ? f.parentHandle.name : (f.entry._virtualSource || '')
+                }))
             };
+
             try {
                 const db = await openDB();
                 await db.transaction("setlists", "readwrite").objectStore("setlists").put(setData);
                 showSuccess(i18n[currentLang].msg_setlist_saved);
                 renderSavedSets();
-            } catch (error) { showError(i18n[currentLang].msg_error_saving); }
+            } catch (error) {
+                showError(i18n[currentLang].msg_error_saving);
+            }
         }
 
         async function loadSavedSet(set) {
-            try { showLoading();
+            try {
+                showLoading();
                 const loadedFiles = [];
                 for (const fileRef of set.files) {
-                    const foundFile = files.find(f => f.entry.name === fileRef.name && (f.parentHandle ? f.parentHandle.name : '') === fileRef.path);
+                    const foundFile = files.find(f =>
+                        f.entry.name === fileRef.name &&
+                        (f.parentHandle ? f.parentHandle.name : '') === fileRef.path
+                    );
                     if (foundFile) loadedFiles.push(foundFile);
                 }
+
                 if (loadedFiles.length > 0) {
-                    setFiles = loadedFiles; currentIndex = 0;
-                    switchTab('view'); renderViewer(); renderSidebar();
-                } else showError(i18n[currentLang].msg_files_not_found);
-            } catch (error) { showError(i18n[currentLang].msg_error_loading); }
-            finally { hideLoading(); }
+                    setFiles = loadedFiles;
+                    currentIndex = 0;
+                    updateSetlistIndicator();
+                    renderSidebar();
+
+                    // If we're in library tab, show success
+                    if (!document.getElementById('sec-view').classList.contains('hidden')) {
+                        renderViewer();
+                    } else {
+                        showSuccess(i18n[currentLang].msg_setlist_saved);
+                    }
+                } else {
+                    showError(i18n[currentLang].msg_files_not_found);
+                }
+            } catch (error) {
+                showError(i18n[currentLang].msg_error_loading);
+            } finally {
+                hideLoading();
+            }
         }
 
         async function deleteSavedSet(id) {
@@ -1225,26 +1397,76 @@
                 await db.transaction("setlists", "readwrite").objectStore("setlists").delete(id);
                 showSuccess(i18n[currentLang].msg_setlist_deleted);
                 renderSavedSets();
-            } catch (error) { showError(i18n[currentLang].msg_error_deleting); }
-        }
-
-        function clearCurrentSet() {
-            if (confirm(currentLang === 'fr' ? 'Vider la setlist?' : 'Clear setlist?')) {
-                setFiles = []; currentIndex = 0; renderSidebar();
-                document.getElementById('page-info').innerText = '0 / 0';
+            } catch (error) {
+                showError(i18n[currentLang].msg_error_deleting);
             }
         }
 
-        function getFileKey(file) { return file.parentHandle ? `${file.parentHandle.name}/${file.entry.name}` : file.entry.name; }
+        function clearCurrentSet() {
+            if (confirm(currentLang === 'fr' ? 'Vider la setlist actuelle?' : 'Clear current setlist?')) {
+                setFiles = [];
+                currentIndex = 0;
+                renderLibrary(); // Update library to remove highlights
+                renderSidebar();
+                updateSetlistIndicator();
+                document.getElementById('page-info').innerText = '0 / 0';
+            }
+        }
 
         function switchTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
             document.getElementById('sec-' + tab).classList.remove('hidden');
             document.getElementById('tab-' + tab).classList.add('tab-active');
+
             if (tab === 'view') {
-                if (setFiles.length === 0) { setFiles = [...files]; currentIndex = 0; }
-                renderViewer(); renderSidebar();
+                if (setFiles.length === 0) {
+                    showError(i18n[currentLang].msg_setlist_empty);
+                    return;
+                }
+                renderViewer();
+                renderSidebar();
+            } else if (tab === 'set') {
+                // Update current setlist display
+                const container = document.getElementById('set-list-current');
+                container.innerHTML = '';
+
+                if (setFiles.length === 0) {
+                    container.innerHTML = '<div class="text-zinc-600 text-center py-10">' +
+                        i18n[currentLang].msg_setlist_empty + '</div>';
+                } else {
+                    setFiles.forEach((file, index) => {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'file-row';
+                        fileDiv.style.marginBottom = '8px';
+
+                        const nameDiv = document.createElement('div');
+                        nameDiv.textContent = file.entry.name;
+                        nameDiv.style.flexGrow = '1';
+                        nameDiv.style.overflow = 'hidden';
+                        nameDiv.style.textOverflow = 'ellipsis';
+                        nameDiv.style.whiteSpace = 'nowrap';
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'text-neon-pink font-bold';
+                        removeBtn.textContent = '✕';
+                        removeBtn.style.padding = '0 4px';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            setFiles.splice(index, 1);
+                            if (currentIndex >= index) currentIndex = Math.max(0, currentIndex - 1);
+                            renderSidebar();
+                            updateSetlistIndicator();
+                            renderLibrary();
+                            container.innerHTML = '';
+                            renderSavedSets(); // Re-render to update
+                        };
+
+                        fileDiv.appendChild(nameDiv);
+                        fileDiv.appendChild(removeBtn);
+                        container.appendChild(fileDiv);
+                    });
+                }
             }
         }
 
