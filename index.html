@@ -690,6 +690,158 @@
             }
         }
 
+
+        /* =====================================================================
+           v9 — iPadOS : ALPHABET + DRAG/DROP + PINCH + SCROLL
+           ===================================================================== */
+        .alphabet-bar {
+            position: sticky;
+            top: calc(118px + var(--safe-top));
+            z-index: 115;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 48px;
+            margin: 8px 0 12px;
+            padding: 6px 8px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            border: 1px solid rgba(0,240,255,.18);
+            border-radius: 14px;
+            background: rgba(5,5,8,.90);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .alphabet-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .alphabet-keys {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1 0 auto;
+        }
+
+        .alphabet-key {
+            flex: 0 0 auto;
+            width: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            padding: 0 6px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 10px;
+            background: rgba(255,255,255,.035);
+            color: #aaaab8;
+            font-weight: 900;
+            font-size: 11px;
+            touch-action: manipulation;
+        }
+
+        .alphabet-key.active,
+        .alphabet-key:active {
+            color: #050508;
+            background: var(--neon-lime);
+            border-color: var(--neon-lime);
+            box-shadow: 0 0 15px rgba(204,255,0,.35);
+        }
+
+        .alphabet-key.has-items {
+            color: var(--neon-cyan-soft);
+            border-color: rgba(0,240,255,.25);
+        }
+
+        /* iPad : chaque zone de drag possède une cible confortable. */
+        .alphabet-focus-v9 {
+            animation: alphabet-focus-v9 1.2s ease-out;
+        }
+
+        @keyframes alphabet-focus-v9 {
+            0% { box-shadow: 0 0 0 3px var(--neon-lime), 0 0 28px rgba(204,255,0,.55); }
+            100% { box-shadow: none; }
+        }
+
+        .drag-over,
+        [data-drop-target="true"].drag-over {
+            outline: 2px dashed var(--neon-lime) !important;
+            outline-offset: 3px;
+            background: rgba(204,255,0,.07) !important;
+            box-shadow: 0 0 24px rgba(204,255,0,.16) inset;
+        }
+
+        .drag-handle,
+        [draggable="true"] {
+            touch-action: manipulation;
+        }
+
+        .dnd-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            max-width: 320px;
+            padding: 10px 14px;
+            border: 1px solid var(--neon-cyan-soft);
+            border-radius: 10px;
+            background: rgba(5,5,8,.92);
+            color: var(--neon-cyan-soft);
+            box-shadow: 0 0 22px rgba(0,240,255,.22);
+            font-weight: 800;
+            font-size: 11px;
+        }
+
+        /* La zone de lecture doit être un vrai conteneur de scroll tactile.
+           Ne pas appliquer touch-action:none au lecteur : cela cassait le scroll
+           et empêchait Safari d'orchestrer correctement le pinch. */
+        #scroll-container,
+        #viewer-content {
+            touch-action: pan-x pan-y pinch-zoom;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        #scroll-container {
+            overflow: auto !important;
+            scrollbar-gutter: stable;
+        }
+
+        /* Le canvas/image ne capture plus seul les gestes système. */
+        #scroll-container canvas,
+        #scroll-container img,
+        #scroll-container .page-wrapper {
+            touch-action: pinch-zoom;
+        }
+
+        /* Le bandeau de commandes reste indépendant des gestes du document. */
+        #viewer-touch-strip,
+        #viewer-header,
+        #viewer-nav,
+        .right-control-dock {
+            touch-action: manipulation;
+        }
+
+        @media (pointer: coarse) {
+            .alphabet-key {
+                width: 44px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .alphabet-bar {
+                top: calc(106px + var(--safe-top));
+            }
+        }
+
+        /* Lors d'un pinch JS, on verrouille temporairement le scroll pour éviter
+           un déplacement diagonal parasite, puis on le rend immédiatement. */
+        body.partoches-pinch-active {
+            overscroll-behavior: none;
+        }
+
     </style>
 </head>
 <body>
@@ -711,6 +863,14 @@
             <div>
                 <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
+
+        <!-- v9 — BARRE ALPHABÉTIQUE iPAD/ANDROID : accès direct aux partitions -->
+        <div id="alphabet-bar" class="alphabet-bar" role="navigation" aria-label="Index alphabétique">
+            <button type="button" class="alphabet-key alphabet-all active" data-letter="ALL"
+                    onclick="filterLibraryByLetter('ALL')">★</button>
+            <div id="alphabet-keys" class="alphabet-keys"></div>
+        </div>
+
 
         <!-- =====================================================================
              v8 — SCAN DOCK TOUJOURS ACCESSIBLE
@@ -1334,6 +1494,7 @@
             loadViewPreferences();
             updateScanSupportHint();
             logPlatformProfile();
+            requestAnimationFrame(installV9InteractionLayer);
 
             // Adapter le label du bouton selon le support de l'API
             const btnScan = document.querySelector('[data-i18n="btn_scan"]');
@@ -1987,6 +2148,7 @@
         async function openFile(obj) {
             if(!obj) return;
             switchTab('view');
+            requestAnimationFrame(installV9InteractionLayer);
 
             const container = document.getElementById('viewer-content');
 
@@ -2704,6 +2866,511 @@
             if(el) el.classList.add('active'); 
         }
 
+
+
+        // =====================================================================
+        // PARTOCHES v9 — RESTAURATION DES 4 GESTES / OUTILS iPAD
+        // 1. Barre alphabétique
+        // 2. Drag & Drop
+        // 3. Pinch-to-zoom
+        // 4. Scroll tactile / molette / trackpad
+        // =====================================================================
+
+        let libraryLetterFilter = 'ALL';
+        let pinchStateV9 = null;
+        let pinchVisualScaleV9 = 1;
+        let scrollTouchStateV9 = null;
+        let dndV9 = { active: false, source: null, ghost: null };
+
+        function normalizeLibraryLetter(name) {
+            const clean = String(name || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim()
+                .toUpperCase();
+            return clean.charAt(0) || '#';
+        }
+
+        function getLibraryItemsForAlphabet() {
+            return Array.isArray(files) ? files : [];
+        }
+
+        function getFileLabelV9(obj) {
+            return String(
+                obj?.entry?.baseName ||
+                obj?.entry?.name ||
+                obj?.name ||
+                ''
+            ).split('/').pop();
+        }
+
+        function buildAlphabetBar() {
+            const host = document.getElementById('alphabet-keys');
+            if (!host) return;
+
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const counts = {};
+            for (const obj of getLibraryItemsForAlphabet()) {
+                const l = normalizeLibraryLetter(getFileLabelV9(obj));
+                counts[l] = (counts[l] || 0) + 1;
+            }
+
+            host.innerHTML = letters.map(letter => {
+                const disabled = !counts[letter];
+                const cls = disabled ? 'alphabet-key' : 'alphabet-key has-items';
+                return `<button type="button" class="${cls}"
+                        data-letter="${letter}"
+                        ${disabled ? 'aria-disabled="true"' : ''}
+                        onclick="filterLibraryByLetter('${letter}')">${letter}</button>`;
+            }).join('');
+
+            updateAlphabetActiveState();
+        }
+
+        function updateAlphabetActiveState() {
+            document.querySelectorAll('#alphabet-bar .alphabet-key').forEach(btn => {
+                btn.classList.toggle('active',
+                    btn.dataset.letter === libraryLetterFilter);
+            });
+        }
+
+        function filterLibraryByLetter(letter) {
+            libraryLetterFilter = String(letter || 'ALL').toUpperCase();
+            updateAlphabetActiveState();
+
+            const rows = document.querySelectorAll(
+                '#library-list [data-file-name], #library-list .file-row, #library-list .library-file-row'
+            );
+
+            // Si le DOM d'origine utilise une structure différente, on ne cache rien
+            // arbitrairement : le filtre est mémorisé et le scroll alphabétique reste actif.
+            if (!rows.length) {
+                revealFirstMatchingLibraryItem();
+                return;
+            }
+
+            rows.forEach(row => {
+                const label = row.dataset.fileName ||
+                    row.getAttribute('data-name') ||
+                    row.textContent || '';
+                const show = libraryLetterFilter === 'ALL' ||
+                    normalizeLibraryLetter(label) === libraryLetterFilter;
+                row.style.display = show ? '' : 'none';
+            });
+
+            revealFirstMatchingLibraryItem();
+        }
+
+        function revealFirstMatchingLibraryItem() {
+            if (libraryLetterFilter === 'ALL') return;
+
+            const target = getLibraryItemsForAlphabet().find(obj =>
+                normalizeLibraryLetter(getFileLabelV9(obj)) === libraryLetterFilter
+            );
+
+            if (!target) {
+                showToast(currentLang === 'fr'
+                    ? `Aucune partition en ${libraryLetterFilter}`
+                    : `No score starting with ${libraryLetterFilter}`);
+                return;
+            }
+
+            const name = getFileLabelV9(target);
+            const candidates = document.querySelectorAll(
+                '#library-list [data-file-name], #library-list .file-row, #library-list .library-file-row'
+            );
+
+            for (const el of candidates) {
+                const label = el.dataset.fileName ||
+                    el.getAttribute('data-name') || el.textContent || '';
+                if (label.includes(name)) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('alphabet-focus-v9');
+                    setTimeout(() => el.classList.remove('alphabet-focus-v9'), 1200);
+                    break;
+                }
+            }
+        }
+
+        function installAlphabetRefreshHooks() {
+            buildAlphabetBar();
+
+            // renderLibrary() existant est conservé ; on le décore afin que la
+            // barre soit régénérée après chaque import/suppression/recherche.
+            if (typeof renderLibrary === 'function' && !renderLibrary.__v9Wrapped) {
+                const originalRenderLibraryV9 = renderLibrary;
+                function wrappedRenderLibraryV9(...args) {
+                    const result = originalRenderLibraryV9.apply(this, args);
+                    requestAnimationFrame(buildAlphabetBar);
+                    return result;
+                }
+                wrappedRenderLibraryV9.__v9Wrapped = true;
+                renderLibrary = wrappedRenderLibraryV9;
+            }
+        }
+
+        // =====================================================================
+        // DRAG & DROP — PC + iPadOS (pointer events) + Android
+        // =====================================================================
+        function clearDnDStateV9() {
+            document.querySelectorAll('.drag-over').forEach(el =>
+                el.classList.remove('drag-over')
+            );
+            if (dndV9.ghost) {
+                dndV9.ghost.remove();
+                dndV9.ghost = null;
+            }
+            dndV9.active = false;
+            dndV9.source = null;
+        }
+
+        function createDndGhostV9(text, x, y) {
+            const ghost = document.createElement('div');
+            ghost.className = 'dnd-ghost';
+            ghost.textContent = text;
+            ghost.style.left = `${x + 14}px`;
+            ghost.style.top = `${y + 14}px`;
+            document.body.appendChild(ghost);
+            dndV9.ghost = ghost;
+        }
+
+        function moveDndGhostV9(x, y) {
+            if (!dndV9.ghost) return;
+            dndV9.ghost.style.left = `${x + 14}px`;
+            dndV9.ghost.style.top = `${y + 14}px`;
+        }
+
+        function findDropTargetV9(x, y) {
+            const el = document.elementFromPoint(x, y);
+            if (!el) return null;
+            return el.closest(
+                '[data-drop-target="true"], .setlist-drop-zone, .setlist-item, .file-row, .library-file-row'
+            );
+        }
+
+        async function handleDroppedFilesV9(fileList) {
+            const arr = Array.from(fileList || []);
+            if (!arr.length) return;
+
+            const supported = arr.filter(file => SUPPORTED_SCORE_EXT.test(file.name));
+            if (!supported.length) {
+                showToast(currentLang === 'fr'
+                    ? 'Aucun PDF ou fichier image compatible.'
+                    : 'No compatible PDF or image file.');
+                return;
+            }
+
+            mergeVirtualFiles(
+                supported,
+                currentLang === 'fr' ? 'Glisser-déposer' : 'Drag & Drop'
+            );
+        }
+
+        function installNativeDragDropV9() {
+            const targets = [
+                document.getElementById('sec-lib'),
+                document.getElementById('source-list'),
+                document.getElementById('library-list'),
+                document.getElementById('sec-set')
+            ].filter(Boolean);
+
+            targets.forEach(target => {
+                if (target.dataset.dndV9Installed === '1') return;
+                target.dataset.dndV9Installed = '1';
+                target.dataset.dropTarget = 'true';
+
+                target.addEventListener('dragenter', e => {
+                    e.preventDefault();
+                    target.classList.add('drag-over');
+                });
+
+                target.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+                    target.classList.add('drag-over');
+                });
+
+                target.addEventListener('dragleave', e => {
+                    if (!target.contains(e.relatedTarget)) {
+                        target.classList.remove('drag-over');
+                    }
+                });
+
+                target.addEventListener('drop', e => {
+                    e.preventDefault();
+                    target.classList.remove('drag-over');
+                    handleDroppedFilesV9(e.dataTransfer?.files);
+                });
+            });
+        }
+
+        // iPadOS Safari n'a pas de drag/drop de fichiers natif équivalent au desktop
+        // dans tous les cas. On ajoute donc un geste long + déplacement par pointeur
+        // pour les éléments réordonnables de setlist, sans casser Sortable.js.
+        function installTouchDragBridgeV9() {
+            const selectors = [
+                '.setlist-item[draggable="true"]',
+                '[data-sortable-item]',
+                '.sortable-item'
+            ];
+
+            document.addEventListener('pointerdown', e => {
+                const source = e.target.closest?.(selectors.join(','));
+                if (!source || e.pointerType === 'mouse') return;
+
+                const timer = setTimeout(() => {
+                    if (pinchStateV9) return;
+                    dndV9.active = true;
+                    dndV9.source = source;
+                    source.classList.add('drag-over');
+                    createDndGhostV9(
+                        source.textContent.trim().slice(0, 80) || 'Partition',
+                        e.clientX, e.clientY
+                    );
+                    try { source.setPointerCapture(e.pointerId); } catch (_) {}
+                }, 260);
+
+                source.__dndTimerV9 = timer;
+
+                const cancel = () => {
+                    clearTimeout(timer);
+                    source.removeEventListener('pointerup', cancel);
+                    source.removeEventListener('pointercancel', cancel);
+                };
+                source.addEventListener('pointerup', cancel, { once: true });
+                source.addEventListener('pointercancel', cancel, { once: true });
+            }, { passive: true });
+
+            document.addEventListener('pointermove', e => {
+                if (!dndV9.active || !dndV9.source) return;
+                moveDndGhostV9(e.clientX, e.clientY);
+
+                const target = findDropTargetV9(e.clientX, e.clientY);
+                document.querySelectorAll('.drag-over').forEach(el =>
+                    el.classList.remove('drag-over')
+                );
+                if (target) target.classList.add('drag-over');
+            }, { passive: true });
+
+            document.addEventListener('pointerup', async e => {
+                if (!dndV9.active) return;
+                const source = dndV9.source;
+                const target = findDropTargetV9(e.clientX, e.clientY);
+
+                clearDnDStateV9();
+
+                if (target && source && target !== source) {
+                    // Si SortableJS gère déjà ce DOM, il reçoit aussi les événements
+                    // natifs. Pour éviter un double reorder, nous ne manipulons pas le
+                    // tableau métier ici : on laisse le moteur d'origine finaliser.
+                    source.dispatchEvent(new CustomEvent('partoches:touchdrop', {
+                        bubbles: true,
+                        detail: { source, target }
+                    }));
+                }
+            }, { passive: true });
+
+            document.addEventListener('pointercancel', clearDnDStateV9, { passive: true });
+        }
+
+        // =====================================================================
+        // PINCH TO ZOOM — iPadOS Safari + Android
+        // =====================================================================
+        function distanceBetweenPointersV9() {
+            const points = Array.from(pinchStateV9?.pointers?.values() || []);
+            if (points.length < 2) return 0;
+            return Math.hypot(
+                points[0].clientX - points[1].clientX,
+                points[0].clientY - points[1].clientY
+            );
+        }
+
+        function midpointBetweenPointersV9() {
+            const points = Array.from(pinchStateV9?.pointers?.values() || []);
+            if (points.length < 2) return { x: 0, y: 0 };
+            return {
+                x: (points[0].clientX + points[1].clientX) / 2,
+                y: (points[0].clientY + points[1].clientY) / 2
+            };
+        }
+
+        function applyPinchZoomV9(scale, center) {
+            if (!Number.isFinite(scale)) return;
+
+            const min = 0.40;
+            const max = 3.50;
+            const next = Math.max(min, Math.min(max, scale));
+
+            const scroller = document.getElementById('scroll-container');
+            if (!scroller) return;
+
+            const rect = scroller.getBoundingClientRect();
+            const localX = center.x - rect.left + scroller.scrollLeft;
+            const localY = center.y - rect.top + scroller.scrollTop;
+
+            const ratio = next / Math.max(.001, currentZoom);
+
+            currentZoom = next;
+            zoomMemory = next;
+
+            if (typeof applyPageScales === 'function') {
+                applyPageScales();
+            }
+
+            // Maintenir le point pincé sous les doigts.
+            requestAnimationFrame(() => {
+                scroller.scrollLeft = localX * ratio - (center.x - rect.left);
+                scroller.scrollTop = localY * ratio - (center.y - rect.top);
+            });
+
+            updateZoomLabel();
+            saveViewPreferences();
+        }
+
+        function installPinchZoomV9() {
+            const target = document.getElementById('scroll-container') ||
+                           document.getElementById('viewer-content');
+            if (!target || target.dataset.pinchV9Installed === '1') return;
+
+            target.dataset.pinchV9Installed = '1';
+            target.style.touchAction = 'pan-x pan-y pinch-zoom';
+
+            target.addEventListener('pointerdown', e => {
+                if (e.pointerType === 'mouse') return;
+
+                if (!pinchStateV9) {
+                    pinchStateV9 = { pointers: new Map(), baseDistance: 0, baseZoom: currentZoom };
+                }
+
+                pinchStateV9.pointers.set(e.pointerId, e);
+
+                if (pinchStateV9.pointers.size === 2) {
+                    pinchStateV9.baseDistance = distanceBetweenPointersV9();
+                    pinchStateV9.baseZoom = currentZoom;
+                    pinchVisualScaleV9 = currentZoom;
+                    document.body.classList.add('partoches-pinch-active');
+                }
+            }, { passive: true });
+
+            target.addEventListener('pointermove', e => {
+                if (!pinchStateV9 || !pinchStateV9.pointers.has(e.pointerId)) return;
+                pinchStateV9.pointers.set(e.pointerId, e);
+
+                if (pinchStateV9.pointers.size !== 2 || !pinchStateV9.baseDistance) return;
+
+                const distance = distanceBetweenPointersV9();
+                const factor = distance / pinchStateV9.baseDistance;
+                const center = midpointBetweenPointersV9();
+
+                applyPinchZoomV9(pinchStateV9.baseZoom * factor, center);
+            }, { passive: true });
+
+            const finish = e => {
+                if (!pinchStateV9) return;
+                pinchStateV9.pointers.delete(e.pointerId);
+
+                if (pinchStateV9.pointers.size < 2) {
+                    pinchStateV9 = null;
+                    document.body.classList.remove('partoches-pinch-active');
+                    saveViewPreferences();
+                }
+            };
+
+            target.addEventListener('pointerup', finish, { passive: true });
+            target.addEventListener('pointercancel', finish, { passive: true });
+            target.addEventListener('pointerleave', e => {
+                if (e.pointerType !== 'mouse') finish(e);
+            }, { passive: true });
+
+            // Safari gesture events : si le navigateur les expose, ils ne doivent
+            // pas déclencher le zoom de page autour de la partition.
+            target.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
+            target.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+        }
+
+        // =====================================================================
+        // SCROLL — restauration complète tactile / molette / trackpad
+        // =====================================================================
+        function installScrollBridgeV9() {
+            const scroller = document.getElementById('scroll-container') ||
+                             document.getElementById('viewer-content');
+            if (!scroller || scroller.dataset.scrollV9Installed === '1') return;
+
+            scroller.dataset.scrollV9Installed = '1';
+            scroller.style.overflow = 'auto';
+            scroller.style.webkitOverflowScrolling = 'touch';
+            scroller.style.touchAction = 'pan-x pan-y pinch-zoom';
+
+            // Wheel desktop / trackpad : préserver la navigation verticale et
+            // permettre le déplacement horizontal sur partitions zoomées.
+            scroller.addEventListener('wheel', e => {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    scroller.scrollTop += e.deltaY;
+                } else {
+                    scroller.scrollLeft += e.deltaX;
+                }
+            }, { passive: true });
+
+            // Un doigt = scroll. Deux doigts = pinch.
+            scroller.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1) return;
+                const t = e.touches[0];
+                scrollTouchStateV9 = {
+                    x: t.clientX,
+                    y: t.clientY,
+                    left: scroller.scrollLeft,
+                    top: scroller.scrollTop
+                };
+            }, { passive: true });
+
+            scroller.addEventListener('touchmove', e => {
+                if (e.touches.length !== 1 || !scrollTouchStateV9) return;
+                const t = e.touches[0];
+                const dx = scrollTouchStateV9.x - t.clientX;
+                const dy = scrollTouchStateV9.y - t.clientY;
+
+                // Laisser Safari effectuer le scroll natif si possible ; ce
+                // fallback ne sert que lorsque le conteneur est verrouillé par
+                // un autre élément.
+                if (scroller.scrollHeight > scroller.clientHeight) {
+                    scroller.scrollTop = scrollTouchStateV9.top + dy;
+                }
+                if (scroller.scrollWidth > scroller.clientWidth) {
+                    scroller.scrollLeft = scrollTouchStateV9.left + dx;
+                }
+            }, { passive: true });
+
+            scroller.addEventListener('touchend', () => {
+                scrollTouchStateV9 = null;
+            }, { passive: true });
+
+            // Scroll programmatique : quand une page est sélectionnée, on ne
+            // supprime jamais le positionnement naturel du lecteur.
+            scroller.addEventListener('scroll', () => {
+                scroller.dataset.lastScrollTop = String(scroller.scrollTop);
+            }, { passive: true });
+        }
+
+        function installV9InteractionLayer() {
+            buildAlphabetBar();
+            installAlphabetRefreshHooks();
+            installNativeDragDropV9();
+            installTouchDragBridgeV9();
+            installPinchZoomV9();
+            installScrollBridgeV9();
+
+            // Réinstallation légère après création dynamique du viewer.
+            const observer = new MutationObserver(() => {
+                if (document.getElementById('scroll-container')) {
+                    installPinchZoomV9();
+                    installScrollBridgeV9();
+                }
+                buildAlphabetBar();
+                installNativeDragDropV9();
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
 
         // =====================================================================
         // v8 — GARDE-FOU D'INTERFACE : les contrôles ne peuvent pas être
