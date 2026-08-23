@@ -3,11 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <!-- ==========================================================================
-         PARTOCHES — NEON PRO 
+         PARTOCHES — NEON PRO ULTRA HYBRID — v7 "AUTOSCROLL & IPAD EDITION"
          ==========================================================================
+         Changelog v6 -> v7 (voir aussi commentaires inline dans tout le fichier) :
+           • NOUVEAU : moteur d'auto-scroll fluide (RAF) avec vitesse réglable,
+             pause automatique pendant le dessin et pendant une interaction
+             tactile manuelle, reprise contrôlée, et enchaînement optionnel
+             des partitions d'une setlist en fin de page.
+           • OPTIMISATION iPad Air 13" (et tablettes Android grand format) :
+             détection dédiée "grande tablette", échelle de rendu PDF adaptée,
+             gestion des zones sûres (encoche / home indicator), cibles
+             tactiles agrandies, correction de la hauteur de viewport iOS
+             (barres Safari dynamiques) via variable --app-vh.
+           • DESIGN : nouvelle identité néon multi-dégradé (lime → cyan → magenta),
+             icône entièrement repensée (croches néon lumineuses) déclinée dans
+             tous les formats PWA/iOS/Android, halos animés, meilleurs contrastes.
+           • Aucune fonctionnalité d'origine supprimée : sélection de répertoire
+             et fichiers avec récursivité, lecture PNG/JPG/PDF multipages,
+             conservation du zoom, plein écran, navigation tactile/molette/clavier,
+             dessin annoté, luminosité/contraste, setlists avec retour en tête
+             de partition — tout est conservé ET amélioré.
          ========================================================================== -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Partoches — Neon Pro </title>
+    <title>Partoches — Neon Pro Ultra Hybrid v8 (iPad Air 13" / Android / PC)</title>
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050508">
@@ -17,6 +35,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Partoches">
     <meta name="format-detection" content="telephone=no">
+
+    <!-- PARTOCHES v8 — PWA / iPadOS / Android hardening -->
+    <meta name="apple-mobile-web-app-orientations" content="portrait-any">
+    <meta name="application-name" content="Partoches">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="msapplication-TileColor" content="#050508">
+    <meta name="msapplication-TileImage" content="icon-144.png">
+    <link rel="apple-touch-startup-image" href="icon-180.png">
 
     <!-- Favicon multi-résolutions -->
     <link rel="icon" href="favicon.ico" sizes="any">
@@ -357,6 +383,313 @@
             font-size: 11px; font-weight: 700; padding: 8px 18px; border-radius: 8px; z-index: 9999;
             box-shadow: 0 0 18px rgba(176,38,255,0.4); letter-spacing: 0.5px; pointer-events: none;
         }
+
+        /* =====================================================================
+           v8 — ACCESSIBILITÉ / SAFE AREA / IPAD AIR 13" / ANDROID
+           ===================================================================== */
+        :root {
+            --top-ui: 72px;
+            --bottom-ui: 92px;
+            --touch-min: 48px;
+            --neon-glow: 0 0 18px rgba(0,240,255,.22), 0 0 32px rgba(204,255,0,.10);
+        }
+
+        html {
+            background: var(--bg);
+            min-height: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button, input, select {
+            font: inherit;
+        }
+
+        button {
+            touch-action: manipulation;
+        }
+
+        .sr-only {
+            position: fixed !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0,0,0,0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        /* La navigation fixe ne doit jamais masquer le début de la bibliothèque. */
+        #sec-lib, #sec-set {
+            padding-top: calc(104px + var(--safe-top)) !important;
+            padding-bottom: calc(140px + var(--safe-bottom)) !important;
+            scroll-padding-top: calc(104px + var(--safe-top));
+        }
+
+        .library-action-dock {
+            position: sticky;
+            top: calc(72px + var(--safe-top));
+            z-index: 120;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0 0 18px 0;
+            padding: 12px;
+            border: 1px solid rgba(0,240,255,.24);
+            border-radius: 14px;
+            background:
+                linear-gradient(120deg, rgba(5,5,8,.97), rgba(12,12,20,.95)),
+                radial-gradient(circle at 10% 50%, rgba(204,255,0,.10), transparent 35%);
+            box-shadow: var(--neon-glow);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .library-action-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 190px;
+            color: #a6a6b7;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1.2px;
+            white-space: nowrap;
+        }
+
+        .neon-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--neon-lime);
+            box-shadow: 0 0 12px var(--neon-lime);
+            animation: dock-dot-pulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes dock-dot-pulse {
+            0%,100% { transform: scale(.9); opacity: .75; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .library-action-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .library-action-buttons .btn-jazz {
+            min-height: 48px;
+            padding: 10px 14px;
+            font-size: 10px;
+            box-shadow: 0 0 14px rgba(0,240,255,.08);
+        }
+
+        .scan-primary {
+            border-color: var(--neon-lime) !important;
+            color: var(--neon-lime) !important;
+        }
+
+        .scan-secondary {
+            border-color: var(--neon-blue) !important;
+            color: var(--neon-blue) !important;
+        }
+
+        .scan-photo {
+            border-color: var(--neon-pink) !important;
+            color: var(--neon-pink) !important;
+        }
+
+        .scan-support-hint {
+            position: absolute;
+            left: 12px;
+            bottom: -18px;
+            color: #5d5d6d;
+            font-size: 8px;
+            pointer-events: none;
+        }
+
+        /* Dock miroir fixe : l'utilisateur peut toujours importer sans remonter. */
+        body::after {
+            content: "";
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: calc(1px + var(--safe-bottom));
+            background: rgba(2,2,4,.98);
+            z-index: 599;
+            pointer-events: none;
+        }
+
+        #viewer-touch-strip {
+            position: fixed;
+            left: 50%;
+            bottom: calc(12px + var(--safe-bottom));
+            transform: translateX(-50%);
+            z-index: 560;
+            display: flex;
+            gap: 6px;
+            padding: 7px;
+            border: 1px solid rgba(0,240,255,.22);
+            border-radius: 16px;
+            background: rgba(5,5,8,.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 0 26px rgba(0,0,0,.75);
+        }
+
+        #viewer-touch-strip button {
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.035);
+            color: #d9d9e2;
+            font-weight: 900;
+        }
+
+        #viewer-touch-strip button:active {
+            transform: scale(.94);
+            border-color: var(--neon-lime);
+            color: var(--neon-lime);
+        }
+
+        /* Ne jamais placer un dock vertical sous les barres système. */
+        .right-control-dock {
+            padding-bottom: var(--safe-bottom);
+            padding-right: var(--safe-right);
+        }
+
+        /* Contrôles plus grands sur tablette tactile. */
+        @media (pointer: coarse) {
+            .btn-jazz,
+            .nav-rect,
+            .tab-btn,
+            .lang-switch {
+                min-height: 48px;
+            }
+
+            .nav-rect {
+                min-width: 120px;
+            }
+
+            .library-action-buttons .btn-jazz {
+                min-width: 145px;
+            }
+        }
+
+        @media (min-width: 1024px) and (orientation: landscape) {
+            .library-action-dock {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            #viewer-touch-strip {
+                display: none;
+            }
+
+            #viewer-content {
+                padding-bottom: calc(520px + var(--safe-bottom));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .library-action-dock {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .library-action-title {
+                min-width: 0;
+            }
+
+            .library-action-buttons {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .library-action-buttons .btn-jazz {
+                flex: 1 1 30%;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .library-action-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .library-action-buttons .btn-jazz {
+                width: 100%;
+                padding-left: 7px;
+                padding-right: 7px;
+                font-size: 9px;
+            }
+
+            .scan-support-hint {
+                display: none;
+            }
+
+            .desktop-scan-legacy {
+                display: none;
+            }
+
+            #viewer-header {
+                padding-top: calc(6px + var(--safe-top)) !important;
+            }
+
+            #viewer-nav {
+                bottom: calc(82px + var(--safe-bottom)) !important;
+            }
+        }
+
+        /* Mode plein écran : l'interface de lecture garde une marge sûre. */
+        :fullscreen #sec-view,
+        :-webkit-full-screen #sec-view {
+            background: #000;
+        }
+
+        :fullscreen #viewer-header {
+            padding-top: max(8px, var(--safe-top));
+        }
+
+        /* États clavier / focus : utile avec trackpad et claviers iPad. */
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--neon-lime);
+            outline-offset: 2px;
+        }
+
+        /* Le zoom > 100% doit rester utilisable horizontalement sans couper les pages. */
+        #viewer-content {
+            overflow: visible;
+            will-change: scroll-position;
+        }
+
+        .page-wrapper {
+            contain: layout paint;
+            will-change: transform;
+        }
+
+        /* Réduit les risques de "clic fantôme" après un geste iPad. */
+        .file-row,
+        .sidebar-item,
+        .btn-jazz,
+        .nav-rect {
+            -webkit-touch-callout: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .neon-dot {
+                animation: none;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -373,15 +706,47 @@
         </div>
     </nav>
 
-    <section id="sec-lib" class="pt-22 h-screen overflow-y-auto px-8 md:px-12">
+    <section id="sec-lib" class="pt-22 h-screen overflow-y-auto px-4 md:px-6">
         <div class="flex justify-between items-end mb-6 mt-4">
             <div>
                 <h1 class="jazz-title text-3xl md:text-4xl mb-1">Partoches</h1>
                 <div id="source-list" class="flex flex-wrap gap-2"></div>
+
+        <!-- =====================================================================
+             v8 — SCAN DOCK TOUJOURS ACCESSIBLE
+             Les actions d'import sont dupliquées dans un dock sticky + bottom-safe.
+             Cela évite tout recouvrement par la barre Safari/Chrome, le dock système,
+             le clavier virtuel ou les zones sûres iPadOS/Android.
+             ===================================================================== -->
+        <div id="library-action-dock" class="library-action-dock" aria-label="Importation">
+            <div class="library-action-title">
+                <span class="neon-dot"></span>
+                <span data-i18n="scan_title">IMPORTER UNE BIBLIOTHÈQUE</span>
             </div>
-            <div class="flex gap->
+            <div class="library-action-buttons">
+                <button id="btn-scan-folder" class="btn-jazz scan-primary" onclick="scanFolderEntry()"
+                        data-i18n="btn_scan_folder">📁 Dossier récursif</button>
+                <button id="btn-scan-files" class="btn-jazz scan-secondary" onclick="scanFilesEntry()"
+                        data-i18n="btn_scan_files">📄 Fichiers</button>
+                <button id="btn-scan-photos" class="btn-jazz scan-photo" onclick="scanPhotosEntry()"
+                        data-i18n="btn_scan_photos">📷 Photos</button>
+            </div>
+            <div id="scan-support-hint" class="scan-support-hint"></div>
+        </div>
+
+        <!-- Inputs séparés : ils sont créés une seule fois et déclenchés par les boutons.
+             webkitdirectory permet le scan récursif quand le navigateur l'expose. -->
+        <input id="file-input-recursive" class="sr-only" type="file" multiple
+               webkitdirectory directory
+               accept=".pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf">
+        <input id="file-input-files" class="sr-only" type="file" multiple
+               accept=".pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf">
+        <input id="file-input-photos" class="sr-only" type="file" multiple
+               accept="image/*" capture="environment">
+            </div>
+            <div class="flex gap-2">
                 <button id="btn-restore" onclick="restoreAccess()" class="hidden btn-jazz !border-blue-500 !text-blue-500" data-i18n="btn_restore">Rétablir Accès</button>
-                <button onclick="addSource()" class="btn-jazz" data-i18n="btn_scan">Scanner Dossier</button>
+                <button onclick="scanFolderEntry()" class="btn-jazz desktop-scan-legacy" data-i18n="btn_scan">Scanner Dossier</button>
             </div>
         </div>
         <div id="alpha-bar" class="sticky top-0 z-20 flex flex-wrap justify-center bg-black/90 backdrop-blur-md py-2 border-b border-white/5 shadow-2xl rounded-md"></div>
@@ -429,6 +794,7 @@
                 <button onclick="toggleScrollToolbar()" id="scroll-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_autoscroll" title="Auto-défilement">Scroll ▶</button>
                 <button onclick="toggleFX()" id="fx-toggle-btn" class="btn-jazz !border-zinc-700 !text-zinc-400 !px-2" data-i18n="btn_settings">Filtres</button>
                 <button onclick="toggleDrawingMode()" id="draw-toggle" class="btn-jazz !px-2" data-i18n="btn_draw">Dessin</button>
+                <button onclick="toggleFullscreen()" id="fullscreen-toggle" class="btn-jazz !border-cyan-500 !text-cyan-300 !px-2" data-i18n="btn_fullscreen" title="Plein écran">⛶</button>
                 <!-- Boutons rotation : antihoraire / horaire — reset automatique à chaque partition -->
                 <div class="flex items-center bg-zinc-900 rounded-lg border border-white/5" title="Rotation (non conservée)">
                     <button onclick="event.stopPropagation(); rotatePage(-1)" class="px-2 py-1 text-zinc-400 hover:text-white font-bold text-sm" title="Rotation antihoraire">↺</button>
@@ -453,6 +819,16 @@
         <div id="viewer-nav" class="absolute bottom-8 w-full flex justify-between px-12 pointer-events-none z-[400] transition-opacity duration-300 sm:flex">
             <button onclick="event.stopPropagation(); prevFile()" class="nav-rect" data-i18n="btn_prev">Précédent</button>
             <button onclick="event.stopPropagation(); nextFile()" class="nav-rect" data-i18n="btn_next">Suivant</button>
+        </div>
+
+
+        <!-- v8 : commandes tactiles secondaires, toujours au-dessus de la safe-area -->
+        <div id="viewer-touch-strip" class="viewer-touch-strip">
+            <button onclick="prevFile()" aria-label="Partition précédente">◀</button>
+            <button onclick="adjustZoom(-0.10)" aria-label="Zoom arrière">−</button>
+            <button onclick="resetViewerView()" aria-label="Réinitialiser la vue">100%</button>
+            <button onclick="adjustZoom(0.10)" aria-label="Zoom avant">+</button>
+            <button onclick="nextFile()" aria-label="Partition suivante">▶</button>
         </div>
 
         <div class="right-control-dock">
@@ -513,6 +889,9 @@
         const i18n = {
             fr: {
                 nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
+                scan_title: "Importer une bibliothèque", btn_scan_folder: "📁 Dossier récursif",
+                btn_scan_files: "📄 Fichiers", btn_scan_photos: "📷 Photos",
+                btn_fullscreen: "Plein écran", scan_folder_hint: "Dossier récursif disponible selon le navigateur",
                 btn_restore: "Rétablir Accès", btn_scan: "Scanner Dossier",
                 set_title: "Programmation", btn_save_set: "Enregistrer Set", btn_clear: "Vider",
                 btn_close: "✕ Fermer", btn_settings: "Filtres", btn_draw: "Dessin",
@@ -522,6 +901,9 @@
             },
             en: {
                 nav_lib: "Library", nav_set: "Setlists", nav_view: "Viewer",
+                scan_title: "Import library", btn_scan_folder: "📁 Recursive folder",
+                btn_scan_files: "📄 Files", btn_scan_photos: "📷 Photos",
+                btn_fullscreen: "Fullscreen", scan_folder_hint: "Recursive folder support depends on browser",
                 btn_restore: "Restore Access", btn_scan: "Scan Folder",
                 set_title: "Setlists", btn_save_set: "Save Setlist", btn_clear: "Clear",
                 btn_close: "✕ Close", btn_settings: "Filters", btn_draw: "Draw",
@@ -574,6 +956,7 @@
             document.getElementById('lang-' + lang).classList.add('active');
             renderLibrary();
             renderSavedSets();
+            updateScanSupportHint();
         }
 
         const DB_NAME = "PartochesDB_Ultimate";
@@ -585,8 +968,372 @@
             }); 
         }
 
+
+        // =====================================================================
+        // PARTOCHES v8 — IMPORT UNIFIÉ MULTI-PLATEFORME
+        // =====================================================================
+        // Objectifs :
+        //  • PC : showDirectoryPicker quand disponible.
+        //  • iPadOS / Android : webkitdirectory pour les dossiers si exposé,
+        //    sinon sélection multiple de fichiers sans blocage.
+        //  • Photos : sélection de la photothèque/caméra sans dépendre du
+        //    File System Access API.
+        //  • Chaque entrée garde son chemin relatif pour éviter les collisions
+        //    entre deux partitions portant le même nom.
+        // =====================================================================
+
+        const SUPPORTED_SCORE_EXT = /\.(pdf|png|jpg|jpeg|webp)$/i;
+
+        function getEntryDisplayName(file) {
+            return file.webkitRelativePath || file.name;
+        }
+
+        function makeVirtualEntry(file) {
+            const displayName = getEntryDisplayName(file);
+            return {
+                entry: {
+                    name: displayName,
+                    baseName: file.name,
+                    relativePath: file.webkitRelativePath || file.name,
+                    _blob: file,
+                    kind: 'file',
+                    getFile: () => Promise.resolve(file)
+                }
+            };
+        }
+
+        function mergeVirtualFiles(newFiles, sourceLabel) {
+            const accepted = [];
+            const seen = new Set(
+                files.map(f => String(f.entry.relativePath || f.entry.name).toLowerCase())
+            );
+
+            for (const file of newFiles) {
+                if (!SUPPORTED_SCORE_EXT.test(file.name)) continue;
+                const key = String(file.webkitRelativePath || file.name).toLowerCase();
+                if (seen.has(key)) continue;
+                seen.add(key);
+                accepted.push(makeVirtualEntry(file));
+            }
+
+            if (!accepted.length) {
+                showToast(currentLang === 'fr'
+                    ? 'Aucun PDF ou fichier image compatible.'
+                    : 'No compatible PDF or image file.');
+                return 0;
+            }
+
+            let src = sources.find(s => s._virtual && s.name === sourceLabel);
+            if (!src) {
+                src = { name: sourceLabel, _virtual: true, _files: [] };
+                sources.push(src);
+            }
+
+            src._files = (src._files || []).concat(accepted);
+            files.push(...accepted);
+            renderLibrary();
+            renderSourcesUI();
+
+            showToast(currentLang === 'fr'
+                ? `${accepted.length} fichier(s) ajouté(s)`
+                : `${accepted.length} file(s) added`);
+
+            return accepted.length;
+        }
+
+        function scanFilesEntry() {
+            const input = document.getElementById('file-input-files');
+            if (!input) return;
+            input.value = '';
+            input.onchange = () => {
+                const chosen = Array.from(input.files || []);
+                mergeVirtualFiles(chosen,
+                    currentLang === 'fr' ? 'Fichiers sélectionnés' : 'Selected Files');
+            };
+            input.click();
+        }
+
+        function scanPhotosEntry() {
+            const input = document.getElementById('file-input-photos');
+            if (!input) return;
+            input.value = '';
+            input.onchange = () => {
+                const chosen = Array.from(input.files || []);
+                mergeVirtualFiles(chosen,
+                    currentLang === 'fr' ? 'Photos' : 'Photos');
+            };
+            input.click();
+        }
+
+        async function scanFolderEntry() {
+            // 1. Desktop Chromium / Android Chromium quand l'API est exposée.
+            if (typeof window.showDirectoryPicker === 'function') {
+                try {
+                    const h = await window.showDirectoryPicker({ mode: 'read' });
+                    if (sources.some(s => !s._virtual && s.name === h.name)) {
+                        showToast(currentLang === 'fr'
+                            ? 'Ce dossier est déjà ajouté.'
+                            : 'This folder is already added.');
+                        return;
+                    }
+
+                    const db = await openDB();
+                    db.transaction("sources", "readwrite")
+                        .objectStore("sources").put(h, h.name);
+
+                    sources.push(h);
+                    await refreshFiles();
+                    showToast(currentLang === 'fr'
+                        ? 'Dossier récursif ajouté ✓'
+                        : 'Recursive folder added ✓');
+                    return;
+                } catch (e) {
+                    if (e && e.name === 'AbortError') return;
+                    console.warn('[Partoches v8] showDirectoryPicker:', e);
+                }
+            }
+
+            // 2. Fallback navigateur : webkitdirectory = sélection récursive.
+            const input = document.getElementById('file-input-recursive');
+            if (input) {
+                input.value = '';
+                input.onchange = () => {
+                    const chosen = Array.from(input.files || []);
+                    if (!chosen.length) return;
+                    const count = mergeVirtualFiles(chosen,
+                        currentLang === 'fr'
+                            ? 'Dossier sélectionné'
+                            : 'Selected Folder');
+
+                    if (count) {
+                        showToast(currentLang === 'fr'
+                            ? `${count} fichier(s) importé(s) récursivement`
+                            : `${count} file(s) imported recursively`);
+                    }
+                };
+                input.click();
+                return;
+            }
+
+            // 3. Dernier filet de sécurité.
+            scanFilesEntry();
+        }
+
+        function updateScanSupportHint() {
+            const el = document.getElementById('scan-support-hint');
+            if (!el) return;
+
+            const hasFS = typeof window.showDirectoryPicker === 'function';
+            const hasWebkitDir = 'webkitdirectory' in document.createElement('input');
+
+            let msg;
+            if (hasFS) {
+                msg = currentLang === 'fr'
+                    ? 'Dossier natif + récursivité'
+                    : 'Native folder + recursion';
+            } else if (hasWebkitDir) {
+                msg = currentLang === 'fr'
+                    ? 'Dossier récursif via sélecteur système'
+                    : 'Recursive folder via system picker';
+            } else {
+                msg = currentLang === 'fr'
+                    ? 'Dossier non disponible : utilisez Fichiers / Photos'
+                    : 'Folder unavailable: use Files / Photos';
+            }
+
+            el.textContent = msg;
+        }
+
+        // =====================================================================
+        // v8 — PLEIN ÉCRAN + VERROUILLAGE DE VEILLE
+        // =====================================================================
+        let wakeLockHandle = null;
+
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) return false;
+            try {
+                wakeLockHandle = await navigator.wakeLock.request('screen');
+                wakeLockHandle.addEventListener?.('release', () => {
+                    wakeLockHandle = null;
+                });
+                return true;
+            } catch (e) {
+                console.warn('[Partoches] Wake Lock non disponible:', e);
+                return false;
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (!wakeLockHandle) return;
+            try { await wakeLockHandle.release(); } catch (_) {}
+            wakeLockHandle = null;
+        }
+
+        async function toggleFullscreen() {
+            const target = document.getElementById('sec-view') || document.documentElement;
+            try {
+                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                    if (document.exitFullscreen) await document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                } else {
+                    if (target.requestFullscreen) {
+                        await target.requestFullscreen({ navigationUI: 'hide' });
+                    } else if (target.webkitRequestFullscreen) {
+                        target.webkitRequestFullscreen();
+                    } else {
+                        // iOS Safari n'autorise pas le fullscreen générique de la même
+                        // façon : on masque les barres de l'application et on utilise
+                        // la hauteur visualViewport déjà corrigée.
+                        document.body.classList.add('ios-fullscreen-fallback');
+                        uiVisible = true;
+                        showToast(currentLang === 'fr'
+                            ? 'Mode lecture optimisé activé'
+                            : 'Optimized reading mode enabled');
+                    }
+                }
+                updateFullscreenButton();
+            } catch (e) {
+                console.warn('[Partoches] Fullscreen:', e);
+                showToast(currentLang === 'fr'
+                    ? 'Plein écran non autorisé par le navigateur'
+                    : 'Fullscreen blocked by browser');
+            }
+        }
+
+        function updateFullscreenButton() {
+            const btn = document.getElementById('fullscreen-toggle');
+            if (!btn) return;
+            const active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            btn.innerText = active ? '⛶' : '⛶';
+            btn.setAttribute('aria-pressed', String(active));
+        }
+
+        function resetViewerView() {
+            currentZoom = 1.0;
+            zoomMemory = 1.0;
+            currentRotation = 0;
+            updateZoomLabel();
+            applyPageScales();
+            applyRotation();
+            const sc = document.getElementById('scroll-container');
+            if (sc) {
+                sc.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            }
+            showToast(currentLang === 'fr' ? 'Vue réinitialisée' : 'View reset');
+        }
+
+        // =====================================================================
+        // v8 — PRÉFÉRENCES DE LECTURE
+        // =====================================================================
+        const VIEW_PREFS_KEY = 'part_view_prefs_v8';
+
+        function loadViewPreferences() {
+            try {
+                const p = JSON.parse(localStorage.getItem(VIEW_PREFS_KEY) || '{}');
+                if (Number.isFinite(p.zoom)) {
+                    zoomMemory = Math.max(0.4, Math.min(3.5, p.zoom));
+                    currentZoom = zoomMemory;
+                }
+                if (Number.isFinite(p.bright)) {
+                    document.documentElement.style.setProperty('--page-bright', p.bright);
+                }
+                if (Number.isFinite(p.contrast)) {
+                    document.documentElement.style.setProperty('--page-contrast', p.contrast);
+                }
+            } catch (e) {
+                console.warn('[Partoches] Préférences invalides:', e);
+            }
+        }
+
+        function saveViewPreferences() {
+            try {
+                const root = getComputedStyle(document.documentElement);
+                localStorage.setItem(VIEW_PREFS_KEY, JSON.stringify({
+                    zoom: currentZoom,
+                    bright: parseFloat(root.getPropertyValue('--page-bright')) || 1,
+                    contrast: parseFloat(root.getPropertyValue('--page-contrast')) || 1
+                }));
+            } catch (_) {}
+        }
+
+        function updateZoomLabel() {
+            const label = document.getElementById('zoom-level');
+            if (label) label.textContent = Math.round(currentZoom * 100) + '%';
+        }
+
+        // Renforcement de adjustZoom existant sans supprimer sa logique.
+        const _adjustZoomV7 = adjustZoom;
+        adjustZoom = function(delta) {
+            _adjustZoomV7(delta);
+            updateZoomLabel();
+            saveViewPreferences();
+        };
+
+        // Renforcement de updateFX existant : persistance des réglages.
+        const _updateFXV7 = updateFX;
+        updateFX = function(type, value) {
+            _updateFXV7(type, value);
+            saveViewPreferences();
+        };
+
+        // =====================================================================
+        // v8 — RESTAURATION APRÈS RETOUR D'ARRIÈRE / SUSPENSION iPadOS
+        // =====================================================================
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible') {
+                setAppVH();
+                if (autoScrollOn) {
+                    await requestWakeLock();
+                }
+            } else {
+                // Le navigateur peut suspendre requestAnimationFrame.
+                autoScrollLastTs = null;
+            }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+
+        // Recalage plus fin quand Safari change de hauteur sans déclencher resize.
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('scroll', setAppVH, { passive: true });
+        }
+
+        // =====================================================================
+        // v8 — DIAGNOSTIC D'ENVIRONNEMENT, visible dans la console pour QA
+        // =====================================================================
+        function getPlatformProfile() {
+            const ua = navigator.userAgent || '';
+            const touch = navigator.maxTouchPoints || 0;
+            const isIPad = /iPad/i.test(ua) ||
+                (navigator.platform === 'MacIntel' && touch > 1);
+            const isAndroid = /Android/i.test(ua);
+            const largeTablet = Math.min(window.innerWidth, window.innerHeight) >= 768;
+            return {
+                iPad: isIPad,
+                android: isAndroid,
+                largeTablet,
+                touchPoints: touch,
+                dpr: window.devicePixelRatio || 1,
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                visualViewport: window.visualViewport
+                    ? `${Math.round(window.visualViewport.width)}x${Math.round(window.visualViewport.height)}`
+                    : null,
+                fullscreen: !!(document.fullscreenEnabled || document.webkitFullscreenEnabled),
+                directoryPicker: typeof window.showDirectoryPicker === 'function',
+                webkitDirectory: 'webkitdirectory' in document.createElement('input')
+            };
+        }
+
+        function logPlatformProfile() {
+            console.info('[Partoches v8] Profil appareil:', getPlatformProfile());
+        }
+
         async function init() {
             setLang(currentLang);
+            loadViewPreferences();
+            updateScanSupportHint();
+            logPlatformProfile();
 
             // Adapter le label du bouton selon le support de l'API
             const btnScan = document.querySelector('[data-i18n="btn_scan"]');
@@ -1411,6 +2158,7 @@
         function goToHome() { 
             zoomMemory = 1.0;
             stopAutoScroll(); // NOUVEAU v7 : on n'auto-scrolle pas dans le vide hors de la visionneuse
+            releaseWakeLock();
             switchTab('lib'); 
         }
 
@@ -1751,6 +2499,7 @@
         function startAutoScroll() {
             if (autoScrollOn) return;
             autoScrollOn = true;
+            requestWakeLock();
             autoScrollLastTs = null;
             autoScrollPausedForTouch = false;
             updateAutoScrollUI();
@@ -1761,6 +2510,7 @@
         function stopAutoScroll() {
             const wasOn = autoScrollOn;
             autoScrollOn = false;
+            releaseWakeLock();
             if (autoScrollRAF) cancelAnimationFrame(autoScrollRAF);
             autoScrollRAF = null;
             if (autoScrollResumeTimer) clearTimeout(autoScrollResumeTimer);
@@ -1952,6 +2702,89 @@
             annoSize = s; 
             document.querySelectorAll('.size-btn').forEach(d => d.classList.remove('active')); 
             if(el) el.classList.add('active'); 
+        }
+
+
+        // =====================================================================
+        // v8 — GARDE-FOU D'INTERFACE : les contrôles ne peuvent pas être
+        // "perdus" sous une barre système après rotation ou redimensionnement.
+        // =====================================================================
+        function refreshResponsiveShell() {
+            setAppVH();
+            updateScanSupportHint();
+            updateZoomLabel();
+
+            const view = document.getElementById('sec-view');
+            const header = document.getElementById('viewer-header');
+
+            if (view && !view.classList.contains('hidden') && header) {
+                header.style.paddingTop =
+                    `max(6px, calc(6px + var(--safe-top)))`;
+            }
+
+            requestAnimationFrame(() => {
+                applyPageScales();
+                if (currentRotation !== 0) applyRotation();
+            });
+        }
+
+        window.addEventListener('resize', refreshResponsiveShell, { passive: true });
+        window.addEventListener('orientationchange', () => {
+            window.setTimeout(refreshResponsiveShell, 250);
+            window.setTimeout(refreshResponsiveShell, 700);
+        });
+
+        // Prévenir les doubles gestes de zoom navigateur autour du lecteur.
+        document.addEventListener('gesturestart', e => {
+            if (e.target.closest?.('#scroll-container')) e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('gesturechange', e => {
+            if (e.target.closest?.('#scroll-container')) e.preventDefault();
+        }, { passive: false });
+
+        // Raccourci PC : F = plein écran, 0 = reset vue.
+        window.addEventListener('keydown', e => {
+            if (document.activeElement?.tagName === 'INPUT') return;
+            if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                if (!document.getElementById('sec-view').classList.contains('hidden')) {
+                    toggleFullscreen();
+                }
+            }
+            if (e.key === '0') {
+                if (!document.getElementById('sec-view').classList.contains('hidden')) {
+                    e.preventDefault();
+                    resetViewerView();
+                }
+            }
+        });
+
+        // Protection contre les promesses IndexedDB silencieusement rejetées.
+        window.addEventListener('unhandledrejection', e => {
+            console.warn('[Partoches] Promise non gérée:', e.reason);
+        });
+
+        // Expose un petit diagnostic volontairement non intrusif pour les tests QA.
+        window.PartochesDiagnostics = {
+            profile: getPlatformProfile,
+            refresh: refreshResponsiveShell,
+            scanFolder: scanFolderEntry,
+            scanFiles: scanFilesEntry,
+            scanPhotos: scanPhotosEntry,
+            resetView: resetViewerView,
+            fullscreen: toggleFullscreen
+        };
+
+
+        // PWA shell : service worker uniquement en contexte sécurisé.
+        if ('serviceWorker' in navigator &&
+            (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
+                    .then(reg => console.info('[Partoches] Service Worker actif:', reg.scope))
+                    .catch(err => console.warn('[Partoches] Service Worker:', err));
+            });
         }
 
         window.onload = init;
