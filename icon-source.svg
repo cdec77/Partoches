@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg"><stop stop-color="#222b37"/><stop offset="1" stop-color="#090b12"/></radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+    <g id="note">
+      <path d="M290 333V136" fill="none" stroke-linecap="round" stroke-width="24"/>
+      <path d="M290 138C303 177 371 172 365 227C362 251 349 269 335 278C355 237 335 214 290 205Z" stroke="none"/>
+      <ellipse cx="251" cy="338" rx="47" ry="32" transform="rotate(-23 251 338)"/>
+    </g>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <use href="#note" fill="#96ff00" stroke="#96ff00" filter="url(#glow)" opacity=".9"/>
+  <use href="#note" fill="#ceff4b" stroke="#ceff4b"/>
+</svg>

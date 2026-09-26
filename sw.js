@@ -1,7 +1,9 @@
-const CACHE = "partoches-v8-shell";
+const CACHE = "partoches-v11-shell";
 const CORE = [
   "./",
   "./index.html",
+  "./enhancements.js",
+  "./enhancements.css",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"

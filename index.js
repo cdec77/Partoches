@@ -1,7 +1,3 @@
-
-
-
-
         const i18n = {
             fr: {
                 nav_lib: "Répertoire", nav_set: "Setlists", nav_view: "Visionneuse",
@@ -1358,8 +1354,10 @@
         // =====================================================================
         // OUVERTURE ET RENDU D'UN FICHIER — TOUTES PLATEFORMES
         // =====================================================================
+        let viewerLoadId = 0;
         async function openFile(obj) {
             if(!obj) return;
+            const loadId = ++viewerLoadId;
             switchTab('view');
 
             const container = document.getElementById('viewer-content');
@@ -1388,6 +1386,7 @@
                     showLoadingSpinner(container, currentLang === 'fr' ? 'Lecture PDF...' : 'Reading PDF...');
 
                     const pdfRaw = await readFileAsArrayBuffer(obj.entry);
+                    if (loadId !== viewerLoadId) return;
 
                     showLoadingSpinner(container, currentLang === 'fr' ? 'Décodage PDF...' : 'Decoding PDF...');
 
@@ -1395,6 +1394,7 @@
                     // la propriété du buffer (ArrayBuffer devient detached)
                     const pdfBuffer = pdfRaw.slice(0);
                     const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
+                    if (loadId !== viewerLoadId) { await pdf.destroy(); return; }
 
                     // Vider le spinner seulement après décodage réussi
                     container.innerHTML = '';
@@ -1428,6 +1428,7 @@
 
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page     = await pdf.getPage(i);
+                        if (loadId !== viewerLoadId) { await pdf.destroy(); return; }
                         const viewport = page.getViewport({ scale: pdfScale });
 
                         const wrapper = document.createElement('div');
@@ -1451,6 +1452,7 @@
                             viewport
                         }).promise;
 
+                        if (loadId !== viewerLoadId) { await pdf.destroy(); return; }
                         setupDrawing(anno, fileName, i);
                     }
 
@@ -1463,6 +1465,7 @@
                     showLoadingSpinner(container, currentLang === 'fr' ? 'Lecture image...' : 'Reading image...');
 
                     const dataUrl = await readFileAsDataURL(obj.entry);
+                    if (loadId !== viewerLoadId) return;
 
                     // Vider le spinner seulement après lecture réussie
                     container.innerHTML = '';
@@ -1490,13 +1493,14 @@
                     };
 
                     img.onerror = () => {
-                        showFileError(container, new Error('Image decode failed'), fileName);
+                        if (loadId === viewerLoadId) showFileError(container, new Error('Image decode failed'), fileName);
                     };
 
                     img.src = dataUrl;
                 }
 
             } catch (err) {
+                if (loadId !== viewerLoadId) return;
                 showFileError(container, err, fileName);
             }
 
@@ -1537,7 +1541,7 @@
         }
 
         window.addEventListener('keydown', (e) => {
-            if(document.activeElement.tagName === 'INPUT') return;
+            if(document.querySelector('dialog[open]') || document.activeElement.tagName === 'INPUT') return;
             const sc = document.getElementById('scroll-container');
             if(e.code === "Space") { e.preventDefault(); nextFile(); }
             if(e.key === "ArrowRight") nextFile();
@@ -1686,7 +1690,8 @@
             el.addEventListener('touchend', (e) => { if (e.touches.length < 2) startDist = 0; }, { passive: true });
         }
 
-        function switchTab(id) { 
+        function switchTab(id) {
+            if (id !== 'view') viewerLoadId++; 
             // NOUVEAU v7 : quitter la visionneuse coupe systématiquement l'auto-scroll,
             // qu'on parte via "Accueil", "✕", ou un autre onglet.
             if (id !== 'view' && autoScrollOn) stopAutoScroll();
@@ -1706,9 +1711,12 @@
             setFiles.forEach((f, i) => {
                 const div = document.createElement('div');
                 div.className = `sidebar-item ${i === currentIndex ? 'active' : ''}`;
-                div.innerHTML = `<div class="flex items-center truncate"><span class="opacity-40 mr-2.5 font-bold text-[10px]">${i+1}</span>
-                                 <span class="truncate pr-2">${f.entry.name}</span></div>
-                                 <span class="text-zinc-600 font-bold text-[10px] select-none">☰</span>`;
+                const label = document.createElement('span');
+                label.className = 'truncate pr-2';
+                label.textContent = `${i + 1} · ${f.entry.name}`;
+                const handle = document.createElement('span');
+                handle.textContent = '☰';
+                div.append(label, handle);
                 div.onclick = (e) => { 
                     if(e.target.innerText === '☰') return;
                     currentIndex = i; 
@@ -2162,4 +2170,3 @@
         }
 
         window.onload = init;
-    

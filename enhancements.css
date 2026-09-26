@@ -1,0 +1,36 @@
+/* Persistent selection, accessible previews and viewer set controls. */
+.file-row.score-selected {
+    background: rgba(204, 255, 0, .14);
+    box-shadow: inset 4px 0 #ccff00;
+}
+.score-selected .score-title { color: #e4ff86; }
+.score-badge { color: #ccff00; font-size: 11px; margin: 0 8px; }
+.score-actions { display: flex; gap: 8px; align-items: center; }
+.score-title { flex: 1; min-width: 0; text-align: left; overflow-wrap: anywhere; }
+.score-dialog {
+    width: min(920px, 94vw);
+    max-height: 90vh;
+    overflow: auto;
+    background: #141419;
+    color: #eee;
+    border: 1px solid #ccff00;
+    border-radius: 16px;
+    padding: 20px;
+}
+.score-dialog::backdrop { background: #000b; }
+.score-dialog header { display: flex; gap: 12px; justify-content: space-between; align-items: center; }
+.score-dialog h2 { overflow-wrap: anywhere; }
+.score-dialog button, .score-dialog input { min-height: 44px; }
+.score-preview { min-height: 100px; margin: 16px 0; text-align: center; }
+.score-preview img, .score-preview canvas { max-width: 100%; height: auto; margin: auto; background: white; }
+.score-picker-row { display: flex; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #444; }
+.score-search { width: 100%; color: white; background: #222; padding: 10px; margin-top: 16px; }
+.viewer-set-actions { padding: 12px; border-bottom: 1px solid #333; }
+.sidebar-item.active { background: #ccff0026; border-left: 4px solid #ccff00; color: #e4ff86; }
+.score-remove { color: #ff729c; padding: 8px; }
+@media (max-width: 550px) {
+    .file-row { flex-wrap: wrap; gap: 8px; }
+    .file-row .score-title { flex-basis: 65%; }
+    .score-actions { margin-left: auto; }
+    .score-picker-row { flex-wrap: wrap; }
+}
